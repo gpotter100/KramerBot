@@ -101,14 +101,12 @@ body {
 }
 
 /* ===========================
-   MOBILE LAYOUT (ALL NEW BEHAVIOR)
+   MOBILE LAYOUT
 =========================== */
 
 @media (max-width: 768px) {
 
-  /* ---------------------------
-     HAMBURGER MENU
-  --------------------------- */
+  /* Hamburger menu */
   #hamburger-menu {
     display: block;
     position: fixed;
@@ -125,9 +123,7 @@ body {
     cursor: pointer;
   }
 
-  /* ---------------------------
-     SIDEBAR (HIDDEN BY DEFAULT)
-  --------------------------- */
+  /* Sidebar hidden by default */
   #sidebar {
     position: fixed;
     left: -240px;
@@ -145,28 +141,19 @@ body {
     left: 0;
   }
 
-  /* Shrink sidebar Kramer icon */
+  /* Shrink Kramer icon */
   #sidebar-kramer-icon {
     width: 30%;
     max-width: 80px;
   }
 
-  /* ---------------------------
-     GLOBAL TITLE (MOBILE)
-  --------------------------- */
+  /* Global title styling */
   #global-title {
-    margin-top: 60px; /* ensures title sits below hamburger */
+    margin-top: 60px;
     text-align: center;
   }
 
-  .title-line-1 {
-    font-size: 14px;
-    color: #99ccff;
-    opacity: 0.8;
-    font-style: italic;
-    margin-bottom: 4px;
-  }
-
+  .title-line-1,
   .title-line-2 {
     font-size: 22px;
     font-weight: 800;
@@ -174,9 +161,7 @@ body {
     color: #66ccff;
   }
 
-  /* ---------------------------
-     MAIN CONTENT
-  --------------------------- */
+  /* Main content */
   #main {
     padding: 8px;
     gap: 8px;
@@ -184,10 +169,11 @@ body {
     overflow-y: auto;
   }
 
-  /* Panels: stacked + controlled height */
+  /* Panels with reduced width */
   #chat-panel,
   #visual-panel {
-    width: 100%;
+    width: 94%;
+    margin: 0 auto;
     padding: 12px;
     border-radius: 10px;
     flex-direction: column;
@@ -220,7 +206,6 @@ body {
     width: 100%;
   }
 
-  /* Safe-area padding */
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
