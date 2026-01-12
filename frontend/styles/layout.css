@@ -151,7 +151,7 @@ body {
 
   /* Global title styling */
   #global-title {
-    margin-top: 60px;
+    margin-top: 40px;
     text-align: center;
   }
 
@@ -174,7 +174,7 @@ body {
   /* Panels with reduced width */
   #chat-panel,
   #visual-panel {
-    width: 94%;
+    width: 92%;
     margin: 0 auto;
     padding: 12px;
     border-radius: 10px;
@@ -189,8 +189,8 @@ body {
   }
 
   #visual-panel {
-    flex: 0 0 32vh;
-    max-height: 32vh;
+    flex: 1;
+    max-height: none;
     min-height: 160px;
     overflow-y: auto;
     margin-top: 4px;
