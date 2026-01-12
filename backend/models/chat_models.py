@@ -1,8 +1,8 @@
 # models/chat_models.py
 from typing import List, Dict, Optional
-from data_store import get_known_data, get_global_context
-from analysis_tools import analyze_message
-from kramer_persona import wrap_as_kramer, system_preamble
+from .data_store import get_known_data, get_global_context
+from .analysis_tools import analyze_message
+from .kramer_persona import wrap_as_kramer, system_preamble
 
 # Super simple in-memory history for now (per-process)
 chat_history: List[Dict[str, str]] = []
