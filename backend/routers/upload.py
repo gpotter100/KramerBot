@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, UploadFile, File
 from services.csv_parser import parse_csv
-from models.data_store import store_data
+from services.data_store_upload import store_data
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
 
