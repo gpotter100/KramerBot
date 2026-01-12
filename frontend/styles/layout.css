@@ -118,7 +118,7 @@ body {
     align-items: center;
   }
 
-  /* Panels stay centered but do NOT stretch vertically */
+  /* Panels stay centered */
   #chat-panel,
   #visual-panel {
     width: 100%;
@@ -127,37 +127,35 @@ body {
     padding: 14px;
   }
 
-  /* Chat panel becomes column layout */
+  /* Chat panel becomes column layout and shrinks height */
   #chat-panel {
     flex-direction: column;
-    height: auto;
-    min-height: 260px;
+    height: 22.5%;           /* 50% of original 45% */
+    min-height: 140px;
+    overflow-y: auto;
   }
 
   #chat-top-row {
     flex-direction: column;
   }
 
-  #kramer-icon-container {
-    margin: 0 auto;
-  }
-
-  /* ===========================
-     FIX: RIGHT‑SIDE HEIGHTS
-  =========================== */
-
-  /* Chat right column (top-right panel) */
   #chat-right-column {
     width: 100%;
-    max-height: 180px;      /* ← adjust to taste */
+    max-height: 140px;
     overflow-y: auto;
     padding-right: 4px;
   }
 
-  /* Visuals panel (bottom-right panel) */
+  #kramer-icon-container {
+    margin: 0 auto;
+  }
+
+  /* Visual panel shrinks height */
   #visual-panel {
-    max-height: 320px;      /* ← adjust to taste */
+    height: 25%;             /* 50% of original flex: 1 */
+    max-height: 240px;
     overflow-y: auto;
+    margin-top: 12px;
   }
 
   /* Safe-area padding for iPhone notch */
@@ -166,4 +164,3 @@ body {
     padding-top: env(safe-area-inset-top);
   }
 }
-
