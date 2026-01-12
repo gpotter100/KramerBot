@@ -143,3 +143,11 @@
   }
 }
 
+@media (min-width: 769px) {
+  #sidebar {
+    scrollbar-width: none;
+  }
+  #sidebar::-webkit-scrollbar {
+    display: none;
+  }
+}

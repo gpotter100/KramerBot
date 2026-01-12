@@ -24,6 +24,11 @@ body {
   overflow: hidden;
 }
 
+#sidebar {
+  overflow-y: auto;
+  max-height: 100vh;
+}
+
 /* ===========================
    PANELS
 =========================== */
