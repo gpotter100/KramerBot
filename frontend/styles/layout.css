@@ -29,6 +29,8 @@ body {
   max-height: 100vh;
 }
 
+
+
 /* ===========================
    PANELS
 =========================== */
@@ -216,5 +218,16 @@ body {
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Hide hamburger on desktop */
+#hamburger-menu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #hamburger-menu {
+    display: block;
   }
 }

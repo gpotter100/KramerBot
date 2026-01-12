@@ -10,7 +10,15 @@
   flex-direction: column;
   padding: 16px 12px;
   box-shadow: 4px 0 12px rgba(0, 0, 0, 0.25);
+
+  /* Hide scrollbar */
+  scrollbar-width: none; /* Firefox */
 }
+
+#sidebar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
 
 .sidebar-logo {
   margin-bottom: 24px;
