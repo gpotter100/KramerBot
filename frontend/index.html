@@ -3,23 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>KramerBot</title>
-  <link rel="stylesheet" href="styles/layout.css">
-  <link rel="stylesheet" href="styles/sidebar.css">
-  <link rel="stylesheet" href="styles/chat.css">
-  <link rel="stylesheet" href="styles/visuals.css">
-  <link rel="stylesheet" href="styles/kramer.css">
+
+  <!-- CRITICAL: Enables real mobile viewport sizing -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- iOS standalone app mode -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KramerBot">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KramerBot">
 
-<!-- iOS home screen icon -->
-<link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
+  <link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
 
-<link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
-
+  <!-- Stylesheets (with cache-busting) -->
+  <link rel="stylesheet" href="styles/layout.css?v=4">
+  <link rel="stylesheet" href="styles/sidebar.css?v=4">
+  <link rel="stylesheet" href="styles/chat.css?v=4">
+  <link rel="stylesheet" href="styles/visuals.css?v=4">
+  <link rel="stylesheet" href="styles/kramer.css?v=4">
 </head>
+
 <body>
   <div id="app">
 
