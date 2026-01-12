@@ -118,36 +118,18 @@ body {
     align-items: center;
   }
 
-  /* Constrain panel width */
+  /* Panels stay centered but do NOT stretch vertically */
   #chat-panel,
   #visual-panel {
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
     padding: 14px;
-    flex-direction: column;
   }
 
-  /* ===========================
-     FIX: RIGHT‑SIDE HEIGHTS
-  =========================== */
-
-  /* Chat right column (top-right panel) */
-  #chat-right-column {
-    width: 100%;
-    max-height: 180px;       /* ← adjust this number to taste */
-    overflow-y: auto;        /* scrolls internally instead of stretching */
-    padding-right: 4px;      /* avoid scrollbars touching edge */
-  }
-
-  /* Visuals content (bottom-right panel) */
-  #visual-panel {
-    max-height: 220px;       /* ← adjust this number to taste */
-    overflow-y: auto;
-  }
-
-  /* Chat layout adjustments */
+  /* Chat panel becomes column layout */
   #chat-panel {
+    flex-direction: column;
     height: auto;
     min-height: 260px;
   }
@@ -160,9 +142,28 @@ body {
     margin: 0 auto;
   }
 
+  /* ===========================
+     FIX: RIGHT‑SIDE HEIGHTS
+  =========================== */
+
+  /* Chat right column (top-right panel) */
+  #chat-right-column {
+    width: 100%;
+    max-height: 180px;      /* ← adjust to taste */
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  /* Visuals panel (bottom-right panel) */
+  #visual-panel {
+    max-height: 320px;      /* ← adjust to taste */
+    overflow-y: auto;
+  }
+
   /* Safe-area padding for iPhone notch */
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
   }
 }
+
