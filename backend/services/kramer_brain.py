@@ -1,5 +1,5 @@
 import random
-from services.data_store import get_data
+from KramerBot.backend.services.data_store_upload import get_data
 
 def generate_kramer_reply(message: str) -> str:
     data = get_data()
