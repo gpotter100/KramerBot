@@ -1,10 +1,13 @@
 from fastapi import APIRouter
-from models.chat_models import ChatRequest, ChatResponse
-from services.kramer_brain import generate_kramer_reply
+from pydantic import BaseModel
+from models.chat_models import generate_reply
 
-router = APIRouter(prefix="/chat", tags=["Chat"])
+chat_router = APIRouter()
 
-@router.post("/")
-def chat(req: ChatRequest) -> ChatResponse:
-    reply = generate_kramer_reply(req.message)
-    return ChatResponse(reply=reply)
+class ChatRequest(BaseModel):
+    message: str
+
+@chat_router.post("/chat")
+async def chat_endpoint(req: ChatRequest):
+    reply = await generate_reply(req.message)
+    return {"reply": reply}
