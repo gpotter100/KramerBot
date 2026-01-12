@@ -6,6 +6,7 @@ body {
   font-family: 'Segoe UI', sans-serif;
   background: radial-gradient(circle at top left, #0a0f1c 0%, #1a1f2c 40%, #222a3a 100%);
   color: #d9eaff;
+  margin: 0;
 }
 
 #app {
@@ -36,6 +37,7 @@ body {
   gap: 12px;
 }
 
+/* Desktop / default: chat gets 45%, visuals fill the rest */
 #chat-panel {
   height: 45%;
   min-height: 220px;
@@ -99,51 +101,79 @@ body {
 }
 
 /* ===========================
-   MOBILE LAYOUT FIXES
+   MOBILE LAYOUT
+   (shrink chat + visuals height)
 =========================== */
 
 @media (max-width: 768px) {
+
+  /* Hide sidebar entirely */
+  #sidebar {
+    display: none;
+  }
+
+  /* Make main fill the screen and stack panels */
+  #app {
+    height: 100vh;
+  }
 
   #main {
     padding: 8px;
     gap: 8px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    height: 100vh;
+    box-sizing: border-box;
   }
 
+  /* Panels: full width, but with controlled heights */
   #chat-panel,
   #visual-panel {
     width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 14px;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  /* Chat panel: smaller fixed height on mobile */
+  #chat-panel {
+    flex: 0 0 28vh;       /* roughly half of what it was – tweak as needed */
+    max-height: 28vh;
+    min-height: 40px;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  #chat-top-row {
     flex-direction: column;
   }
 
-  /* Chat panel: 50% of viewport height */
-  #chat-panel {
-    height: auto;
-    max-height: 45vh;
-    overflow-y: auto;
+  #kramer-icon-container {
+    margin: 0 auto 8px auto;
   }
 
-  /* Visual panel: 50% of viewport height */
-  #visual-panel {
-    height: auto;
-    max-height: 45vh;
-    overflow-y: auto;
-    margin-top: 12px;
-  }
-
-  /* Optional: cap inner content */
   #chat-right-column {
-    max-height: 45vh;
-    overflow-y: auto;
+    width: 100%;
   }
 
+  /* Visuals panel: smaller fixed height on mobile */
+  #visual-panel {
+    flex: 0 0 32vh;       /* roughly half height – tweak as needed */
+    max-height: 32vh;
+    min-height: 60px;
+    overflow-y: auto;
+    margin-top: 4px;
+  }
+
+  /* Make sure the two panels + padding don’t exceed viewport */
+  #main {
+    justify-content: flex-start;
+  }
+
+  /* Safe-area padding for iPhones with notch */
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
   }
 }
+
