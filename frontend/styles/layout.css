@@ -124,14 +124,14 @@ body {
   /* Chat panel: 50% of viewport height */
   #chat-panel {
     height: auto;
-    max-height: 45vh;
+    max-height: 25vh;
     overflow-y: auto;
   }
 
   /* Visual panel: 50% of viewport height */
   #visual-panel {
     height: auto;
-    max-height: 45vh;
+    max-height: 25vh;
     overflow-y: auto;
     margin-top: 12px;
   }
