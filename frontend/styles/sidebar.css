@@ -101,8 +101,9 @@
 
 @media (max-width: 768px) {
 
-  /* Sidebar becomes hidden by default and slides in */
+  /* Sidebar fully hidden until toggled */
   #sidebar {
+    display: none; /* ← CRITICAL FIX */
     position: fixed;
     left: -240px;
     top: 0;
@@ -116,6 +117,7 @@
   }
 
   #sidebar.open {
+    display: flex; /* ← becomes visible */
     left: 0;
   }
 
