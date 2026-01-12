@@ -1,3 +1,7 @@
+/* ===========================
+   GLOBAL
+=========================== */
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background: radial-gradient(circle at top left, #0a0f1c 0%, #1a1f2c 40%, #222a3a 100%);
@@ -18,7 +22,9 @@ body {
   background: linear-gradient(to bottom right, #0f1626, #1e2a3a);
 }
 
-/* Panels */
+/* ===========================
+   PANELS
+=========================== */
 
 #chat-panel,
 #visual-panel {
@@ -41,46 +47,9 @@ body {
   overflow: hidden;
 }
 
-/* iPhone / small screens */
-@media (max-width: 768px) {
-
-  #sidebar {
-    display: none; /* hide sidebar on mobile */
-  }
-
-  #main {
-    padding: 8px;
-    gap: 8px;
-  }
-
-  #chat-panel {
-    height: auto;
-    min-height: 300px;
-    flex-direction: column;
-  }
-
-  #chat-top-row {
-    flex-direction: column;
-  }
-
-  #kramer-icon-container {
-    margin: 0 auto;
-  }
-
-  #chat-right-column {
-    width: 100%;
-  }
-
-  #visual-panel {
-    height: auto;
-    margin-top: 12px;
-  }
-
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-top: env(safe-area-inset-top);
-  }
-}
+/* ===========================
+   UPLOAD PANEL
+=========================== */
 
 #upload-panel {
   background: #0f1a2e;
@@ -129,32 +98,66 @@ body {
   display: none;
 }
 
-@media screen and (max-width: 600px) {
-  .main-content {
-    padding-right: 12px;
-    padding-left: 12px;
+/* ===========================
+   MOBILE LAYOUT FIXES
+=========================== */
+
+@media (max-width: 768px) {
+
+  /* Hide sidebar */
+  #sidebar {
+    display: none;
   }
 
-  .chat-header,
-  .chat-footer,
-  .visuals-panel {
-    max-width: 100%;
-    margin-right: auto;
-    margin-left: auto;
-    padding: 0 8px;
+  /* Center content */
+  #main {
+    padding: 8px;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .sidebar-logo-icon {
-    width: 40px;
-    height: 40px;
+  /* Constrain panel width so they don't stretch */
+  #chat-panel,
+  #visual-panel {
+    width: 100%;
+    max-width: 480px;   /* Adjust this number to taste */
+    margin: 0 auto;
+    padding: 14px;
+    flex-direction: column;
   }
 
-  .logo-main {
-    font-size: 1.2rem;
+  /* Chat layout adjustments */
+  #chat-panel {
+    height: auto;
+    min-height: 260px;
   }
 
-  .logo-sub {
-    font-size: 0.9rem;
+  #chat-top-row {
+    flex-direction: column;
+  }
+
+  #chat-right-column {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  #kramer-icon-container {
+    margin: 0 auto;
+  }
+
+  /* Visual panel spacing */
+  #visual-panel {
+    height: auto;
+    margin-top: 12px;
+  }
+
+  /* Safe-area padding for iPhone notch */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
   }
 }
 
