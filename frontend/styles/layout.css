@@ -21,6 +21,7 @@ body {
   padding: 16px;
   gap: 12px;
   background: linear-gradient(to bottom right, #0f1626, #1e2a3a);
+  overflow: hidden;
 }
 
 /* ===========================
@@ -37,7 +38,6 @@ body {
   gap: 12px;
 }
 
-/* Desktop / default: chat gets 45%, visuals fill the rest */
 #chat-panel {
   height: 45%;
   min-height: 220px;
@@ -101,46 +101,51 @@ body {
 }
 
 /* ===========================
-   MOBILE LAYOUT
-   (shrink chat + visuals height)
+   MOBILE LAYOUT (SIDEBAR VISIBLE)
 =========================== */
 
 @media (max-width: 768px) {
 
-  /* Hide sidebar entirely */
+  /* Sidebar stays visible but scrolls independently */
   #sidebar {
-    display: none;
-  }
-
-  /* Make main fill the screen and stack panels */
-  #app {
+    display: flex;
+    flex-direction: column;
     height: 100vh;
+    overflow-y: auto;
+    padding-bottom: 12px;
   }
 
+  /* Remove vertical gaps inside sidebar */
+  .sidebar-nav {
+    margin-bottom: 0;
+  }
+
+  .sidebar-icon-container {
+    margin-top: 0;
+  }
+
+  /* Main column also scrolls independently */
   #main {
     padding: 8px;
     gap: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
     height: 100vh;
-    box-sizing: border-box;
+    overflow-y: auto;
   }
 
-  /* Panels: full width, but with controlled heights */
+  /* Panels: full width but controlled height */
   #chat-panel,
   #visual-panel {
     width: 100%;
     padding: 12px;
     border-radius: 10px;
+    flex-direction: column;
   }
 
-  /* Chat panel: smaller fixed height on mobile */
+  /* Chat panel: smaller height */
   #chat-panel {
-    flex: 0 0 28vh;       /* roughly half of what it was – tweak as needed */
-    max-height: 28vh;
-    min-height: 40px;
-    flex-direction: column;
+    flex: 0 0 26vh;
+    max-height: 26vh;
+    min-height: 140px;
     overflow-y: auto;
   }
 
@@ -156,21 +161,16 @@ body {
     width: 100%;
   }
 
-  /* Visuals panel: smaller fixed height on mobile */
+  /* Visuals panel: smaller height */
   #visual-panel {
-    flex: 0 0 32vh;       /* roughly half height – tweak as needed */
+    flex: 0 0 32vh;
     max-height: 32vh;
-    min-height: 60px;
+    min-height: 160px;
     overflow-y: auto;
     margin-top: 4px;
   }
 
-  /* Make sure the two panels + padding don’t exceed viewport */
-  #main {
-    justify-content: flex-start;
-  }
-
-  /* Safe-area padding for iPhones with notch */
+  /* Safe-area padding for iPhones */
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
