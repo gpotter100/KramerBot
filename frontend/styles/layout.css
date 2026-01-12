@@ -123,8 +123,9 @@ body {
     cursor: pointer;
   }
 
-  /* Sidebar hidden by default */
+  /* Sidebar fully hidden until toggled */
   #sidebar {
+    display: none;
     position: fixed;
     left: -240px;
     top: 0;
@@ -138,6 +139,7 @@ body {
   }
 
   #sidebar.open {
+    display: flex;
     left: 0;
   }
 
@@ -211,5 +213,3 @@ body {
     padding-top: env(safe-area-inset-top);
   }
 }
-
-
