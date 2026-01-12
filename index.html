@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KramerBot</title>
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/sidebar.css">
+  <link rel="stylesheet" href="styles/chat.css">
+  <link rel="stylesheet" href="styles/visuals.css">
+  <link rel="stylesheet" href="styles/kramer.css">
+
+  <!-- iOS standalone app mode -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KramerBot">
+
+<!-- iOS home screen icon -->
+<link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
+
+<link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
+
+
+</head>
+<body>
+  <div id="app">
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-main">KramerBot</span>
+    <span class="logo-sub">“I got stats… probably.”</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-page="home">Home</button>
+    <button class="nav-btn" data-page="upload">Upload CSV</button>
+    <button class="nav-btn" data-page="stats">Basic Stats</button>
+    <button class="nav-btn" data-page="visuals">Visuals</button>
+    <button class="nav-btn" data-page="about">About</button>
+  </nav>
+
+  <!-- NEW: Kramer Icon -->
+  <div class="sidebar-icon-container">
+    <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
+  </div>
+
+  <div class="sidebar-footer">
+    <span>KramerBot © 2026</span>
+    <span class="disclaimer">No guarantees. At all.</span>
+  </div>
+</aside>
+
+    <!-- RIGHT MAIN AREA -->
+    <main id="main">
+
+      <!-- TOP CHAT PANEL -->
+      <section id="chat-panel">
+
+        <div id="chat-top-row">
+          <div id="kramer-icon-container">
+            <div id="kramer-speaking-animation"></div>
+            <img src="assets/KramerBot_Icon.png" id="kramer-icon" alt="KramerBot">
+        </div>
+
+        <div id="chat-right-column">
+          <div id="conversation-box"></div>
+
+          <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask Kramer something…">
+            <button id="chat-send">Giddy Up!</button>
+           </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- BOTTOM VISUAL PANEL -->
+      <section id="visual-panel">
+        <div id="visuals-placeholder">
+          <h2>Basic Visuals</h2>
+          <p>
+            Upload your league data and I’ll whip up some very serious,
+            totally reliable charts. Probably.
+          </p>
+          <div class="visuals-grid">
+            <div class="visual-card">
+              <h3>Team Points (Mock)</h3>
+              <div class="fake-bar-chart">
+                <div class="bar bar-a" title="Team A"></div>
+                <div class="bar bar-b" title="Team B"></div>
+                <div class="bar bar-c" title="Team C"></div>
+                <div class="bar bar-d" title="Team D"></div>
+              </div>
+            </div>
+            <div class="visual-card">
+              <h3>League Snapshot</h3>
+              <table class="basic-table">
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Wins</th>
+                    <th>Points</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Team A</td>
+                    <td>8</td>
+                    <td>1123</td>
+                  </tr>
+                  <tr>
+                    <td>Team B</td>
+                    <td>7</td>
+                    <td>1087</td>
+                  </tr>
+                  <tr>
+                    <td>Team C</td>
+                    <td>5</td>
+                    <td>975</td>
+                  </tr>
+                  <tr>
+                    <td>Team D</td>
+                    <td>3</td>
+                    <td>842</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="scripts/kramer.js"></script>
+  <script src="scripts/chat.js"></script>
+  <script src="scripts/visuals.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>
+

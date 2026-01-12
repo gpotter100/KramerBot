@@ -1,0 +1,93 @@
+#sidebar {
+  width: 240px;
+  background: #0a0f1c;
+  color: #d9eaff;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-logo {
+  margin-bottom: 24px;
+}
+
+.logo-main {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #66ccff;
+}
+
+.logo-sub {
+  display: block;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+  color: #99ccff;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: auto;
+}
+
+.nav-btn {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.nav-btn.active {
+  background: #004c99;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* NEW: Kramer Icon Styling */
+.sidebar-icon-container {
+  margin: 20px 0 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#sidebar-kramer-icon {
+  width: 90%;
+  max-width: 200px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px #66ccff;
+  background: #001122;
+  padding: 4px;
+  border: 5px solid #66ccff;
+}
+
+/* Footer */
+.sidebar-footer {
+  font-size: 11px;
+  opacity: 0.7;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+  color: #99ccff;
+}
+
+.sidebar-footer .disclaimer {
+  font-style: italic;
+}
+

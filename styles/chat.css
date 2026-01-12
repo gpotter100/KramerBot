@@ -1,0 +1,170 @@
+/* Layout inside chat panel */
+
+#kramer-icon-container {
+  position: relative;
+  width: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#kramer-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid #66ccff;
+  object-fit: cover;
+  background: #eee;
+}
+
+/* Speaking animation */
+
+#kramer-speaking-animation {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  position: absolute;
+  background: rgba(242, 163, 101, 0.35);
+  animation: kramer-pulse 1.2s infinite ease-in-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kramer-speaking {
+  opacity: 1 !important;
+}
+
+@keyframes kramer-pulse {
+  0% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 0.2; }
+}
+
+#conversation-box {
+  flex: 1;
+  border-radius: 10px;
+  background: #0f1a2e;
+  padding: 8px 10px;
+  overflow-y: auto;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #66ccff;
+  gap: 6px;
+}
+
+.chat-message {
+  max-width: 80%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  line-height: 1.35;
+}
+
+.chat-message.user { 
+    align-self: flex-end; 
+    background: #004c99; 
+    color: #ffffff; 
+}
+
+.chat-message.kramer {
+  align-self: flex-start;
+  background: #1e2a3a; 
+  border: 1px solid #3a4f6b; 
+  color: #d9eaff; 
+}
+
+/* Input */
+
+#chat-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 4px;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #66ccff;
+  font-size: 13px;
+}
+
+#chat-input:focus {
+  outline: none;
+  border-color: #66ccff;
+  box-shadow: 0 0 0 1px rgba(242, 163, 101, 0.2);
+}
+
+#chat-send {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #66ccff;
+  color: #1b2838;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+#chat-send:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+#chat-send:active {
+  transform: translateY(0);
+  box-shadow: none;
+  background: #e6954f;
+}
+
+#chat-panel {
+  display: flex;
+  flex-direction: column;   /* NEW */
+  gap: 12px;
+  height: 45%;
+  min-height: 220px;
+  background: #121a2b;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(102, 204, 255, 0.1);
+  padding: 16px;
+}
+
+/* Row: icon on left, right column on right */
+#chat-top-row {
+  display: flex;
+  flex: 1;
+  gap: 12px;
+}
+
+/* Right column defines the width for BOTH conversation + input */
+#chat-right-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;               /* This is the width master */
+  gap: 10px;
+}
+
+/* Conversation box fills the right column width */
+#conversation-box {
+  flex: 1;
+  width: 100%;
+}
+
+/* Input container ALSO fills the right column width */
+#chat-input-container {
+  display: flex;
+  width: 100%;           /* EXACT match with conversation box */
+  gap: 8px;              /* spacing between input + button */
+}
+
+/* Input expands to fill remaining space */
+#chat-input {
+  flex: 1;
+}
+
+/* Send button stays fixed width */
+#chat-send {
+  flex-shrink: 0;
+}

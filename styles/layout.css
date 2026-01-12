@@ -1,0 +1,84 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top left, #0a0f1c 0%, #1a1f2c 40%, #222a3a 100%);
+  color: #d9eaff;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+  background: linear-gradient(to bottom right, #0f1626, #1e2a3a);
+}
+
+/* Panels */
+
+#chat-panel,
+#visual-panel {
+  background: #121a2b;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(102, 204, 255, 0.1);
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+#chat-panel {
+  height: 45%;
+  min-height: 220px;
+  align-items: stretch;
+}
+
+#visual-panel {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* iPhone / small screens */
+@media (max-width: 768px) {
+
+  #sidebar {
+    display: none; /* hide sidebar on mobile */
+  }
+
+  #main {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  #chat-panel {
+    height: auto;
+    min-height: 300px;
+    flex-direction: column;
+  }
+
+  #chat-top-row {
+    flex-direction: column;
+  }
+
+  #kramer-icon-container {
+    margin: 0 auto;
+  }
+
+  #chat-right-column {
+    width: 100%;
+  }
+
+  #visual-panel {
+    height: auto;
+    margin-top: 12px;
+  }
+
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
