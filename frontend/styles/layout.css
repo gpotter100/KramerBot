@@ -101,30 +101,82 @@ body {
 }
 
 /* ===========================
-   MOBILE LAYOUT (SIDEBAR VISIBLE)
+   MOBILE LAYOUT (ALL NEW BEHAVIOR)
 =========================== */
 
 @media (max-width: 768px) {
 
-  /* Sidebar stays visible but scrolls independently */
+  /* ---------------------------
+     HAMBURGER MENU
+  --------------------------- */
+  #hamburger-menu {
+    display: block;
+    position: fixed;
+    top: 12px;
+    right: 16px;
+    z-index: 1100;
+  }
+
+  #hamburger-toggle {
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: #66ccff;
+    cursor: pointer;
+  }
+
+  /* ---------------------------
+     SIDEBAR (HIDDEN BY DEFAULT)
+  --------------------------- */
   #sidebar {
-    display: flex;
-    flex-direction: column;
+    position: fixed;
+    left: -240px;
+    top: 0;
+    width: 240px;
     height: 100vh;
+    background: #0a0f1c;
     overflow-y: auto;
-    padding-bottom: 12px;
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding: 16px 12px;
   }
 
-  /* Remove vertical gaps inside sidebar */
-  .sidebar-nav {
-    margin-bottom: 0;
+  #sidebar.open {
+    left: 0;
   }
 
-  .sidebar-icon-container {
-    margin-top: 0;
+  /* Shrink sidebar Kramer icon */
+  #sidebar-kramer-icon {
+    width: 30%;
+    max-width: 80px;
   }
 
-  /* Main column also scrolls independently */
+  /* ---------------------------
+     GLOBAL TITLE (MOBILE)
+  --------------------------- */
+  #global-title {
+    margin-top: 60px; /* ensures title sits below hamburger */
+    text-align: center;
+  }
+
+  .title-line-1 {
+    font-size: 14px;
+    color: #99ccff;
+    opacity: 0.8;
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+
+  .title-line-2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: #66ccff;
+  }
+
+  /* ---------------------------
+     MAIN CONTENT
+  --------------------------- */
   #main {
     padding: 8px;
     gap: 8px;
@@ -132,7 +184,7 @@ body {
     overflow-y: auto;
   }
 
-  /* Panels: full width but controlled height */
+  /* Panels: stacked + controlled height */
   #chat-panel,
   #visual-panel {
     width: 100%;
@@ -141,12 +193,19 @@ body {
     flex-direction: column;
   }
 
-  /* Chat panel: smaller height */
   #chat-panel {
     flex: 0 0 26vh;
     max-height: 26vh;
     min-height: 140px;
     overflow-y: auto;
+  }
+
+  #visual-panel {
+    flex: 0 0 32vh;
+    max-height: 32vh;
+    min-height: 160px;
+    overflow-y: auto;
+    margin-top: 4px;
   }
 
   #chat-top-row {
@@ -161,19 +220,11 @@ body {
     width: 100%;
   }
 
-  /* Visuals panel: smaller height */
-  #visual-panel {
-    flex: 0 0 32vh;
-    max-height: 32vh;
-    min-height: 160px;
-    overflow-y: auto;
-    margin-top: 4px;
-  }
-
-  /* Safe-area padding for iPhones */
+  /* Safe-area padding */
   body {
     padding-bottom: env(safe-area-inset-bottom);
     padding-top: env(safe-area-inset-top);
   }
 }
+
 

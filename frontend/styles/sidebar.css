@@ -1,3 +1,7 @@
+/* ===========================
+   SIDEBAR BASE (DESKTOP)
+=========================== */
+
 #sidebar {
   width: 240px;
   background: #0a0f1c;
@@ -58,7 +62,7 @@
   font-weight: 600;
 }
 
-/* NEW: Kramer Icon Styling */
+/* Kramer Icon */
 .sidebar-icon-container {
   margin: 20px 0 12px;
   display: flex;
@@ -97,27 +101,40 @@
 
 @media (max-width: 768px) {
 
-  /* Sidebar stays visible but scrolls independently */
+  /* Sidebar becomes hidden by default and slides in */
   #sidebar {
+    position: fixed;
+    left: -240px;
+    top: 0;
+    width: 240px;
     height: 100vh;
+    background: #0a0f1c;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    box-sizing: border-box;
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding: 16px 12px;
   }
 
-  /* Remove extra vertical spacing */
+  #sidebar.open {
+    left: 0;
+  }
+
+  /* Shrink Kramer icon to 1/3 size */
+  #sidebar-kramer-icon {
+    width: 30%;
+    max-width: 80px;
+  }
+
+  /* Remove extra spacing so mobile layout is tighter */
   .sidebar-nav {
     margin-bottom: 0;
   }
 
   .sidebar-icon-container {
-    margin-top: 0;
-    padding-top: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
   }
 
-  /* Keep footer tight */
   .sidebar-footer {
     margin-top: auto;
     padding-top: 8px;

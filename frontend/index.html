@@ -17,11 +17,11 @@
   <link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
 
   <!-- Stylesheets (with cache-busting) -->
-  <link rel="stylesheet" href="styles/layout.css?v=4">
-  <link rel="stylesheet" href="styles/sidebar.css?v=4">
-  <link rel="stylesheet" href="styles/chat.css?v=4">
-  <link rel="stylesheet" href="styles/visuals.css?v=4">
-  <link rel="stylesheet" href="styles/kramer.css?v=4">
+  <link rel="stylesheet" href="styles/layout.css?v=5">
+  <link rel="stylesheet" href="styles/sidebar.css?v=5">
+  <link rel="stylesheet" href="styles/chat.css?v=5">
+  <link rel="stylesheet" href="styles/visuals.css?v=5">
+  <link rel="stylesheet" href="styles/kramer.css?v=5">
 </head>
 
 <body>
@@ -29,54 +29,63 @@
 
     <!-- LEFT SIDEBAR -->
     <aside id="sidebar">
-  <div class="sidebar-logo">
-    <span class="logo-main">KramerBot</span>
-    <span class="logo-sub">“I got stats… probably.”</span>
-  </div>
+      <div class="sidebar-logo">
+        <span class="logo-main">KramerBot</span>
+        <span class="logo-sub">“I got stats… probably.”</span>
+      </div>
 
-  <nav class="sidebar-nav">
-    <button class="nav-btn active" data-page="home">Home</button>
-    <button class="nav-btn" data-page="upload">Upload CSV</button>
-    <button class="nav-btn" data-page="stats">Basic Stats</button>
-    <button class="nav-btn" data-page="visuals">Visuals</button>
-    <button class="nav-btn" data-page="about">About</button>
-  </nav>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-page="home">Home</button>
+        <button class="nav-btn" data-page="upload">Upload CSV</button>
+        <button class="nav-btn" data-page="stats">Basic Stats</button>
+        <button class="nav-btn" data-page="visuals">Visuals</button>
+        <button class="nav-btn" data-page="about">About</button>
+      </nav>
 
-  <!-- NEW: Kramer Icon -->
-  <div class="sidebar-icon-container">
-    <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
-  </div>
+      <div class="sidebar-icon-container">
+        <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
+      </div>
 
-  <div class="sidebar-footer">
-    <span>KramerBot © 2026</span>
-    <span class="disclaimer">No guarantees. At all.</span>
-  </div>
-</aside>
+      <div class="sidebar-footer">
+        <span>KramerBot © 2026</span>
+        <span class="disclaimer">No guarantees. At all.</span>
+      </div>
+    </aside>
+
+    <!-- HAMBURGER MENU (Mobile Only) -->
+    <div id="hamburger-menu">
+      <button id="hamburger-toggle">&#9776;</button>
+    </div>
+
+    <!-- GLOBAL TITLE -->
+    <header id="global-title">
+      <div class="title-line-1">Vandalay Industries Presents...</div>
+      <div class="title-line-2">KramerBot</div>
+    </header>
 
     <!-- RIGHT MAIN AREA -->
     <main id="main">
 
       <!-- TOP CHAT PANEL -->
       <section id="chat-panel">
-
         <div id="chat-top-row">
           <div id="kramer-icon-container">
             <div id="kramer-speaking-animation"></div>
             <img src="assets/KramerBot_Icon.png" id="kramer-icon" alt="KramerBot">
-        </div>
+          </div>
 
-        <div id="chat-right-column">
-          <div id="conversation-box"></div>
+          <div id="chat-right-column">
+            <div id="conversation-box"></div>
 
-          <div id="chat-input-container">
-            <input type="text" id="chat-input" placeholder="Ask Kramer something…">
-            <button id="chat-send">Giddy Up!</button>
-           </div>
+            <div id="chat-input-container">
+              <input type="text" id="chat-input" placeholder="Ask Kramer something…">
+              <button id="chat-send">Giddy Up!</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- UPLOAD CSV PANEL (NEW) -->
+      <!-- UPLOAD CSV PANEL -->
       <section id="upload-panel" class="hidden">
         <div id="upload-container">
           <h2>Upload League CSV</h2>
@@ -91,7 +100,6 @@
         </div>
       </section>
 
-
       <!-- BOTTOM VISUAL PANEL -->
       <section id="visual-panel">
         <div id="visuals-placeholder">
@@ -100,6 +108,7 @@
             Upload your league data and I’ll whip up some very serious,
             totally reliable charts. Probably.
           </p>
+
           <div class="visuals-grid">
             <div class="visual-card">
               <h3>Team Points (Mock)</h3>
@@ -110,6 +119,7 @@
                 <div class="bar bar-d" title="Team D"></div>
               </div>
             </div>
+
             <div class="visual-card">
               <h3>League Snapshot</h3>
               <table class="basic-table">
@@ -145,16 +155,26 @@
               </table>
             </div>
           </div>
+
         </div>
       </section>
 
     </main>
   </div>
 
+  <!-- Scripts -->
   <script src="scripts/kramer.js"></script>
   <script src="scripts/chat.js"></script>
   <script src="scripts/visuals.js"></script>
   <script src="scripts/app.js"></script>
+
+  <!-- Sidebar Toggle Script -->
+  <script>
+    document.getElementById("hamburger-toggle").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+  </script>
+
 </body>
 </html>
 
