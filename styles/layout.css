@@ -82,3 +82,50 @@ body {
   }
 }
 
+#upload-panel {
+  background: #0f1a2e;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(102, 204, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+#upload-container h2 {
+  color: #66ccff;
+  margin-bottom: 8px;
+}
+
+#upload-container p {
+  color: #b8d9ff;
+  margin-bottom: 16px;
+}
+
+#upload-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+#csv-upload {
+  color: #d9eaff;
+}
+
+#upload-button {
+  background: #1a2d45;
+  color: #66ccff;
+  border: 1px solid #66ccff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+#upload-button:hover {
+  background: #223b5c;
+  box-shadow: 0 0 8px rgba(102, 204, 255, 0.4);
+}
+
+.hidden {
+  display: none;
+}
+

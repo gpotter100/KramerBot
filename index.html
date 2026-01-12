@@ -17,8 +17,6 @@
 <!-- iOS home screen icon -->
 <link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
 
-<link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
-
 
 </head>
 <body>
@@ -70,6 +68,21 @@
             <button id="chat-send">Giddy Up!</button>
            </div>
           </div>
+        </div>
+      </section>
+
+      <!-- UPLOAD CSV PANEL (NEW) -->
+      <section id="upload-panel" class="hidden">
+        <div id="upload-container">
+          <h2>Upload League CSV</h2>
+          <p>Select your league CSV file and KramerBot will… do something with it. Probably.</p>
+
+          <div id="upload-controls">
+            <input type="file" id="csv-upload" accept=".csv">
+            <button id="upload-button">Upload CSV</button>
+          </div>
+
+          <div id="upload-status"></div>
         </div>
       </section>
 
