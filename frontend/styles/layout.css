@@ -142,7 +142,7 @@ body {
 
   /* Visuals content (bottom-right panel) */
   #visual-panel {
-    max-height: 320px;       /* ← adjust this number to taste */
+    max-height: 220px;       /* ← adjust this number to taste */
     overflow-y: auto;
   }
 
