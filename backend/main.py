@@ -12,7 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(chat.router)
+app.include_router(chat.chat_router)
 app.include_router(upload.router)
 app.include_router(stats.router)
 app.include_router(visuals.router)
