@@ -35,6 +35,7 @@ function appendMessage(who, text) {
 // Send Chat Message
 // -----------------------------
 async function sendChat() {
+  console.log("sendChat fired");
   const message = chatInput.value.trim();
   if (!message) return;
 
