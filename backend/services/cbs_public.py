@@ -1,5 +1,6 @@
 # backend/services/cbs_public.py
 
+import html
 import os
 from typing import List, Dict, Any
 import httpx
@@ -26,7 +27,14 @@ async def fetch_html(path: str) -> str:
 
 async def get_standings() -> List[Dict[str, Any]]:
     html = await fetch_html("standings")
-    print("DEBUG CBS HTML:", html[:2000])
+
+    with open("/tmp/cbs_debug.html", "w", encoding="utf-8") as f:
+        f.write(html)
+
+    print("DEBUG CBS HTML START")
+    print(html[:2000])
+    print("DEBUG CBS HTML END")
+
     soup = BeautifulSoup(html, "html.parser")
 
     table = soup.find("table")
