@@ -8,6 +8,11 @@ const uploadButton = document.getElementById("upload-button");
 const visualsCanvas = document.getElementById("visuals-canvas");
 
 
+console.log("chatInput:", chatInput);
+console.log("chatSend:", chatSend);
+console.log("conversationBox:", conversationBox);
+
+
 // -----------------------------
 // Chat UI Helpers
 // -----------------------------
