@@ -26,22 +26,20 @@ async def fetch_html(path: str) -> str:
 
 
 async def get_standings() -> List[Dict[str, Any]]:
-    html = await fetch_html("standings")
-
-    with open("/tmp/cbs_debug.html", "w", encoding="utf-8") as f:
-        f.write(html)
-
-    print("DEBUG CBS HTML START")
-    print(html[:2000])
-    print("DEBUG CBS HTML END")
+    try:
+        html = await fetch_html("standings")
+        print("DEBUG CBS HTML START")
+        print(html[:2000])
+        print("DEBUG CBS HTML END")
+    except Exception as e:
+        print("FETCH ERROR:", str(e))
+        raise LeagueDataError(f"Fetch failed: {str(e)}")
 
     soup = BeautifulSoup(html, "html.parser")
-
     table = soup.find("table")
     if not table:
         raise LeagueDataError("Could not find standings table")
 
-    # CBS HTML may change; this is intentionally defensive and simple
     standings: List[Dict[str, Any]] = []
     rows = table.tbody.find_all("tr") if table.tbody else table.find_all("tr")[1:]
 
@@ -97,3 +95,4 @@ async def get_standings() -> List[Dict[str, Any]]:
         raise LeagueDataError("No standings rows parsed")
 
     return standings
+
