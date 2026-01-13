@@ -8,6 +8,7 @@ from routers.chat import chat_router
 from routers.upload import router as upload_router
 from routers.stats import router as stats_router
 from routers.visuals import router as visuals_router
+from routers.league_public import router as league_public_router
 
 app = FastAPI(title="KramerBot API", version="0.1.0")
 
@@ -29,6 +30,7 @@ app.include_router(chat_router)
 app.include_router(upload_router)
 app.include_router(stats_router)
 app.include_router(visuals_router)
+app.include_router(league_public_router)
 
 @app.get("/")
 def root():
