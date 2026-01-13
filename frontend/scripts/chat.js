@@ -1,5 +1,13 @@
 import { API_BASE } from "./config.js";
 
+function kramerIntroLines() {
+  return [
+    "Hey buddy.",
+    "You got something you wanna ask?",
+    "Because I got answers. Probably."
+  ];
+}
+
 function appendMessage(text, sender = "kramer") {
   const box = document.getElementById("conversation-box");
   const msg = document.createElement("div");
