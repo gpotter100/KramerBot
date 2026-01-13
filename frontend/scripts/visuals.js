@@ -1,4 +1,8 @@
-export async function refreshVisuals(API_BASE) {
+// visuals.js
+
+const API_BASE = "https://kramerbot-backend.onrender.com";
+
+export async function refreshVisuals() {
   try {
     const res = await fetch(`${API_BASE}/visuals/`);
     const data = await res.json();
@@ -9,7 +13,7 @@ export async function refreshVisuals(API_BASE) {
     }
 
     console.log("Visuals:", data);
-    // You can add chart rendering logic here later
+    // Future: render charts or tables here
   } catch (err) {
     console.error("Error loading visuals", err);
   }
