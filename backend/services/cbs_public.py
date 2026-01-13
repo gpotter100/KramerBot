@@ -13,16 +13,28 @@ class LeagueDataError(Exception):
     pass
 
 
+import httpx
+
 async def fetch_html(path: str) -> str:
-    if not LEAGUE_BASE_URL:
+    base_url = os.getenv("LEAGUE_BASE_URL")
+    if not base_url:
         raise LeagueDataError("LEAGUE_BASE_URL is not configured")
 
-    url = f"{LEAGUE_BASE_URL}/{path.lstrip('/')}"
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    url = f"{base_url.rstrip('/')}/{path.lstrip('/')}"
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/143.0.0.0 Safari/537.36"
+        )
+    }
+
+    async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
         resp = await client.get(url)
         if resp.status_code != 200:
             raise LeagueDataError(f"Failed to fetch {url} (status {resp.status_code})")
         return resp.text
+
 
 
 async def get_standings() -> List[Dict[str, Any]]:
