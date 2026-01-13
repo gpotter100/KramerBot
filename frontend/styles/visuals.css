@@ -5,7 +5,7 @@
 #visuals-placeholder {
   width: 100%;
   height: 100%;
-  padding: 6px;
+  padding: 3px;
   display: flex;
   flex-direction: column;
   color: #d9eaff;
@@ -14,7 +14,7 @@
 /* Section Title */
 #visuals-placeholder h2 {
   font-size: 18px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   color: #66ccff;
   text-shadow: 0 0 6px rgba(102, 204, 255, 0.6);
 }
@@ -22,7 +22,7 @@
 /* Subtitle / Description */
 #visuals-placeholder p {
   font-size: 13px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   opacity: 0.85;
   color: #b8d9ff;
 }
@@ -39,7 +39,7 @@
 .visual-card {
   background: #0f1a2e;
   border-radius: 12px;
-  padding: 12px;
+  padding: 5px;
   box-shadow:
     inset 0 0 0 1px #1f2f4f,
     0 0 12px rgba(102, 204, 255, 0.08);
