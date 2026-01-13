@@ -1,22 +1,43 @@
-const KRAMER_RESPONSES = [
-  "Buddy, let me take a look at that…",
-  "Stats are like pretzels — crunchy and confusing.",
-  "Giddy up! Processing your data.",
-  "Whoa! These numbers are wild.",
-  "I got charts, I got tables, I got… something.",
-  "Listen, I'm not saying this is accurate, but it is interesting.",
-  "You ever just *feel* like your team is cursed?",
-  "I’m seeing numbers… big, small, all of ‘em.",
-];
+// kramer.js
+// Handles KramerBot personality, animations, and UI flair
 
-function getRandomKramerResponse() {
-  const idx = Math.floor(Math.random() * KRAMER_RESPONSES.length);
-  return KRAMER_RESPONSES[idx];
+// Pulse animation element
+const speakingAnim = document.getElementById("kramer-speaking-animation");
+const kramerIcon = document.getElementById("kramer-icon");
+
+// Start the speaking animation
+export function kramerStartSpeaking() {
+  if (speakingAnim) {
+    speakingAnim.classList.add("kramer-speaking");
+  }
 }
 
-function kramerIntroLines() {
-  return [
-    "KramerBot here. I got stats… probably.",
-    "Upload your league CSVs and I’ll show you a few things. No guarantees.",
-  ];
+// Stop the speaking animation
+export function kramerStopSpeaking() {
+  if (speakingAnim) {
+    speakingAnim.classList.remove("kramer-speaking");
+  }
+}
+
+// Optional: subtle idle hover effect
+export function enableKramerIdle() {
+  if (!kramerIcon) return;
+
+  kramerIcon.addEventListener("mouseenter", () => {
+    kramerIcon.style.transform = "scale(1.05)";
+  });
+
+  kramerIcon.addEventListener("mouseleave", () => {
+    kramerIcon.style.transform = "scale(1)";
+  });
+}
+
+// Optional: Kramer reacts when user sends a message
+export function kramerReact() {
+  if (!kramerIcon) return;
+
+  kramerIcon.style.transform = "scale(1.1)";
+  setTimeout(() => {
+    kramerIcon.style.transform = "scale(1)";
+  }, 150);
 }
