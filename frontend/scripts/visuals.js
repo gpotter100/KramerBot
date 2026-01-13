@@ -1,20 +1,29 @@
-// visuals.js
+import { API_BASE } from "./config.js";
 
-const API_BASE = "https://kramerbot-backend.onrender.com";
+async function refreshVisuals() {
+  const chartBox = document.getElementById("visuals-box");
+  if (!chartBox) return;
 
-export async function refreshVisuals() {
   try {
     const res = await fetch(`${API_BASE}/visuals/`);
     const data = await res.json();
 
     if (data.error) {
-      console.warn("No visuals available yet.");
+      chartBox.textContent = data.error;
       return;
     }
 
-    console.log("Visuals:", data);
-    // Future: render charts or tables here
+    const { labels, points } = data;
+    chartBox.textContent = `Teams: ${labels.join(", ")} | Points: ${points.join(", ")}`;
   } catch (err) {
-    console.error("Error loading visuals", err);
+    chartBox.textContent = "Failed to load visuals.";
   }
 }
+
+function initVisuals() {
+  console.log("initVisuals running");
+  refreshVisuals();
+}
+
+export { refreshVisuals, initVisuals };
+

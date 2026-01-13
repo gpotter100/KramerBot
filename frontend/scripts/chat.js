@@ -1,3 +1,5 @@
+import { API_BASE } from "./config.js";
+
 function appendMessage(text, sender = "kramer") {
   const box = document.getElementById("conversation-box");
   const msg = document.createElement("div");
@@ -17,24 +19,29 @@ function setSpeakingAnimation(on) {
   }
 }
 
-function handleUserMessage() {
+async function handleUserMessage() {
   const input = document.getElementById("chat-input");
   const text = input.value.trim();
   if (!text) return;
 
-  // User message
   appendMessage(text, "user");
   input.value = "";
-
-  // Kramer “thinking”
   setSpeakingAnimation(true);
 
-  // Respond after a short delay
-  setTimeout(() => {
-    const reply = getRandomKramerResponse();
-    appendMessage(reply, "kramer");
+  try {
+    const res = await fetch(`${API_BASE}/chat/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await res.json();
+    appendMessage(data.reply || "Kramer is speechless.", "kramer");
+  } catch (err) {
+    appendMessage("Something went sideways. Very on brand.", "kramer");
+  } finally {
     setSpeakingAnimation(false);
-  }, 500 + Math.random() * 600);
+  }
 }
 
 function initChat() {
@@ -51,3 +58,5 @@ function initChat() {
     }
   });
 }
+
+export { initChat };

@@ -5,23 +5,15 @@ from services.visuals_engine import build_visuals
 
 router = APIRouter(prefix="/visuals", tags=["Visuals"])
 
-
 @router.get("/")
 def visuals():
-    """
-    Returns chart-ready arrays (labels + points) only.
-    No raw rows, no CSV export.
-    """
+    print("📊 /visuals/ route hit")
     try:
         data = build_visuals()
-
-        # If your engine returns None or empty, handle gracefully
         if not data:
             return {"error": "No visuals available yet."}
-
         return data
-
     except Exception as e:
-        # Never expose internal errors to the frontend
+        print("❌ Visuals engine error:", e)
         return {"error": "Visuals engine failed."}
 
