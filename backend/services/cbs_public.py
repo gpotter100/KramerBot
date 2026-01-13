@@ -26,6 +26,7 @@ async def fetch_html(path: str) -> str:
 
 async def get_standings() -> List[Dict[str, Any]]:
     html = await fetch_html("standings")
+    print("DEBUG CBS HTML:", html[:2000])
     soup = BeautifulSoup(html, "html.parser")
 
     table = soup.find("table")
