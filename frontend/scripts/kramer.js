@@ -1,43 +1,48 @@
 // kramer.js
 // Handles KramerBot personality, animations, and UI flair
 
-// Pulse animation element
-const speakingAnim = document.getElementById("kramer-speaking-animation");
-const kramerIcon = document.getElementById("kramer-icon");
+// Helper: safely fetch elements when needed
+function getSpeakingAnim() {
+  return document.getElementById("kramer-speaking-animation");
+}
+
+function getKramerIcon() {
+  return document.getElementById("kramer-icon");
+}
 
 // Start the speaking animation
 export function kramerStartSpeaking() {
-  if (speakingAnim) {
-    speakingAnim.classList.add("kramer-speaking");
-  }
+  const el = getSpeakingAnim();
+  if (el) el.classList.add("kramer-speaking");
 }
 
 // Stop the speaking animation
 export function kramerStopSpeaking() {
-  if (speakingAnim) {
-    speakingAnim.classList.remove("kramer-speaking");
-  }
+  const el = getSpeakingAnim();
+  if (el) el.classList.remove("kramer-speaking");
 }
 
 // Optional: subtle idle hover effect
 export function enableKramerIdle() {
-  if (!kramerIcon) return;
+  const icon = getKramerIcon();
+  if (!icon) return;
 
-  kramerIcon.addEventListener("mouseenter", () => {
-    kramerIcon.style.transform = "scale(1.05)";
+  icon.addEventListener("mouseenter", () => {
+    icon.style.transform = "scale(1.05)";
   });
 
-  kramerIcon.addEventListener("mouseleave", () => {
-    kramerIcon.style.transform = "scale(1)";
+  icon.addEventListener("mouseleave", () => {
+    icon.style.transform = "scale(1)";
   });
 }
 
-// Optional: Kramer reacts when user sends a message
+// Kramer reacts when user sends a message
 export function kramerReact() {
-  if (!kramerIcon) return;
+  const icon = getKramerIcon();
+  if (!icon) return;
 
-  kramerIcon.style.transform = "scale(1.1)";
+  icon.style.transform = "scale(1.1)";
   setTimeout(() => {
-    kramerIcon.style.transform = "scale(1)";
+    icon.style.transform = "scale(1)";
   }, 150);
 }
