@@ -1,0 +1,150 @@
+/* ================================
+   STANDINGS PANEL CONTAINER
+   ================================ */
+
+#standings-panel {
+  padding: 20px;
+  animation: fadeIn 0.35s ease;
+}
+
+#standings-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ================================
+   HEADER + SEASON SELECT
+   ================================ */
+
+.standings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.standings-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+#season-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fafafa;
+  cursor: pointer;
+}
+
+/* ================================
+   LAST UPDATED
+   ================================ */
+
+.last-updated {
+  font-size: 12px;
+  color: #666;
+  margin-top: -6px;
+}
+
+/* ================================
+   TABLE CONTAINER
+   ================================ */
+
+#standings-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+#standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+#standings-table th {
+  background: #f5f5f5;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+}
+
+#standings-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+#standings-table tr:hover {
+  background: #fafafa;
+}
+
+/* ================================
+   SNAPSHOT TABLE (VISUALS PANEL)
+   ================================ */
+
+#snapshot-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+#snapshot-table th,
+#snapshot-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+#snapshot-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+#snapshot-loading {
+  font-size: 13px;
+  color: #777;
+  padding: 8px 0;
+}
+
+.hidden {
+  display: none;
+}
+
+/* ================================
+   ANIMATIONS
+   ================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================================
+   MOBILE RESPONSIVENESS
+   ================================ */
+
+@media (max-width: 600px) {
+  #standings-container {
+    padding: 16px;
+  }
+
+  .standings-header h2 {
+    font-size: 18px;
+  }
+
+  #season-select {
+    font-size: 13px;
+  }
+
+  #standings-table th,
+  #standings-table td {
+    padding: 8px;
+  }
+}

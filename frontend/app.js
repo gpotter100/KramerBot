@@ -3,6 +3,9 @@
 import { sendChat } from "./chat.js";
 import { uploadCSV } from "./upload.js";
 import { refreshVisuals } from "./visuals.js";
+import { loadStandingsPanel } from "./standings.js";
+import { loadSnapshot } from "./snapshot.js";
+
 import { 
   kramerStartSpeaking, 
   kramerStopSpeaking, 
@@ -17,12 +20,6 @@ const chatSend = document.getElementById("chat-send");
 const conversationBox = document.getElementById("conversation-box");
 const fileInput = document.getElementById("csv-upload");
 const uploadButton = document.getElementById("upload-button");
-const visualsCanvas = document.getElementById("visuals-canvas");
-
-// Debug logs
-console.log("chatInput:", chatInput);
-console.log("chatSend:", chatSend);
-console.log("conversationBox:", conversationBox);
 
 // -----------------------------
 // Chat UI Helpers
@@ -66,16 +63,55 @@ uploadButton.addEventListener("click", () => {
 });
 
 // -----------------------------
+// PANEL SWITCHING
+// -----------------------------
+function showPanel(panelId) {
+  document.querySelectorAll("main section").forEach(sec => {
+    sec.classList.add("hidden");
+  });
+
+  const panel = document.getElementById(panelId);
+  if (panel) panel.classList.remove("hidden");
+}
+
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const page = btn.dataset.page;
+
+    // Update active state
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    // Switch panel
+    if (page === "home") {
+      showPanel("chat-panel");
+    } 
+    else if (page === "upload") {
+      showPanel("upload-panel");
+    } 
+    else if (page === "standings") {
+      showPanel("standings-panel");
+      loadStandingsPanel(API_BASE);
+    } 
+    else if (page === "visuals") {
+      showPanel("visual-panel");
+      loadSnapshot(API_BASE);   // NEW: real data snapshot
+      refreshVisuals();         // existing visuals loader
+    } 
+    else if (page === "stats") {
+      showPanel("stats-panel");
+    } 
+    else if (page === "about") {
+      showPanel("about-panel");
+    }
+  });
+});
+
+// -----------------------------
 // Init Chat (future voice mode lives here)
 // -----------------------------
 export function initChat() {
   console.log("initChat() running…");
-
-  // Future: voice recognition setup
-  // Future: wake-word listener
-  // Future: Kramer intro line
-  // Future: audio unlock gesture
-
   if (chatInput) chatInput.focus();
 }
 
