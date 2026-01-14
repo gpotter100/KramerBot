@@ -1,46 +1,196 @@
-<!-- UPLOAD PANEL -->
-<section id="upload-panel" class="hidden">
-  <div id="upload-container">
-    <h2>Upload League CSV</h2>
-    <p>Select your league CSV file and KramerBot will… do something with it. Probably.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>KramerBot</title>
 
-    <div id="upload-controls">
-      <input type="file" id="csv-upload" accept=".csv">
-      <button id="upload-button">Upload CSV</button>
+  <!-- Correct mobile viewport -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Updated mobile web app capability -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KramerBot">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
+  <link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles/layout.css?v=6">
+  <link rel="stylesheet" href="styles/sidebar.css?v=6">
+  <link rel="stylesheet" href="styles/chat.css?v=5">
+  <link rel="stylesheet" href="styles/visuals.css?v=5">
+  <link rel="stylesheet" href="styles/kramer.css?v=5">
+  <link rel="stylesheet" href="styles/standings.css?v=1">
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- LEFT SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-main">KramerBot</span>
+        <span class="logo-sub">“I got stats… probably.”</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-page="home">Home</button>
+        <button class="nav-btn" data-page="upload">Upload CSV</button>
+        <button class="nav-btn" data-page="standings">Standings</button>
+        <button class="nav-btn" data-page="stats">Basic Stats</button>
+        <button class="nav-btn" data-page="visuals">Visuals</button>
+        <button class="nav-btn" data-page="about">About</button>
+      </nav>
+
+      <div class="sidebar-icon-container">
+        <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
+      </div>
+
+      <div class="sidebar-footer">
+        <span>KramerBot © 2026</span>
+        <span class="disclaimer">No guarantees. At all.</span>
+      </div>
+    </aside>
+
+    <!-- MOBILE HAMBURGER -->
+    <div id="hamburger-menu">
+      <button id="hamburger-toggle">&#9776;</button>
     </div>
 
-    <div id="upload-status"></div>
+    <!-- MAIN CONTENT -->
+    <main id="main">
+
+      <!-- GLOBAL TITLE -->
+      <header id="global-title">
+        <div class="logo-main">Vandalay Industries Presents...</div>
+        <div class="logo-sub-main">KramerBot</div>
+      </header>
+
+      <!-- CHAT PANEL -->
+      <section id="chat-panel">
+        <div id="chat-top-row">
+          <div id="kramer-icon-container">
+            <div id="kramer-speaking-animation"></div>
+            <img src="assets/KramerBot_Icon.png" id="kramer-icon" alt="KramerBot">
+          </div>
+
+          <div id="chat-right-column">
+            <div id="conversation-box"></div>
+
+            <div id="chat-input-container">
+              <input type="text" id="chat-input" placeholder="Ask Kramer something…">
+              <button id="chat-send">Giddy Up!</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- UPLOAD PANEL -->
+      <section id="upload-panel" class="hidden">
+        <div id="upload-container">
+          <h2>Upload League CSV</h2>
+          <p>Select your league CSV file and KramerBot will… do something with it. Probably.</p>
+
+          <div id="upload-controls">
+            <input type="file" id="csv-upload" accept=".csv">
+            <button id="upload-button">Upload CSV</button>
+          </div>
+
+          <div id="upload-status"></div>
+        </div>
+      </section>
+
+      <!-- STANDINGS PANEL -->
+      <section id="standings-panel" class="hidden">
+        <div id="standings-container">
+
+          <div class="standings-header">
+            <h2>League Standings</h2>
+            <select id="season-select"></select>
+          </div>
+
+          <div id="last-updated" class="last-updated"></div>
+
+          <div id="standings-table-container">
+            <table id="standings-table">
+              <thead id="standings-head"></thead>
+              <tbody id="standings-body"></tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VISUALS PANEL -->
+      <section id="visual-panel" class="hidden">
+        <div id="visuals-placeholder">
+          <h2>Movie Phone</h2>
+          <p>
+            Tell me the name of the movie you want to see... Or just upload your league data and I’ll whip up some very serious,
+            totally reliable charts. Probably.
+          </p>
+
+          <div class="visuals-grid">
+
+            <!-- Mock chart stays for now -->
+            <div class="visual-card">
+              <h3>Team Points (Mock)</h3>
+              <div class="fake-bar-chart">
+                <div class="bar bar-a"></div>
+                <div class="bar bar-b"></div>
+                <div class="bar bar-c"></div>
+                <div class="bar bar-d"></div>
+              </div>
+            </div>
+
+            <!-- REAL SNAPSHOT PANEL -->
+            <div class="visual-card">
+              <h3>League Snapshot</h3>
+
+              <div id="snapshot-loading">Loading snapshot…</div>
+
+              <table id="snapshot-table" class="basic-table hidden">
+                <thead>
+                  <tr id="snapshot-head"></tr>
+                </thead>
+                <tbody id="snapshot-body"></tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- BASIC STATS PANEL -->
+      <section id="stats-panel" class="hidden">
+        <div class="panel-placeholder">
+          <h2>Basic Stats</h2>
+          <p>Coming soon… probably.</p>
+        </div>
+      </section>
+
+      <!-- ABOUT PANEL -->
+      <section id="about-panel" class="hidden">
+        <div class="panel-placeholder">
+          <h2>About KramerBot</h2>
+          <p>A questionable creation by Vandalay Industries.</p>
+        </div>
+      </section>
+
+    </main>
   </div>
-</section>
 
-<!-- STANDINGS PANEL (NEW) -->
-<section id="standings-panel" class="hidden">
-  <div id="standings-container">
+  <!-- ES MODULE ENTRY POINT -->
+  <script type="module" src="scripts/main.js"></script>
 
-    <div class="standings-header">
-      <h2>League Standings</h2>
-      <select id="season-select"></select>
-    </div>
+  <!-- Sidebar Toggle -->
+  <script>
+    document.getElementById("hamburger-toggle").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+  </script>
 
-    <div id="last-updated" class="last-updated"></div>
-
-    <div id="standings-table-container">
-      <table id="standings-table">
-        <thead id="standings-head"></thead>
-        <tbody id="standings-body"></tbody>
-      </table>
-    </div>
-
-  </div>
-</section>
-
-<!-- VISUALS PANEL -->
-<section id="visual-panel">
-  <div id="visuals-placeholder">
-    <h2>Movie Phone</h2>
-    <p>
-      Tell me the name of the movie you want to see... Or just upload your league data and I’ll whip up some very serious,
-      totally reliable charts. Probably.
-    </p>
-
-
+</body>
+</html>
