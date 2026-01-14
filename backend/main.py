@@ -1,4 +1,6 @@
 # backend/main.py
+print(">>> RUNNING MAIN FROM:", __file__)
+
 
 import os
 from fastapi import FastAPI
