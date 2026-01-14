@@ -32,6 +32,17 @@ app.include_router(stats_router)
 app.include_router(visuals_router)
 app.include_router(league_public_router)
 
+import json
+
+@app.get("/standings")
+def get_standings_file():
+    try:
+        with open("standings.json", "r") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"last_updated": None, "standings": []}
+
+
 @app.get("/")
 def root():
     return {"message": "KramerBot API running. Probably."}
