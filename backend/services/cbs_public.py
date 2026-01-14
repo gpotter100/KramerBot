@@ -26,7 +26,8 @@ async def fetch_html(path: str) -> str:
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
             "Chrome/143.0.0.0 Safari/537.36"
-        )
+        ),
+        "Cookie": "QSI_History_Session=https%3A%2F%2Flouieshades.football.cbssports.com%2F%3Flogin%3Dconfirmed%26tid%3D1768358797~1768358801836%7Chttps%3A%2F%2Flouieshades.football.cbssports.com%2Fhome~1768358814281%7Chttps%3A%2F%2Flouieshades.football.cbssports.com%2Fstandings%2Foverall~1768359022019"
     }
 
     async with httpx.AsyncClient(follow_redirects=True, headers=headers) as client:
