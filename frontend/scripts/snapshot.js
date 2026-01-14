@@ -14,7 +14,7 @@ export async function loadSnapshot() {
   body.innerHTML = "";
 
   try {
-    const res = await fetch(`${BACKEND_URL}/standings`);
+    const res = await fetch(`${BACKEND_URL}/league/public/standings`);
     const data = await res.json();
 
     const allRows = data.standings;

@@ -15,7 +15,7 @@ export async function loadStandingsPanel() {
   lastUpdatedEl.textContent = "Loading…";
 
   try {
-    const res = await fetch(`${BACKEND_URL}/standings`);
+    const res = await fetch(`${BACKEND_URL}/league/public/standings`);
     const data = await res.json();
 
     // Timestamp
