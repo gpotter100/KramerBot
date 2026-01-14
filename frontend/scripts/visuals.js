@@ -52,22 +52,35 @@ async function loadSnapshot() {
       return;
     }
 
-    // Data format: [season, col1, col2, col3, ...]
     const rows = data.standings;
 
-    // Build header from first row (skip season)
-    const headerCells = rows[0].slice(1);
+    // Hardcoded header row (matches CBS columns)
+    const headerCells = [
+      "TEAM",
+      "W",
+      "L",
+      "T",
+      "PCT",
+      "GB",
+      "STREAK",
+      "WKS",
+      "PF",
+      "BACK",
+      "PA"
+    ];
+
+    // Render header
     headEl.innerHTML = headerCells.map(h => `<th>${h}</th>`).join("");
 
-    // Build body
+    // Render body rows (skip the season column)
     bodyEl.innerHTML = rows
+      .filter(r => r.length > 2) // skip weird rows like "2024", "Overall Standings"
       .map(r => {
-        const cells = r.slice(1);
+        const cells = r.slice(1); // drop season
         return `<tr>${cells.map(c => `<td>${c}</td>`).join("")}</tr>`;
       })
       .join("");
 
-    // Show table, hide loading
     loadingEl.textContent = "";
     tableEl.classList.remove("hidden");
 
@@ -88,4 +101,3 @@ function initVisuals() {
 }
 
 export { refreshVisuals, initVisuals };
-
