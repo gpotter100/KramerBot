@@ -4,22 +4,17 @@
   <meta charset="UTF-8">
   <title>KramerBot</title>
 
-  <!-- Correct mobile viewport -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Updated mobile web app capability -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="KramerBot">
 
-  <!-- Icons -->
   <link rel="apple-touch-icon" href="assets/KramerBot_Icon.png">
   <link rel="icon" type="image/png" href="assets/KramerBot_Icon.png">
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="styles/layout.css?v=6">
+  <link rel="stylesheet" href="styles/layout.css?v=7">
   <link rel="stylesheet" href="styles/sidebar.css?v=6">
-  <link rel="stylesheet" href="styles/chat.css?v=5">
+  <link rel="stylesheet" href="styles/chat.css?v=6">
   <link rel="stylesheet" href="styles/visuals.css?v=5">
   <link rel="stylesheet" href="styles/kramer.css?v=5">
   <link rel="stylesheet" href="styles/standings.css?v=1">
@@ -71,6 +66,7 @@
       <!-- CHAT PANEL -->
       <section id="chat-panel">
         <div id="chat-top-row">
+
           <div id="kramer-icon-container">
             <div id="kramer-speaking-animation"></div>
             <img src="assets/KramerBot_Icon.png" id="kramer-icon" alt="KramerBot">
@@ -78,14 +74,16 @@
 
           <div id="chat-right-column">
             <div id="conversation-box"></div>
-
-            <div id="chat-input-container">
-              <input type="text" id="chat-input" placeholder="Ask Kramer something…">
-              <button id="chat-send">Giddy Up!</button>
-            </div>
           </div>
+
         </div>
       </section>
+
+      <!-- STATIC CHAT INPUT BAR (DESKTOP) -->
+      <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Ask Kramer something…">
+        <button id="chat-send">Giddy Up!</button>
+      </div>
 
       <!-- UPLOAD PANEL -->
       <section id="upload-panel" class="hidden">
@@ -134,7 +132,6 @@
 
           <div class="visuals-grid">
 
-            <!-- Mock chart stays for now -->
             <div class="visual-card">
               <h3>Team Points (Mock)</h3>
               <div class="fake-bar-chart">
@@ -145,7 +142,6 @@
               </div>
             </div>
 
-            <!-- REAL SNAPSHOT PANEL -->
             <div class="visual-card">
               <h3>League Snapshot</h3>
 
@@ -182,10 +178,8 @@
     </main>
   </div>
 
-  <!-- ES MODULE ENTRY POINT -->
-  <script type="module" src="scripts/main.js"></script>
+  <script type="module" src="scripts/main.js?v=7"></script>
 
-  <!-- Sidebar Toggle -->
   <script>
     document.getElementById("hamburger-toggle").addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("open");
