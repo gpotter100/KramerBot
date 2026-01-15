@@ -9,8 +9,14 @@ router = APIRouter()
 @router.get("/nfl/player-usage/{season}/{week}")
 def get_player_usage(season: int, week: int):
     try:
+        print("🔥 NFL ROUTE HIT:", season, week)
+
         df = import_weekly_data([season])
+        print("📊 FULL DF SHAPE:", df.shape)
+        print("📊 FULL DF COLUMNS:", df.columns.tolist())
+
         week_df = df[df["week"] == week]
+        print("📅 WEEK DF SHAPE:", week_df.shape)
 
         usage = week_df.groupby("player_name").agg({
             "attempts": "sum",
@@ -24,8 +30,11 @@ def get_player_usage(season: int, week: int):
             "position": "first"
         }).reset_index()
 
+        print("📈 USAGE SHAPE:", usage.shape)
+
         usage = usage.sort_values(by=["attempts", "receptions", "targets"], ascending=False)
         return usage.to_dict(orient="records")
 
     except Exception as e:
+        print("❌ ERROR IN NFL ROUTE:", e)
         raise HTTPException(status_code=500, detail=str(e))
