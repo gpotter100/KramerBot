@@ -29,7 +29,54 @@ body {
   max-height: 100vh;
 }
 
+/* ===========================
+   SIDEBAR BUTTON ENHANCEMENTS
+=========================== */
 
+.nav-btn {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  background: #0f1a2e;
+  color: #d9eaff;
+  border: 1px solid #1f2d45;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-btn:hover {
+  background: #16263d;
+  border-color: #66ccff;
+}
+
+.nav-btn.active {
+  background: #1e3555;
+  border-color: #66ccff;
+  color: #ffffff;
+}
+
+/* Optional: dedicated style for special sidebar buttons */
+.sidebar-btn {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: #1a2d45;
+  color: #d9eaff;
+  border: 1px solid #2f4d6d;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-btn:hover {
+  background: #223b5c;
+  border-color: #66ccff;
+}
 
 /* ===========================
    PANELS

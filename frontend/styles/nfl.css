@@ -1,0 +1,174 @@
+/* ===========================
+   TITLE BANNER
+=========================== */
+
+#nfl-title-banner {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.nfl-title-line-1 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #66ccff;
+  letter-spacing: 0.05em;
+}
+
+.nfl-title-line-2 {
+  font-size: 34px;
+  font-weight: 900;
+  color: #d9eaff;
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+/* ===========================
+   NFL PAGE WRAPPER
+=========================== */
+
+#nfl-content {
+  padding: 20px;
+  background: #121a2b;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(102, 204, 255, 0.1);
+  color: #d9eaff;
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===========================
+   FILTER BAR
+=========================== */
+
+#filters {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #0f1a2e;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid #1f2d45;
+  box-shadow: 0 0 8px rgba(102, 204, 255, 0.08);
+}
+
+#filters label {
+  font-size: 15px;
+  color: #66ccff;
+}
+
+#filters input,
+#filters select {
+  width: 100px;
+  padding: 6px 8px;
+  background: #0a1322;
+  border: 1px solid #2f4d6d;
+  border-radius: 6px;
+  color: #d9eaff;
+}
+
+#load-btn {
+  background: #1a2d45;
+  color: #66ccff;
+  border: 1px solid #66ccff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+#load-btn:hover {
+  background: #223b5c;
+  box-shadow: 0 0 8px rgba(102, 204, 255, 0.4);
+}
+
+/* ===========================
+   LOADING INDICATOR
+=========================== */
+
+#loading-indicator {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  color: #66ccff;
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* ===========================
+   SORTABLE TABLE
+=========================== */
+
+#usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #d9eaff;
+}
+
+#usage-table th {
+  cursor: pointer;
+  padding: 10px;
+  background: #1a2d45;
+  border-bottom: 2px solid #66ccff;
+  text-align: left;
+  transition: 0.2s ease;
+}
+
+#usage-table th:hover {
+  background: #223b5c;
+}
+
+#usage-table td {
+  padding: 10px;
+  border-bottom: 1px solid #2f4d6d;
+}
+
+/* ===========================
+   TEAM COLOR ACCENTS
+=========================== */
+
+.team-accent {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #ffffff;
+}
+
+/* ===========================
+   CHART AREA
+=========================== */
+
+#charts-container {
+  background: #0f1626;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #1f2d45;
+  box-shadow: 0 0 12px rgba(102, 204, 255, 0.08);
+}
+
+.chart-block {
+  margin-bottom: 30px;
+}
+
+.chart-title {
+  font-size: 18px;
+  color: #66ccff;
+  margin-bottom: 10px;
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width: 768px) {
+  #filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

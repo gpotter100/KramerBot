@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NFL Statistics</title>
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/nfl.css">
+</head>
+
+<body>
+  <main id="nfl-content">
+
+    <header id="nfl-title-banner">
+      <div class="nfl-title-line-1">Vandalay Industries Presents...</div>
+      <div class="nfl-title-line-2">NFL Statistics</div>
+    </header>
+
+    <div id="filters">
+      <label>Season:</label>
+      <input id="season-input" type="number" value="2023">
+
+      <label>Week:</label>
+      <input id="week-input" type="number" value="1">
+
+      <label>Position:</label>
+      <select id="position-filter">
+        <option value="ALL">All</option>
+        <option value="QB">QB</option>
+        <option value="RB">RB</option>
+        <option value="WR">WR</option>
+        <option value="TE">TE</option>
+      </select>
+
+      <button id="load-btn">Load Stats</button>
+    </div>
+
+    <div id="loading-indicator" class="hidden">Loading NFL data…</div>
+
+    <table id="usage-table" class="hidden">
+      <thead>
+        <tr>
+          <th data-sort="player_name">Player</th>
+          <th data-sort="team">Team</th>
+          <th data-sort="position">Pos</th>
+          <th data-sort="attempts">Att</th>
+          <th data-sort="receptions">Rec</th>
+          <th data-sort="targets">Tgt</th>
+          <th data-sort="snap_pct">Snap %</th>
+        </tr>
+      </thead>
+      <tbody id="usage-body"></tbody>
+    </table>
+
+    <div id="charts-container" class="hidden">
+      <div class="chart-block">
+        <div class="chart-title">Touches by Player</div>
+        <canvas id="touches-chart"></canvas>
+      </div>
+
+      <div class="chart-block">
+        <div class="chart-title">Snap % by Player</div>
+        <canvas id="snap-chart"></canvas>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="scripts/nfl.js"></script>
+</body>
+</html>
