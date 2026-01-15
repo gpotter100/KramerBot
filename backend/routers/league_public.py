@@ -5,7 +5,7 @@ from services.cbs_public import get_standings, LeagueDataError
 
 router = APIRouter(prefix="/league/public", tags=["LeaguePublic"])
 
-@router.get("/standings")
+@router.get("/standings-live")
 async def league_standings():
   try:
       data = await get_standings()
