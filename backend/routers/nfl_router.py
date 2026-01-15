@@ -26,6 +26,8 @@ def get_player_usage(season: int, week: int):
             "position": "first"
         }).reset_index()
 
+        usage = usage.rename(columns={"recent_team": "team"})
+
         print("📈 USAGE SHAPE:", usage.shape)
 
         usage = usage.sort_values(
