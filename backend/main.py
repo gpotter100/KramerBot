@@ -48,7 +48,7 @@ app.include_router(upload_router)
 app.include_router(stats_router)
 app.include_router(visuals_router)
 app.include_router(league_public_router)
-app.include_router(nfl_router.router)
+app.include_router(nfl_router)
 
 # ---------------------------------------------------------
 # EXISTING ENDPOINTS
