@@ -1,9 +1,11 @@
 // ===============================
-// CONFIG
+// IMPORT CONFIG
 // ===============================
+import { BACKEND_URL } from "./config.js";
 
-const backendBase = "https://kramerbot-backend.onrender.com";
-
+// ===============================
+// STATE
+// ===============================
 let currentData = [];
 let currentSort = { column: null, direction: 1 };
 
@@ -21,7 +23,6 @@ const teamColors = {
 // ===============================
 // ELEMENTS
 // ===============================
-
 const seasonInput = document.getElementById("season-input");
 const weekInput = document.getElementById("week-input");
 const positionFilter = document.getElementById("position-filter");
@@ -32,14 +33,28 @@ const usageTable = document.getElementById("usage-table");
 const usageBody = document.getElementById("usage-body");
 
 const chartsContainer = document.getElementById("charts-container");
-let touchesChart, snapChart;
+const touchesCanvas = document.getElementById("touches-chart");
+const snapCanvas = document.getElementById("snap-chart");
+
+let touchesChart = null;
+let snapChart = null;
+
+// ===============================
+// EVENT BINDINGS
+// ===============================
+loadBtn.addEventListener("click", loadStats);
+positionFilter.addEventListener("change", applyFilters);
+
+document.querySelectorAll("#usage-table th").forEach(th => {
+  th.addEventListener("click", () => {
+    const column = th.dataset.sort;
+    sortBy(column);
+  });
+});
 
 // ===============================
 // LOAD DATA
 // ===============================
-
-loadBtn.addEventListener("click", loadStats);
-
 async function loadStats() {
   const season = seasonInput.value;
   const week = weekInput.value;
@@ -47,31 +62,52 @@ async function loadStats() {
   usageTable.classList.add("hidden");
   chartsContainer.classList.add("hidden");
   loadingIndicator.classList.remove("hidden");
+  usageBody.innerHTML = "";
 
   try {
-    const res = await fetch(`${backendBase}/nfl/player-usage/${season}/${week}`);
-    const data = await res.json();
+    const res = await fetch(`${BACKEND_URL}/nfl/player-usage/${season}/${week}`);
+    if (!res.ok) {
+      throw new Error(`Backend returned ${res.status}`);
+    }
 
-    currentData = data;
+    const data = await res.json();
+    currentData = Array.isArray(data) ? data : [];
+
+    if (currentData.length === 0) {
+      usageBody.innerHTML = `<tr><td colspan="7">No data returned for this week.</td></tr>`;
+      usageTable.classList.remove("hidden");
+      loadingIndicator.classList.add("hidden");
+      return;
+    }
+
     applyFilters();
   } catch (err) {
+    console.error("Error loading NFL data:", err);
     usageBody.innerHTML = `<tr><td colspan="7">Error loading data.</td></tr>`;
+    usageTable.classList.remove("hidden");
+  } finally {
+    loadingIndicator.classList.add("hidden");
   }
-
-  loadingIndicator.classList.add("hidden");
 }
 
 // ===============================
 // FILTERING
 // ===============================
-
-positionFilter.addEventListener("change", applyFilters);
-
 function applyFilters() {
   let filtered = [...currentData];
 
-  if (positionFilter.value !== "ALL") {
-    filtered = filtered.filter(p => p.position === positionFilter.value);
+  const pos = positionFilter.value;
+  if (pos !== "ALL") {
+    filtered = filtered.filter(p => (p.position || "").toUpperCase() === pos);
+  }
+
+  // If a sort is active, keep it applied
+  if (currentSort.column) {
+    filtered.sort((a, b) => {
+      const valA = a[currentSort.column] ?? 0;
+      const valB = b[currentSort.column] ?? 0;
+      return (valA > valB ? 1 : -1) * currentSort.direction;
+    });
   }
 
   renderTable(filtered);
@@ -81,14 +117,6 @@ function applyFilters() {
 // ===============================
 // SORTING
 // ===============================
-
-document.querySelectorAll("#usage-table th").forEach(th => {
-  th.addEventListener("click", () => {
-    const column = th.dataset.sort;
-    sortBy(column);
-  });
-});
-
 function sortBy(column) {
   if (currentSort.column === column) {
     currentSort.direction *= -1;
@@ -97,20 +125,12 @@ function sortBy(column) {
     currentSort.direction = 1;
   }
 
-  const sorted = [...currentData].sort((a, b) => {
-    const valA = a[column] ?? 0;
-    const valB = b[column] ?? 0;
-    return (valA > valB ? 1 : -1) * currentSort.direction;
-  });
-
-  renderTable(sorted);
-  renderCharts(sorted);
+  applyFilters();
 }
 
 // ===============================
 // TABLE RENDERING
 // ===============================
-
 function renderTable(data) {
   usageBody.innerHTML = data.map(player => {
     const color = teamColors[player.team] || "#444";
@@ -134,8 +154,9 @@ function renderTable(data) {
 // ===============================
 // CHARTS
 // ===============================
-
 function renderCharts(data) {
+  if (!touchesCanvas || !snapCanvas) return;
+
   const labels = data.map(p => p.player_name);
   const touches = data.map(p => (p.attempts ?? 0) + (p.receptions ?? 0));
   const snaps = data.map(p => p.snap_pct ?? 0);
@@ -143,7 +164,7 @@ function renderCharts(data) {
   if (touchesChart) touchesChart.destroy();
   if (snapChart) snapChart.destroy();
 
-  touchesChart = new Chart(document.getElementById("touches-chart"), {
+  touchesChart = new Chart(touchesCanvas, {
     type: "bar",
     data: {
       labels,
@@ -152,10 +173,18 @@ function renderCharts(data) {
         data: touches,
         backgroundColor: "#66ccff"
       }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#d9eaff" } },
+        y: { ticks: { color: "#d9eaff" } }
+      }
     }
   });
 
-  snapChart = new Chart(document.getElementById("snap-chart"), {
+  snapChart = new Chart(snapCanvas, {
     type: "line",
     data: {
       labels,
@@ -163,8 +192,17 @@ function renderCharts(data) {
         label: "Snap %",
         data: snaps,
         borderColor: "#66ccff",
-        backgroundColor: "rgba(102, 204, 255, 0.2)"
+        backgroundColor: "rgba(102, 204, 255, 0.2)",
+        tension: 0.3
       }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: "#d9eaff" } } },
+      scales: {
+        x: { ticks: { color: "#d9eaff" } },
+        y: { ticks: { color: "#d9eaff" } }
+      }
     }
   });
 
