@@ -1,7 +1,7 @@
 // ===============================
 // IMPORT CONFIG
 // ===============================
-import { BACKEND_URL } from "./config.js";
+import { API_BASE as BACKEND_URL } from "./config.js";
 
 // ===============================
 // STATE
