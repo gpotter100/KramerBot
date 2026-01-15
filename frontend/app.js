@@ -12,7 +12,7 @@ import {
   kramerReact 
 } from "./kramer.js";
 
-const API_BASE = "https://kramerbot-backend.onrender.com";
+const API_BASE = "https://kramerbot.onrender.com";
 
 // DOM elements
 const chatInput = document.getElementById("chat-input");
