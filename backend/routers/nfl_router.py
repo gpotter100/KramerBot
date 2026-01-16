@@ -1,8 +1,70 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 import urllib.error
+import urllib.request
+import threading
 
 router = APIRouter()
+
+# ============================================================
+# GLOBAL SEASON CACHE
+# ============================================================
+SEASON_CACHE = {
+    "seasons": [],
+    "loaded": False
+}
+
+CACHE_LOCK = threading.Lock()
+
+
+# ============================================================
+# LIGHTWEIGHT PARQUET EXISTENCE CHECK (HEAD request)
+# ============================================================
+def parquet_exists(year: int) -> bool:
+    """
+    Fast HEAD request to check if a parquet file exists.
+    Avoids downloading or loading full data.
+    """
+    url = (
+        "https://github.com/nflverse/nflverse-data/releases/download/"
+        f"stats_player/stats_player_{year}.parquet"
+    )
+
+    req = urllib.request.Request(url, method="HEAD")
+
+    try:
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+# ============================================================
+# BUILD SEASON CACHE ONCE
+# ============================================================
+def build_season_cache():
+    """
+    Builds the season list ONCE at startup or first request.
+    Uses lightweight checks only.
+    """
+    with CACHE_LOCK:
+        if SEASON_CACHE["loaded"]:
+            return
+
+        seasons = []
+
+        # Known historical range for nfl_data_py
+        for year in range(2002, 2025):
+            seasons.append(year)
+
+        # Modern seasons (2025+)
+        for year in range(2025, 2035):
+            if parquet_exists(year):
+                seasons.append(year)
+
+        SEASON_CACHE["seasons"] = sorted(seasons)
+        SEASON_CACHE["loaded"] = True
+
 
 # ============================================================
 # WEEKLY LOADER (Legacy 2002–2024, Modern 2025+)
@@ -138,47 +200,15 @@ def get_player_usage(season: int, week: int):
 
 
 # ============================================================
-# SEASONS ROUTE (Dynamic, 2002 → Future)
+# OPTIMIZED, CACHED SEASONS ROUTE
 # ============================================================
 @router.get("/nfl/seasons")
 def get_available_seasons():
     """
-    Dynamically discover all seasons with available data.
-    Legacy: nfl_data_py weekly data (2002–2024)
-    Modern: nflverse parquet (2025+ when published)
+    Returns cached seasons instantly.
+    If cache is empty, builds it once.
     """
+    if not SEASON_CACHE["loaded"]:
+        build_season_cache()
 
-    seasons = []
-
-    # -----------------------------
-    # Legacy seasons (2002–2024)
-    # -----------------------------
-    try:
-        from nfl_data_py import import_weekly_data
-
-        for year in range(2002, 2025):
-            try:
-                df = import_weekly_data([year])
-                if not df.empty:
-                    seasons.append(year)
-            except Exception:
-                continue
-
-    except Exception as e:
-        print(f"⚠️ Legacy season discovery failed: {e}")
-
-    # -----------------------------
-    # Modern seasons (2025+)
-    # -----------------------------
-    for year in range(2025, 2035):
-        url = (
-            "https://github.com/nflverse/nflverse-data/releases/download/"
-            f"stats_player/stats_player_{year}.parquet"
-        )
-        try:
-            pd.read_parquet(url, columns=["season"])
-            seasons.append(year)
-        except Exception:
-            continue
-
-    return sorted(seasons)
+    return SEASON_CACHE["seasons"]
