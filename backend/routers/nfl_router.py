@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from cbs_fallback import load_cbs_weekly_data
+from .cbs_fallback import load_cbs_weekly_data
 import pandas as pd
 import urllib.error
 import urllib.request
