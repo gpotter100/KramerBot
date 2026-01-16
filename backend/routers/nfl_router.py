@@ -109,3 +109,16 @@ def get_player_usage(season: int, week: int):
     except Exception as e:
         print("❌ ERROR IN NFL ROUTE:", e)
         raise HTTPException(status_code=500, detail=str(e))
+
+# ================================
+# NFL SEASONS ROUTE
+# ================================
+
+
+@router.get("/nfl/seasons")
+def get_available_seasons():
+    """
+    Returns all seasons that the backend can serve.
+    Update this list whenever you add new data sources.
+    """
+    return [2021, 2022, 2023, 2024, 2025]
