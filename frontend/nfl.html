@@ -1,72 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>NFL Statistics</title>
-  <link rel="stylesheet" href="styles/layout.css">
-  <link rel="stylesheet" href="styles/nfl.css">
-  <link rel="icon" href="favicon.ico" />
+  <meta charset="UTF-8" />
+  <title>NFL Player Usage</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+  <style>
+    body { background:#0d1117; color:#d9eaff; font-family:Arial; margin:0; padding:20px; }
+    h1 { margin-top:0; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { padding:8px 10px; border-bottom:1px solid #333; text-align:left; }
+    th { cursor:pointer; color:#9ecbff; }
+    tr:hover { background:#1a2332; }
+    .team-accent { padding:3px 6px; border-radius:4px; color:white; font-weight:bold; display:inline-flex; align-items:center; gap:6px; }
+    .team-logo { width:18px; height:18px; border-radius:50%; object-fit:cover; background:#222; }
+    #loading-indicator { margin-top:20px; }
+    .hidden { display:none; }
+    #charts-container { margin-top:40px; display:grid; grid-template-columns:1.5fr 1fr; gap:24px; align-items:flex-start; }
+    canvas { background:#111; padding:10px; border-radius:8px; }
+    #top-performers { background:#111827; padding:12px 16px; border-radius:8px; margin-top:20px; }
+    #top-performers h2 { margin-top:0; font-size:16px; }
+    .top-list { list-style:none; padding:0; margin:0; }
+    .top-list li { margin-bottom:6px; font-size:14px; }
+    .pill { display:inline-block; padding:2px 6px; border-radius:999px; font-size:11px; background:#1f2937; margin-left:6px; }
+    #compare-panel { margin-top:24px; background:#111827; padding:12px 16px; border-radius:8px; }
+    #compare-panel h2 { margin-top:0; font-size:16px; }
+    #compare-select { width:100%; max-width:400px; }
+    .compare-metrics { margin-top:12px; font-size:14px; }
+  </style>
 </head>
 
 <body>
-  <main id="nfl-content">
 
-    <header id="nfl-title-banner">
-      <div class="nfl-title-line-1">Vandalay Industries Presents...</div>
-      <div class="nfl-title-line-2">NFL Statistics</div>
-    </header>
+  <h1>NFL Player Usage</h1>
 
-    <div id="filters">
-      <label>Season:</label>
-      <input id="season-input" type="number" value="2023">
+  <div>
+    <label>Season:</label>
+    <input id="season-input" type="number" value="2024" />
 
-      <label>Week:</label>
-      <input id="week-input" type="number" value="1">
+    <label>Week:</label>
+    <input id="week-input" type="number" value="1" />
 
-      <label>Position:</label>
-      <select id="position-filter">
-        <option value="ALL">All</option>
-        <option value="QB">QB</option>
-        <option value="RB">RB</option>
-        <option value="WR">WR</option>
-        <option value="TE">TE</option>
-      </select>
+    <label>Position:</label>
+    <select id="position-filter">
+      <option value="ALL">All</option>
+      <option value="QB">QB</option>
+      <option value="RB">RB</option>
+      <option value="WR">WR</option>
+      <option value="TE">TE</option>
+    </select>
 
-      <button id="load-btn">Load Stats</button>
+    <button id="load-btn">Load Stats</button>
+  </div>
+
+  <div id="loading-indicator" class="hidden">Loading...</div>
+
+  <div id="top-performers" class="hidden">
+    <h2>Top Performers</h2>
+    <ul class="top-list" id="top-list"></ul>
+  </div>
+
+  <table id="usage-table" class="hidden">
+    <thead>
+      <tr>
+        <th data-sort="player_name">Player</th>
+        <th data-sort="team">Team</th>
+        <th data-sort="position">Pos</th>
+        <th data-sort="attempts">Att</th>
+        <th data-sort="receptions">Rec</th>
+        <th data-sort="targets">Tgt</th>
+        <th data-sort="passing_yards">Pass Yds</th>
+        <th data-sort="rushing_yards">Rush Yds</th>
+        <th data-sort="receiving_yards">Rec Yds</th>
+        <th data-sort="total_yards">Total Yds</th>
+        <th data-sort="touches">Touches</th>
+        <th data-sort="snap_pct">Snap %</th>
+      </tr>
+    </thead>
+    <tbody id="usage-body"></tbody>
+  </table>
+
+  <div id="charts-container" class="hidden">
+    <div>
+      <h2>Touches & Snap %</h2>
+      <canvas id="touches-chart" width="800" height="300"></canvas>
+      <canvas id="snap-chart" width="800" height="300" style="margin-top:16px;"></canvas>
     </div>
 
-    <div id="loading-indicator" class="hidden">Loading NFL data…</div>
-
-    <table id="usage-table" class="hidden">
-      <thead>
-        <tr>
-          <th data-sort="player_name">Player</th>
-          <th data-sort="team">Team</th>
-          <th data-sort="position">Pos</th>
-          <th data-sort="attempts">Att</th>
-          <th data-sort="receptions">Rec</th>
-          <th data-sort="targets">Tgt</th>
-          <th data-sort="snap_pct">Snap %</th>
-        </tr>
-      </thead>
-      <tbody id="usage-body"></tbody>
-    </table>
-
-    <div id="charts-container" class="hidden">
-      <div class="chart-block">
-        <div class="chart-title">Touches by Player</div>
-        <canvas id="touches-chart"></canvas>
-      </div>
-
-      <div class="chart-block">
-        <div class="chart-title">Snap % by Player</div>
-        <canvas id="snap-chart"></canvas>
-      </div>
+    <div>
+      <h2>Usage Breakdown</h2>
+      <canvas id="usage-donut" width="400" height="400"></canvas>
     </div>
+  </div>
 
-  </main>
+  <div id="compare-panel" class="hidden">
+    <h2>Compare Players</h2>
+    <select id="compare-select" multiple size="6"></select>
+    <div class="compare-metrics" id="compare-metrics"></div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module" src="scripts/nfl.js"></script>
+  <script type="module" src="scripts/nfl.js"></script>
 </body>
 </html>
