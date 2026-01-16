@@ -15,10 +15,10 @@ const teamColors = {
 };
 
 const positionIcons = {
-  QB: "🧢",       // helmet
-  RB: "🏈",       // football
-  WR: "👟",       // cleats
-  TE: "👕"        // jersey
+  QB: "🧢",  // helmet
+  RB: "🏈",  // football
+  WR: "👟",  // cleats
+  TE: "👕"   // jersey
 };
 
 const seasonInput = document.getElementById("season-input");
@@ -46,6 +46,22 @@ let touchesChart = null;
 let snapChart = null;
 let usageDonutChart = null;
 
+// ===============================
+// Populate dropdowns dynamically
+// ===============================
+const currentYear = new Date().getFullYear();
+const seasonOptions = [currentYear - 1, currentYear];
+seasonInput.innerHTML = seasonOptions.map(y =>
+  `<option value="${y}" ${y === currentYear ? "selected" : ""}>${y}</option>`
+).join("");
+
+weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
+  `<option value="${i + 1}">${i + 1}</option>`
+).join("");
+
+// ===============================
+// Event bindings
+// ===============================
 loadBtn.addEventListener("click", loadStats);
 positionFilter.addEventListener("change", applyFilters);
 
@@ -58,6 +74,9 @@ document.querySelectorAll("#usage-table th").forEach(th => {
 
 compareSelect.addEventListener("change", renderCompare);
 
+// ===============================
+// Load data
+// ===============================
 async function loadStats() {
   const season = Number(seasonInput.value);
   const week = Number(weekInput.value);
@@ -97,8 +116,12 @@ async function loadStats() {
         (p.passing_yards ?? 0) +
         (p.rushing_yards ?? 0) +
         (p.receiving_yards ?? 0),
-        efficiency: (player.total_yards ?? 0) / Math.max(player.touches ?? 1, 1),
-        fantasy_per_touch: (player.fantasy_points_ppr ?? 0) / Math.max(player.touches ?? 1, 1)
+      efficiency:
+        ((p.passing_yards ?? 0) +
+         (p.rushing_yards ?? 0) +
+         (p.receiving_yards ?? 0)) / Math.max((p.attempts ?? 0) + (p.receptions ?? 0), 1),
+      fantasy_per_touch:
+        (p.fantasy_points_ppr ?? 0) / Math.max((p.attempts ?? 0) + (p.receptions ?? 0), 1)
     }));
 
     populateCompareSelect(currentData);
@@ -113,6 +136,9 @@ async function loadStats() {
   }
 }
 
+// ===============================
+// Filtering
+// ===============================
 function applyFilters() {
   let filtered = [...currentData];
 
@@ -133,6 +159,9 @@ function applyFilters() {
   renderCharts(filtered);
 }
 
+// ===============================
+// Sorting
+// ===============================
 function sortBy(column) {
   if (currentSort.column === column) {
     currentSort.direction *= -1;
@@ -142,177 +171,5 @@ function sortBy(column) {
   }
 
   applyFilters();
-}
-
-function renderTable(data) {
-  usageBody.innerHTML = data.map(player => {
-    const color = teamColors[player.team] || "#444";
-    const posIcon = positionIcons[player.position] || "";
-
-    const logoUrl = `https://a.espncdn.com/i/teamlogos/nfl/500/${(player.team || "nfl").toLowerCase()}.png`;
-
-    return `
-      <tr>
-        <td>${player.player_name}</td>
-        <td>
-          <span class="team-accent" style="background:${color}">
-            <img class="team-logo" src="${logoUrl}" onerror="this.style.display='none';" />
-            ${player.team}
-          </span>
-        </td>
-        <td>${posIcon} ${player.position}</td>
-        <td>${player.attempts ?? 0}</td>
-        <td>${player.receptions ?? 0}</td>
-        <td>${player.targets ?? 0}</td>
-        <td>${player.passing_yards ?? 0}</td>
-        <td>${player.rushing_yards ?? 0}</td>
-        <td>${player.receiving_yards ?? 0}</td>
-        <td>${player.total_yards ?? 0}</td>
-        <td>${player.touches ?? 0}</td>
-        <td>${player.snap_pct ? player.snap_pct.toFixed(1) : 0}</td>
-        <td>${player.fantasy_points ?? 0}</td>
-        <td>${player.fantasy_points_ppr ?? 0}</td>
-        <td>${player.passing_epa?.toFixed(2) ?? 0}</td>
-        <td>${player.rushing_epa?.toFixed(2) ?? 0}</td>
-        <td>${player.receiving_epa?.toFixed(2) ?? 0}</td>
-      </tr>
-    `;
-  }).join("");
-
-  usageTable.classList.remove("hidden");
-}
-
-function renderCharts(data) {
-  if (!touchesCanvas || !snapCanvas || !usageDonutCanvas) return;
-
-  const labels = data.map(p => p.player_name);
-  const touches = data.map(p => p.touches ?? 0);
-  const snaps = data.map(p => p.snap_pct ?? 0);
-
-  if (touchesChart) touchesChart.destroy();
-  if (snapChart) snapChart.destroy();
-  if (usageDonutChart) usageDonutChart.destroy();
-
-  touchesChart = new Chart(touchesCanvas, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Touches",
-        data: touches,
-        backgroundColor: "#66ccff"
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: "#d9eaff" } },
-        y: { ticks: { color: "#d9eaff" } }
-      }
-    }
-  });
-
-  snapChart = new Chart(snapCanvas, {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Snap %",
-        data: snaps,
-        borderColor: "#66ccff",
-        backgroundColor: "rgba(102, 204, 255, 0.2)",
-        tension: 0.3
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: "#d9eaff" } } },
-      scales: {
-        x: { ticks: { color: "#d9eaff" } },
-        y: { ticks: { color: "#d9eaff" } }
-      }
-    }
-  });
-
-  const totalPass = data.reduce((sum, p) => sum + (p.passing_yards ?? 0), 0);
-  const totalRush = data.reduce((sum, p) => sum + (p.rushing_yards ?? 0), 0);
-  const totalRec = data.reduce((sum, p) => sum + (p.receiving_yards ?? 0), 0);
-
-  usageDonutChart = new Chart(usageDonutCanvas, {
-    type: "doughnut",
-    data: {
-      labels: ["Passing Yards", "Rushing Yards", "Receiving Yards"],
-      datasets: [{
-        data: [totalPass, totalRush, totalRec],
-        backgroundColor: ["#4ade80", "#60a5fa", "#f97316"]
-      }]
-    },
-    options: {
-      plugins: {
-        legend: { labels: { color: "#d9eaff" } }
-      }
-    }
-  });
-
-  chartsContainer.classList.remove("hidden");
-}
-
-function renderTopPerformers(data) {
-  const sortedByTouches = [...data].sort((a, b) => (b.touches ?? 0) - (a.touches ?? 0));
-  const top = sortedByTouches.slice(0, 5);
-
-  topList.innerHTML = top.map(p => {
-    const posIcon = positionIcons[p.position] || "";
-    return `
-      <li>
-        ${p.player_name} (${p.team}) ${posIcon}
-        <span class="pill">Touches: ${p.touches ?? 0}</span>
-        <span class="pill">Yds: ${p.total_yards ?? 0}</span>
-        <span class="pill">Snap: ${p.snap_pct ? p.snap_pct.toFixed(1) : 0}%</span>
-      </li>
-    `;
-  }).join("");
-
-  topPanel.classList.remove("hidden");
-}
-
-function populateCompareSelect(data) {
-  const sorted = [...data].sort((a, b) => (b.touches ?? 0) - (a.touches ?? 0));
-  sorted.forEach(p => {
-    const opt = document.createElement("option");
-    opt.value = p.player_name;
-    opt.textContent = `${p.player_name} (${p.team}, ${p.position})`;
-    compareSelect.appendChild(opt);
-  });
-
-  comparePanel.classList.remove("hidden");
-}
-
-function renderCompare() {
-  const selectedNames = Array.from(compareSelect.selectedOptions).map(o => o.value);
-  const selectedPlayers = currentData.filter(p => selectedNames.includes(p.player_name));
-
-  if (selectedPlayers.length === 0) {
-    compareMetrics.innerHTML = "";
-    return;
-  }
-
-  const lines = selectedPlayers.map(p => {
-    return `
-      <div>
-        <strong>${p.player_name} (${p.team}, ${p.position})</strong><br/>
-        Touches: ${p.touches ?? 0} |
-        Total Yds: ${p.total_yards ?? 0} |
-        Pass: ${p.passing_yards ?? 0} |
-        Rush: ${p.rushing_yards ?? 0} |
-        Rec: ${p.receiving_yards ?? 0} |
-        Snap: ${p.snap_pct ? p.snap_pct.toFixed(1) : 0}%
-      </div>
-      <hr style="border-color:#1f2937;"/>
-    `;
-  }).join("");
-
-  compareMetrics.innerHTML = lines;
 }
 
