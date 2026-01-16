@@ -14,10 +14,6 @@ def load_weekly_data(season: int) -> pd.DataFrame:
     - Uses nflverse parquet for 2025+
     - Returns empty DataFrame if data is unavailable
     """
-
-    # ----------------------------
-    # Legacy seasons (2002–2024)
-    # ----------------------------
     if season <= 2024:
         try:
             from nfl_data_py import import_weekly_data
@@ -27,9 +23,6 @@ def load_weekly_data(season: int) -> pd.DataFrame:
             print(f"⚠️ Legacy loader failed for {season}: {e}")
             return pd.DataFrame()
 
-    # ----------------------------
-    # Modern seasons (2025+)
-    # ----------------------------
     url = (
         "https://github.com/nflverse/nflverse-data/releases/download/"
         f"stats_player/stats_player_{season}.parquet"
@@ -58,23 +51,17 @@ def get_player_usage(season: int, week: int):
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}")
 
         df = load_weekly_data(season)
-
         if df.empty:
             print("⚠️ No data returned from loader")
             return []
 
         print("📊 FULL DF SHAPE:", df.shape)
 
-        # Filter to requested week
         week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
-
         if week_df.empty:
             return []
 
-        # ============================================================
-        # NORMALIZE COLUMN NAMES
-        # ============================================================
         rename_map = {
             "recent_team": "team",
             "club": "team",
@@ -82,10 +69,7 @@ def get_player_usage(season: int, week: int):
             "rush_attempt": "carries",
             "pass_attempt": "attempts",
         }
-
-        week_df = week_df.rename(
-            columns={k: v for k, v in rename_map.items() if k in week_df.columns}
-        )
+        week_df = week_df.rename(columns={k: v for k, v in rename_map.items() if k in week_df.columns})
 
         required_cols = [
             "team", "attempts", "receptions", "targets", "carries",
@@ -93,17 +77,12 @@ def get_player_usage(season: int, week: int):
             "fantasy_points", "fantasy_points_ppr",
             "passing_epa", "rushing_epa", "receiving_epa"
         ]
-
         for col in required_cols:
             if col not in week_df.columns:
                 week_df[col] = 0
-
         if "snap_pct" not in week_df.columns:
             week_df["snap_pct"] = 0.0
 
-        # ============================================================
-        # AGGREGATE PLAYER USAGE
-        # ============================================================
         usage = (
             week_df
             .groupby("player_name", as_index=False)
@@ -147,15 +126,10 @@ def get_available_seasons():
     Legacy: nfl_data_py weekly data (2002–2024)
     Modern: nflverse parquet (2025+ when published)
     """
-
     seasons = []
 
-    # -----------------------------
-    # Legacy seasons (2002–2024)
-    # -----------------------------
     try:
         from nfl_data_py import import_weekly_data
-
         for year in range(2002, 2025):
             try:
                 df = import_weekly_data([year])
@@ -163,13 +137,9 @@ def get_available_seasons():
                     seasons.append(year)
             except Exception:
                 continue
-
     except Exception as e:
         print(f"⚠️ Legacy season discovery failed: {e}")
 
-    # -----------------------------
-    # Modern seasons (2025+)
-    # -----------------------------
     for year in range(2025, 2035):
         url = (
             "https://github.com/nflverse/nflverse-data/releases/download/"
