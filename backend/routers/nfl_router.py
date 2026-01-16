@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from .cbs_fallback import load_cbs_weekly_data
-from ..services.espn_weekly_loader import load_espn_weekly_data
+from backend.services.espn_weekly_loader import load_espn_weekly_data
 import pandas as pd
 import urllib.error
 import urllib.request
