@@ -60,12 +60,11 @@ def build_season_cache():
             seasons.append(year)
 
         # Modern seasons (2025+)
-        CBS_SUPPORTED_YEARS = [2025]  # CBS fallback supports these even without parquet
+        CBS_SUPPORTED_YEARS = [2025]
 
         for year in range(2025, 2035):
             if parquet_exists(year) or year in CBS_SUPPORTED_YEARS:
                 seasons.append(year)
-
 
         SEASON_CACHE["seasons"] = sorted(seasons)
         SEASON_CACHE["loaded"] = True
@@ -74,12 +73,11 @@ def build_season_cache():
 # ============================================================
 # WEEKLY LOADER (Legacy 2002–2024, Modern 2025+)
 # ============================================================
-def load_weekly_data(season: int) -> pd.DataFrame:
+def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     """
     Loads weekly NFL player data.
     - Uses nfl_data_py for seasons <= 2024
-    - Uses nflverse parquet for 2025+
-    - Returns empty DataFrame if data is unavailable
+    - Uses ESPN API for 2025+
     """
 
     # ----------------------------
@@ -95,25 +93,11 @@ def load_weekly_data(season: int) -> pd.DataFrame:
             return pd.DataFrame()
 
     # ----------------------------
-    # Modern seasons (2025+)
+    # Modern seasons (2025+ via ESPN)
     # ----------------------------
-    url = (
-        "https://github.com/nflverse/nflverse-data/releases/download/"
-        f"stats_player/stats_player_{season}.parquet"
-    )
-    print(f"📥 Attempting modern weekly data from {url}")
-
-    try:
-        return pd.read_parquet(url)
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            print(f"⚠️ No nflverse data published yet for {season}")
-            return pd.DataFrame()
-        print(f"⚠️ Modern loader HTTP error for {season}: {e}")
-        return pd.DataFrame()
-    except Exception as e:
-        print(f"⚠️ Modern loader error for {season}: {e}")
-        return pd.DataFrame()
+    print(f"📥 Loading modern weekly data via ESPN for {season} week {week}")
+    df = load_espn_weekly_data(season, week)
+    return df
 
 
 # ============================================================
@@ -124,8 +108,10 @@ def get_player_usage(season: int, week: int):
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}")
 
-        df = load_weekly_data(season)
+        # Load weekly data
+        df = load_weekly_data(season, week)
 
+        # CBS fallback for 2025+
         if df.empty and season >= 2025:
             print("🔄 Falling back to CBS public league data...")
             df = load_cbs_weekly_data(season, week)
@@ -133,7 +119,12 @@ def get_player_usage(season: int, week: int):
         print("📊 FULL DF SHAPE:", df.shape)
 
         # Filter to requested week
-        week_df = df[df["week"] == week]
+        if "week" in df.columns:
+            week_df = df[df["week"] == week]
+        else:
+            print("⚠️ No 'week' column found — returning empty")
+            return []
+
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
         if week_df.empty:
