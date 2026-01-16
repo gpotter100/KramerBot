@@ -5,6 +5,7 @@ import os
 import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # ---------------------------------------------------------
 # ROUTERS
@@ -49,6 +50,8 @@ app.include_router(league_public_router)
 
 # The correct NFL router (Option A)
 app.include_router(nfl_router)
+
+app.mount("/styles", StaticFiles(directory="styles"), name="styles")
 
 # ---------------------------------------------------------
 # EXISTING ENDPOINTS
