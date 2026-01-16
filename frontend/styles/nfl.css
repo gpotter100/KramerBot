@@ -83,6 +83,15 @@
   box-shadow: 0 0 8px rgba(102, 204, 255, 0.4);
 }
 
+select, button {
+  background:#1f2937;
+  color:#d9eaff;
+  border:1px solid #333;
+  padding:6px 10px;
+  border-radius:4px;
+  margin-right:8px;
+}
+
 /* ===========================
    LOADING INDICATOR
 =========================== */

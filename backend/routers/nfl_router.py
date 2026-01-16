@@ -61,13 +61,13 @@ def get_player_usage(season: int, week: int):
             "club": "team",
             "team_abbr": "team",
             "rush_attempt": "carries",
-            "pass_attempt": "attempts",
+            "pass_attempt": "pass attempts",
         }
 
         week_df = week_df.rename(columns={k: v for k, v in rename_map.items() if k in week_df.columns})
 
         # Ensure required columns exist
-        for col in ["team", "attempts", "receptions", "targets", "carries"]:
+        for col in ["team", "attempts", "receptions", "targets", "carries","passing_yards", "rushing_yards", "receiving_yards", "fantasy_points", "fantasy_points_ppr", "passing_epa", "rushing_epa", "receiving_epa"]:
             if col not in week_df.columns:
                 week_df[col] = 0
 
@@ -83,14 +83,19 @@ def get_player_usage(season: int, week: int):
             "receptions": "sum",
             "targets": "sum",
             "carries": "sum",
-            "team": "first",
-            "position": "first",
-            "snap_pct": "mean",
             "passing_yards": "sum",
             "rushing_yards": "sum",
             "receiving_yards": "sum",
-            "fantasy_points_ppr": "sum",        
+            "fantasy_points": "sum",
+            "fantasy_points_ppr": "sum",
+            "team": "first",
+            "position": "first",
+            "snap_pct": "mean",
+            "passing_epa": "sum",
+            "rushing_epa": "sum",
+            "receiving_epa": "sum"
         }).reset_index()
+
 
         print("📈 USAGE SHAPE:", usage.shape)
 

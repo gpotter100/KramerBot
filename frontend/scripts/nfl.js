@@ -15,10 +15,10 @@ const teamColors = {
 };
 
 const positionIcons = {
-  QB: "🧠",
-  RB: "🏃",
-  WR: "🎯",
-  TE: "🧱"
+  QB: "🧢",       // helmet
+  RB: "🏈",       // football
+  WR: "👟",       // cleats
+  TE: "👕"        // jersey
 };
 
 const seasonInput = document.getElementById("season-input");
@@ -96,7 +96,9 @@ async function loadStats() {
       total_yards:
         (p.passing_yards ?? 0) +
         (p.rushing_yards ?? 0) +
-        (p.receiving_yards ?? 0)
+        (p.receiving_yards ?? 0),
+        efficiency: (player.total_yards ?? 0) / Math.max(player.touches ?? 1, 1),
+        fantasy_per_touch: (player.fantasy_points_ppr ?? 0) / Math.max(player.touches ?? 1, 1)
     }));
 
     populateCompareSelect(currentData);
@@ -168,6 +170,11 @@ function renderTable(data) {
         <td>${player.total_yards ?? 0}</td>
         <td>${player.touches ?? 0}</td>
         <td>${player.snap_pct ? player.snap_pct.toFixed(1) : 0}</td>
+        <td>${player.fantasy_points ?? 0}</td>
+        <td>${player.fantasy_points_ppr ?? 0}</td>
+        <td>${player.passing_epa?.toFixed(2) ?? 0}</td>
+        <td>${player.rushing_epa?.toFixed(2) ?? 0}</td>
+        <td>${player.receiving_epa?.toFixed(2) ?? 0}</td>
       </tr>
     `;
   }).join("");

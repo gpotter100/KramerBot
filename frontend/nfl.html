@@ -38,10 +38,14 @@
 
   <div>
     <label>Season:</label>
-    <input id="season-input" type="number" value="2024" />
-
+    <select id="season-input">
+      <option value="2023">2023</option> 
+      <option value="2024" selected>2024</option> 
+    </select>
     <label>Week:</label>
-    <input id="week-input" type="number" value="1" />
+    <select id="week-input"> 
+      ${[...Array(18)].map((_, i) => `<option value="${i+1}">${i+1}</option>`).join("")} 
+    </select>
 
     <label>Position:</label>
     <select id="position-filter">
@@ -77,6 +81,11 @@
         <th data-sort="total_yards">Total Yds</th>
         <th data-sort="touches">Touches</th>
         <th data-sort="snap_pct">Snap %</th>
+        <th data-sort="fantasy_points">FPTS</th>
+        <th data-sort="fantasy_points_ppr">PPR</th>
+        <th data-sort="passing_epa">Pass EPA</th>
+        <th data-sort="rushing_epa">Rush EPA</th>
+        <th data-sort="receiving_epa">Rec EPA</th>
       </tr>
     </thead>
     <tbody id="usage-body"></tbody>
@@ -87,6 +96,8 @@
       <h2>Touches & Snap %</h2>
       <canvas id="touches-chart" width="800" height="300"></canvas>
       <canvas id="snap-chart" width="800" height="300" style="margin-top:16px;"></canvas>
+      <h2>Fantasy Points (PPR)</h2>
+      <canvas id="fantasy-chart" width="800" height="300"></canvas>
     </div>
 
     <div>
