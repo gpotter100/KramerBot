@@ -58,9 +58,12 @@ def build_season_cache():
             seasons.append(year)
 
         # Modern seasons (2025+)
+        CBS_SUPPORTED_YEARS = [2025]  # CBS fallback supports these even without parquet
+
         for year in range(2025, 2035):
-            if parquet_exists(year):
+            if parquet_exists(year) or year in CBS_SUPPORTED_YEARS:
                 seasons.append(year)
+
 
         SEASON_CACHE["seasons"] = sorted(seasons)
         SEASON_CACHE["loaded"] = True
