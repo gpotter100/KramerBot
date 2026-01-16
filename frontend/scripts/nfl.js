@@ -15,12 +15,15 @@ const teamColors = {
 };
 
 const positionIcons = {
-  QB: "🧢",  // helmet
-  RB: "🏈",  // football
-  WR: "👟",  // cleats
-  TE: "👕"   // jersey
+  QB: "🧢",
+  RB: "🏈",
+  WR: "👟",
+  TE: "👕"
 };
 
+// ===============================
+// ELEMENTS
+// ===============================
 const seasonInput = document.getElementById("season-input");
 const weekInput = document.getElementById("week-input");
 const positionFilter = document.getElementById("position-filter");
@@ -47,44 +50,48 @@ let snapChart = null;
 let usageDonutChart = null;
 
 // ===============================
-// Populate dropdowns dynamically
+// INITIALIZE DROPDOWNS
 // ===============================
-const currentYear = new Date().getFullYear();
-const seasonOptions = [currentYear - 1, currentYear];
-seasonInput.innerHTML = seasonOptions.map(y =>
-  `<option value="${y}" ${y === currentYear ? "selected" : ""}>${y}</option>`
-).join("");
+async function initDropdowns() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
+    const seasons = await res.json();
 
-weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
-  `<option value="${i + 1}">${i + 1}</option>`
-).join("");
+    seasonInput.innerHTML = seasons
+      .sort((a, b) => b - a)
+      .map(y => `<option value="${y}">${y}</option>`)
+      .join("");
+
+    weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
+      `<option value="${i + 1}">${i + 1}</option>`
+    ).join("");
+
+  } catch (err) {
+    console.error("Failed to load seasons:", err);
+    seasonInput.innerHTML = `<option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option>`;
+  }
+}
+
+initDropdowns();
 
 // ===============================
-// Event bindings
+// EVENT BINDINGS
 // ===============================
 loadBtn.addEventListener("click", loadStats);
 positionFilter.addEventListener("change", applyFilters);
 
 document.querySelectorAll("#usage-table th").forEach(th => {
-  th.addEventListener("click", () => {
-    const column = th.dataset.sort;
-    sortBy(column);
-  });
+  th.addEventListener("click", () => sortBy(th.dataset.sort));
 });
 
 compareSelect.addEventListener("change", renderCompare);
 
 // ===============================
-// Load data
+// LOAD DATA
 // ===============================
 async function loadStats() {
   const season = Number(seasonInput.value);
   const week = Number(weekInput.value);
-
-  if (season >= 2025) {
-    alert("2025+ weekly data is not yet published by nflverse.");
-    return;
-  }
 
   usageTable.classList.add("hidden");
   chartsContainer.classList.add("hidden");
@@ -109,24 +116,26 @@ async function loadStats() {
       return;
     }
 
-    currentData = data.map(p => ({
-      ...p,
-      touches: (p.attempts ?? 0) + (p.receptions ?? 0),
-      total_yards:
+    currentData = data.map(p => {
+      const touches = (p.attempts ?? 0) + (p.receptions ?? 0);
+      const totalYards =
         (p.passing_yards ?? 0) +
         (p.rushing_yards ?? 0) +
-        (p.receiving_yards ?? 0),
-      efficiency:
-        ((p.passing_yards ?? 0) +
-         (p.rushing_yards ?? 0) +
-         (p.receiving_yards ?? 0)) / Math.max((p.attempts ?? 0) + (p.receptions ?? 0), 1),
-      fantasy_per_touch:
-        (p.fantasy_points_ppr ?? 0) / Math.max((p.attempts ?? 0) + (p.receptions ?? 0), 1)
-    }));
+        (p.receiving_yards ?? 0);
+
+      return {
+        ...p,
+        touches,
+        total_yards: totalYards,
+        efficiency: totalYards / Math.max(touches, 1),
+        fantasy_per_touch: (p.fantasy_points_ppr ?? 0) / Math.max(touches, 1)
+      };
+    });
 
     populateCompareSelect(currentData);
     applyFilters();
     renderTopPerformers(currentData);
+
   } catch (err) {
     console.error("Error loading NFL data:", err);
     usageBody.innerHTML = `<tr><td colspan="12">Error loading data.</td></tr>`;
@@ -137,7 +146,7 @@ async function loadStats() {
 }
 
 // ===============================
-// Filtering
+// FILTERING
 // ===============================
 function applyFilters() {
   let filtered = [...currentData];
@@ -160,7 +169,7 @@ function applyFilters() {
 }
 
 // ===============================
-// Sorting
+// SORTING
 // ===============================
 function sortBy(column) {
   if (currentSort.column === column) {
@@ -169,7 +178,6 @@ function sortBy(column) {
     currentSort.column = column;
     currentSort.direction = 1;
   }
-
   applyFilters();
 }
 
