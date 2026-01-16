@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from cbs_fallback import load_cbs_weekly_data
 import pandas as pd
 import urllib.error
 import urllib.request
@@ -124,9 +125,9 @@ def get_player_usage(season: int, week: int):
 
         df = load_weekly_data(season)
 
-        if df.empty:
-            print("⚠️ No data returned from loader")
-            return []
+        if df.empty and season >= 2025:
+            print("🔄 Falling back to CBS public league data...")
+            df = load_cbs_weekly_data(season, week)
 
         print("📊 FULL DF SHAPE:", df.shape)
 
