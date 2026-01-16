@@ -1,36 +1,51 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
+import urllib.error
 
 router = APIRouter()
 
 # ================================
-# CUSTOM WEEKLY LOADER (2025+)
+# CUSTOM WEEKLY LOADER
 # ================================
 def load_weekly_data(season: int) -> pd.DataFrame:
     """
     Loads weekly NFL player data.
     - Uses nfl_data_py for seasons <= 2024
-    - Uses new nflverse parquet endpoint for 2025+
+    - Uses nflverse parquet for 2025+
+    - Gracefully returns empty DF if data does not exist
     """
 
-    # Legacy seasons use nfl_data_py
+    # ----------------------------
+    # Legacy seasons (2002–2024)
+    # ----------------------------
     if season <= 2024:
         try:
             from nfl_data_py import import_weekly_data
             print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
             return import_weekly_data([season])
         except Exception as e:
-            raise RuntimeError(f"Legacy loader failed for {season}: {e}")
+            print(f"⚠️ Legacy loader failed for {season}: {e}")
+            return pd.DataFrame()
 
-    # New seasons use nflverse parquet
-    url = f"https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_{season}.parquet"
-    print(f"📥 Loading modern weekly data from {url}")
+    # ----------------------------
+    # Modern seasons (2025+)
+    # ----------------------------
+    url = (
+        "https://github.com/nflverse/nflverse-data/releases/download/"
+        f"stats_player/stats_player_{season}.parquet"
+    )
+    print(f"📥 Attempting modern weekly data from {url}")
 
     try:
-        df = pd.read_parquet(url)
-        return df
+        return pd.read_parquet(url)
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            print(f"⚠️ No nflverse data published yet for {season}")
+            return pd.DataFrame()
+        raise
     except Exception as e:
-        raise RuntimeError(f"Modern loader failed for {season}: {e}")
+        print(f"⚠️ Modern loader error for {season}: {e}")
+        return pd.DataFrame()
 
 
 # ================================
@@ -41,11 +56,13 @@ def get_player_usage(season: int, week: int):
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}")
 
-        # Load data using patched loader
         df = load_weekly_data(season)
+
+        if df.empty:
+            return []
+
         print("📊 FULL DF SHAPE:", df.shape)
 
-        # Filter to the requested week
         week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
@@ -55,70 +72,99 @@ def get_player_usage(season: int, week: int):
         # ================================
         # NORMALIZE COLUMN NAMES
         # ================================
-        # Some parquet files use different casing or naming
         rename_map = {
             "recent_team": "team",
             "club": "team",
             "team_abbr": "team",
             "rush_attempt": "carries",
-            "pass_attempt": "pass attempts",
+            "pass_attempt": "attempts",
         }
 
-        week_df = week_df.rename(columns={k: v for k, v in rename_map.items() if k in week_df.columns})
+        week_df = week_df.rename(
+            columns={k: v for k, v in rename_map.items() if k in week_df.columns}
+        )
 
-        # Ensure required columns exist
-        for col in ["team", "attempts", "receptions", "targets", "carries","passing_yards", "rushing_yards", "receiving_yards", "fantasy_points", "fantasy_points_ppr", "passing_epa", "rushing_epa", "receiving_epa"]:
+        required_cols = [
+            "team", "attempts", "receptions", "targets", "carries",
+            "passing_yards", "rushing_yards", "receiving_yards",
+            "fantasy_points", "fantasy_points_ppr",
+            "passing_epa", "rushing_epa", "receiving_epa"
+        ]
+
+        for col in required_cols:
             if col not in week_df.columns:
                 week_df[col] = 0
 
-        # Snap % is not included in nflverse 2025+ weekly data
         if "snap_pct" not in week_df.columns:
             week_df["snap_pct"] = 0.0
 
         # ================================
         # AGGREGATE PLAYER USAGE
         # ================================
-        usage = week_df.groupby("player_name").agg({
-            "attempts": "sum",
-            "receptions": "sum",
-            "targets": "sum",
-            "carries": "sum",
-            "passing_yards": "sum",
-            "rushing_yards": "sum",
-            "receiving_yards": "sum",
-            "fantasy_points": "sum",
-            "fantasy_points_ppr": "sum",
-            "team": "first",
-            "position": "first",
-            "snap_pct": "mean",
-            "passing_epa": "sum",
-            "rushing_epa": "sum",
-            "receiving_epa": "sum"
-        }).reset_index()
+        usage = (
+            week_df
+            .groupby("player_name", as_index=False)
+            .agg({
+                "attempts": "sum",
+                "receptions": "sum",
+                "targets": "sum",
+                "carries": "sum",
+                "passing_yards": "sum",
+                "rushing_yards": "sum",
+                "receiving_yards": "sum",
+                "fantasy_points": "sum",
+                "fantasy_points_ppr": "sum",
+                "team": "first",
+                "position": "first",
+                "snap_pct": "mean",
+                "passing_epa": "sum",
+                "rushing_epa": "sum",
+                "receiving_epa": "sum"
+            })
+        )
 
-
-        print("📈 USAGE SHAPE:", usage.shape)
-
-        # Sort by touches (attempts + receptions)
         usage["touches"] = usage["attempts"] + usage["receptions"]
         usage = usage.sort_values(by="touches", ascending=False)
 
-        # Convert to JSON‑friendly dict
-        return usage.to_dict(orient="records")
+        print("📈 USAGE SHAPE:", usage.shape)
+        return usage.fillna(0).to_dict(orient="records")
 
     except Exception as e:
         print("❌ ERROR IN NFL ROUTE:", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Failed to load NFL data")
+
 
 # ================================
-# NFL SEASONS ROUTE
+# NFL SEASONS ROUTE (DYNAMIC)
 # ================================
-
-
 @router.get("/nfl/seasons")
 def get_available_seasons():
     """
-    Returns all seasons that the backend can serve.
-    Update this list whenever you add new data sources.
+    Returns every season with available data.
+    Legacy: nfl_data_py (2002–2024)
+    Modern: nflverse parquet (2025+ when published)
     """
-    return [2021, 2022, 2023, 2024, 2025]
+
+    seasons = set()
+
+    # Legacy seasons
+    try:
+        import nfl_data_py as nfl
+        legacy = nfl.import_seasonal_data()
+        seasons.update(legacy["season"].unique().tolist())
+    except Exception as e:
+        print(f"⚠️ Failed loading legacy seasons: {e}")
+
+    # Probe modern seasons
+    for year in range(2025, 2035):
+        url = (
+            "https://github.com/nflverse/nflverse-data/releases/download/"
+            f"stats_player/stats_player_{year}.parquet"
+        )
+        try:
+            pd.read_parquet(url, columns=["season"])
+            seasons.add(year)
+        except Exception:
+            continue
+
+    return sorted(seasons)
