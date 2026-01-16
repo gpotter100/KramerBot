@@ -2,20 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>NFL Player Usage</title>
+  <title>KramerBot – NFL Player Usage</title>
+
+  <!-- Main NFL styles (served from ../frontend/styles via /styles mount) -->
   <link rel="stylesheet" href="/styles/nfl.css" />
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
+  <!-- Minimal inline base styling (can be moved into nfl.css later) -->
   <style>
-    body { background:#0d1117; color:#d9eaff; font-family:Arial; margin:0; padding:20px; }
+    body { background:#0d1117; color:#d9eaff; font-family:Arial, sans-serif; margin:0; padding:20px; }
     h1 { margin-top:0; }
     table { width:100%; border-collapse:collapse; margin-top:20px; }
     th, td { padding:8px 10px; border-bottom:1px solid #333; text-align:left; }
-    th { cursor:pointer; color:#9ecbff; }
+    th { cursor:pointer; color:#9ecbff; font-size:12px; }
     tr:hover { background:#1a2332; }
-    .team-accent { padding:3px 6px; border-radius:4px; color:white; font-weight:bold; display:inline-flex; align-items:center; gap:6px; }
-    .team-logo { width:18px; height:18px; border-radius:50%; object-fit:cover; background:#222; }
     #loading-indicator { margin-top:20px; }
     .hidden { display:none; }
     #charts-container { margin-top:40px; display:grid; grid-template-columns:1.5fr 1fr; gap:24px; align-items:flex-start; }
@@ -24,28 +26,28 @@
     #top-performers h2 { margin-top:0; font-size:16px; }
     .top-list { list-style:none; padding:0; margin:0; }
     .top-list li { margin-bottom:6px; font-size:14px; }
-    .pill { display:inline-block; padding:2px 6px; border-radius:999px; font-size:11px; background:#1f2937; margin-left:6px; }
     #compare-panel { margin-top:24px; background:#111827; padding:12px 16px; border-radius:8px; }
     #compare-panel h2 { margin-top:0; font-size:16px; }
     #compare-select { width:100%; max-width:400px; }
     .compare-metrics { margin-top:12px; font-size:14px; }
+    label { margin-right:6px; }
+    select, button { margin-right:10px; }
   </style>
 </head>
 
 <body>
-
   <h1>NFL Player Usage</h1>
 
   <div>
-    <label>Season:</label>
+    <label for="season-input">Season:</label>
     <select id="season-input">
-      <option value="2023">2023</option> 
-      <option value="2024" selected>2024</option> 
+      <option value="2024" selected>2024</option>
     </select>
-    <label>Week:</label>
+
+    <label for="week-input">Week:</label>
     <select id="week-input"></select>
 
-    <label>Position:</label>
+    <label for="position-filter">Position:</label>
     <select id="position-filter">
       <option value="ALL">All</option>
       <option value="QB">QB</option>
@@ -67,23 +69,18 @@
   <table id="usage-table" class="hidden">
     <thead>
       <tr>
+        <th>Pos</th>
         <th data-sort="player_name">Player</th>
         <th data-sort="team">Team</th>
-        <th data-sort="position">Pos</th>
         <th data-sort="attempts">Att</th>
         <th data-sort="receptions">Rec</th>
         <th data-sort="targets">Tgt</th>
-        <th data-sort="passing_yards">Pass Yds</th>
-        <th data-sort="rushing_yards">Rush Yds</th>
-        <th data-sort="receiving_yards">Rec Yds</th>
+        <th data-sort="carries">Carries</th>
         <th data-sort="total_yards">Total Yds</th>
-        <th data-sort="touches">Touches</th>
-        <th data-sort="snap_pct">Snap %</th>
-        <th data-sort="fantasy_points">FPTS</th>
         <th data-sort="fantasy_points_ppr">PPR</th>
-        <th data-sort="passing_epa">Pass EPA</th>
-        <th data-sort="rushing_epa">Rush EPA</th>
-        <th data-sort="receiving_epa">Rec EPA</th>
+        <th data-sort="touches">Touches</th>
+        <th data-sort="efficiency">Eff</th>
+        <th data-sort="fantasy_per_touch">PPR / Touch</th>
       </tr>
     </thead>
     <tbody id="usage-body"></tbody>
@@ -94,8 +91,6 @@
       <h2>Touches & Snap %</h2>
       <canvas id="touches-chart" width="800" height="300"></canvas>
       <canvas id="snap-chart" width="800" height="300" style="margin-top:16px;"></canvas>
-      <h2>Fantasy Points (PPR)</h2>
-      <canvas id="fantasy-chart" width="800" height="300"></canvas>
     </div>
 
     <div>
@@ -106,10 +101,12 @@
 
   <div id="compare-panel" class="hidden">
     <h2>Compare Players</h2>
-    <select id="compare-select" multiple size="6"></select>
+    <select id="compare-select"></select>
     <div class="compare-metrics" id="compare-metrics"></div>
   </div>
 
+  <!-- ES modules: config + nfl.js (adjust path if your scripts folder differs) -->
+  <script type="module" src="scripts/config.js"></script>
   <script type="module" src="scripts/nfl.js"></script>
 </body>
 </html>

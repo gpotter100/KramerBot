@@ -68,7 +68,7 @@ async function initDropdowns() {
 
   } catch (err) {
     console.error("Failed to load seasons:", err);
-    seasonInput.innerHTML = `<option value="2023">2023</option><option value="2024">2024</option><option value="2025">2025</option>`;
+    seasonInput.innerHTML = `<option value="2024">2024</option>`;
   }
 }
 
@@ -181,3 +181,125 @@ function sortBy(column) {
   applyFilters();
 }
 
+// ===============================
+// TABLE RENDERING
+// ===============================
+function renderTable(data) {
+  usageBody.innerHTML = data
+    .map(p => `
+      <tr>
+        <td>${positionIcons[p.position] || ""}</td>
+        <td>${p.player_name}</td>
+        <td>${p.team}</td>
+        <td>${p.attempts}</td>
+        <td>${p.receptions}</td>
+        <td>${p.targets}</td>
+        <td>${p.carries}</td>
+        <td>${p.total_yards}</td>
+        <td>${p.fantasy_points_ppr}</td>
+        <td>${p.touches}</td>
+        <td>${p.efficiency.toFixed(2)}</td>
+        <td>${p.fantasy_per_touch.toFixed(2)}</td>
+      </tr>
+    `)
+    .join("");
+
+  usageTable.classList.remove("hidden");
+}
+
+// ===============================
+// TOP PERFORMERS
+// ===============================
+function renderTopPerformers(data) {
+  const top = [...data]
+    .sort((a, b) => b.fantasy_points_ppr - a.fantasy_points_ppr)
+    .slice(0, 10);
+
+  topList.innerHTML = top
+    .map(p => `
+      <li>
+        ${positionIcons[p.position] || ""} 
+        <strong>${p.player_name}</strong> — ${p.fantasy_points_ppr.toFixed(1)} pts
+      </li>
+    `)
+    .join("");
+
+  topPanel.classList.remove("hidden");
+}
+
+// ===============================
+// COMPARE PANEL
+// ===============================
+function populateCompareSelect(data) {
+  compareSelect.innerHTML = data
+    .map(p => `<option value="${p.player_name}">${p.player_name}</option>`)
+    .join("");
+
+  comparePanel.classList.remove("hidden");
+}
+
+function renderCompare() {
+  const name = compareSelect.value;
+  const player = currentData.find(p => p.player_name === name);
+
+  if (!player) return;
+
+  compareMetrics.innerHTML = `
+    <p><strong>${player.player_name}</strong></p>
+    <p>Touches: ${player.touches}</p>
+    <p>Total Yards: ${player.total_yards}</p>
+    <p>Fantasy PPR: ${player.fantasy_points_ppr}</p>
+    <p>Efficiency: ${player.efficiency.toFixed(2)}</p>
+  `;
+}
+
+// ===============================
+// CHARTS
+// ===============================
+function renderCharts(data) {
+  const labels = data.map(p => p.player_name);
+  const touches = data.map(p => p.touches);
+  const snapPct = data.map(p => p.snap_pct || 0);
+
+  if (touchesChart) touchesChart.destroy();
+  if (snapChart) snapChart.destroy();
+  if (usageDonutChart) usageDonutChart.destroy();
+
+  touchesChart = new Chart(touchesCanvas, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Touches",
+        data: touches,
+        backgroundColor: "#4e79a7"
+      }]
+    }
+  });
+
+  snapChart = new Chart(snapCanvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Snap %",
+        data: snapPct,
+        borderColor: "#e15759"
+      }]
+    }
+  });
+
+  usageDonutChart = new Chart(usageDonutCanvas, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{
+        label: "Touches",
+        data: touches,
+        backgroundColor: labels.map(() => "#59a14f")
+      }]
+    }
+  });
+
+  chartsContainer.classList.remove("hidden");
+}
