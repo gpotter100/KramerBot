@@ -32,7 +32,6 @@ def _get_game_summary(event_id: str) -> dict:
     print(json.dumps(list(data.keys()), indent=2))
 
     # TEMP DEBUG: print the first part of the JSON so we can see the structure
-    import json
     print("\n\n===== ESPN SUMMARY DEBUG =====")
     print(json.dumps(list(data.keys()), indent=2))  # show top-level keys
     print("==============================\n\n")
