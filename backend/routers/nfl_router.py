@@ -107,6 +107,19 @@ def load_nflverse_weekly(season: int) -> pd.DataFrame:
     print(f"📡 Downloading nflverse weekly parquet: {url}")
     return pd.read_parquet(url)
 
+def load_rosters(season: int) -> pd.DataFrame:
+    """
+    Loads official nflverse roster parquet for a season.
+    Replaces the old nfl_data_py import_rosters() function.
+    """
+    url = (
+        "https://github.com/nflverse/nflverse-data/releases/download/"
+        f"rosters/roster_{season}.parquet"
+    )
+
+    print(f"📡 Loading nflverse roster parquet for {season}")
+    return pd.read_parquet(url)
+
 
 # ============================================================
 # WEEKLY LOADER (Legacy 2002–2024, nflverse-first 2025+)
