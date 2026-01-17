@@ -20,7 +20,6 @@ def aggregate_player_usage(week_df: pd.DataFrame) -> pd.DataFrame:
             "passing_tds": "sum",
             "interceptions": "sum",
             "passing_air_yards": "sum",
-            "passing_yac": "sum",
             "passing_first_downs": "sum",
             "passing_epa": "sum",
 
@@ -39,7 +38,6 @@ def aggregate_player_usage(week_df: pd.DataFrame) -> pd.DataFrame:
             "receiving_yards": "sum",
             "receiving_tds": "sum",
             "receiving_air_yards": "sum",
-            "receiving_yac": "sum",
             "receiving_first_downs": "sum",
             "receiving_epa": "sum",
 

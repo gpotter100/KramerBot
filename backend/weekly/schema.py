@@ -16,7 +16,6 @@ WEEKLY_SCHEMA = [
     "sacks",
     "sack_yards",
     "passing_air_yards",
-    "passing_yac",
     "passing_first_downs",
     "passing_epa",
 
@@ -35,7 +34,6 @@ WEEKLY_SCHEMA = [
     "receiving_yards",
     "receiving_tds",
     "receiving_air_yards",
-    "receiving_yac",
     "receiving_first_downs",
     "receiving_epa",
 
