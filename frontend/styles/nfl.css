@@ -1,73 +1,50 @@
 /* ==========================================================
    NFL PAGE — MOBILE‑FIRST, CINEMATIC UI
-   Matches KramerBot sidebar + mobile drawer system
+   Uses KramerBot shared layout.css for sidebar + mobile toggle.
+   nfl.css only styles NFL-specific content + small layout tweaks.
 ========================================================== */
 
 /* ----------------------------------------------------------
-   BASE LAYOUT
+   MAIN WRAPPER TWEAKS
 ---------------------------------------------------------- */
 
-.page-wrapper {
-  background: #0d1117;
-  color: #d9eaff;
-  font-family: Arial, sans-serif;
-  padding: 16px;
-  padding-left: 0; /* sidebar handles spacing on desktop */
+#main {
+  /* layout.css already sets padding/background; keep NFL page predictable */
+  overflow-y: auto;
 }
 
-.page-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #66ccff;
-  margin: 0;
+.content {
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* ----------------------------------------------------------
-   MOBILE HAMBURGER
+   MOBILE HAMBURGER PLACEMENT
+   Match homepage: top-left
 ---------------------------------------------------------- */
 
 #hamburger-menu {
-  display: flex;
-  justify-content: flex-start;
-  padding: 12px 0;
+  display: block; /* layout.css handles desktop hide */
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  right: auto;
+  z-index: 1100;
 }
 
 #hamburger-toggle {
   background: none;
   border: none;
+  font-size: 30px;
   color: #66ccff;
-  font-size: 28px;
   cursor: pointer;
 }
 
-/* ----------------------------------------------------------
-   MOBILE NAV DRAWER
----------------------------------------------------------- */
-
-.mobile-nav {
-  background: #111827;
-  border: 1px solid #1f2d45;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 16px;
-}
-
-.mobile-nav a {
-  display: block;
-  padding: 12px 0;
-  color: #d9eaff;
-  text-decoration: none;
-  font-size: 16px;
-}
-
-.mobile-nav a.active {
-  color: #66ccff;
-  font-weight: 700;
-}
-
-/* Prevent scrolling when drawer is open */
-body.nav-open {
-  overflow: hidden;
+/* Ensure content doesn’t sit under the fixed hamburger */
+@media (max-width: 768px) {
+  #main {
+    padding-top: 56px; /* gives breathing room under hamburger */
+  }
 }
 
 /* ----------------------------------------------------------
@@ -138,13 +115,33 @@ body.nav-open {
   padding: 20px;
   font-size: 18px;
   color: #66ccff;
-  animation: pulse 1.4s infinite ease-in-out;
+  animation: nfl-pulse 1.4s infinite ease-in-out;
 }
 
-@keyframes pulse {
+@keyframes nfl-pulse {
   0% { opacity: 0.4; }
   50% { opacity: 1; }
   100% { opacity: 0.4; }
+}
+
+/* ----------------------------------------------------------
+   TOP PERFORMERS
+---------------------------------------------------------- */
+
+#top-performers h2 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  color: #66ccff;
+}
+
+.top-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.top-list li {
+  font-size: 16px;
+  margin-bottom: 6px;
 }
 
 /* ----------------------------------------------------------
@@ -155,6 +152,7 @@ body.nav-open {
   overflow-x: auto;
   border-radius: 12px;
   background: #0f1626;
+  border: 1px solid #1f2d45;
 }
 
 .data-table {
@@ -187,7 +185,7 @@ body.nav-open {
   background: #16263d;
 }
 
-/* Sticky columns */
+/* Sticky columns (only if nfl.js applies these classes) */
 .data-table th.sticky-col,
 .data-table td.sticky-col {
   position: sticky;
@@ -205,21 +203,6 @@ body.nav-open {
 }
 
 /* ----------------------------------------------------------
-   TOP PERFORMERS
----------------------------------------------------------- */
-
-#top-performers h2 {
-  margin: 0 0 12px 0;
-  font-size: 20px;
-  color: #66ccff;
-}
-
-.top-list li {
-  font-size: 16px;
-  margin-bottom: 6px;
-}
-
-/* ----------------------------------------------------------
    CHART GRID — MOBILE FIRST
 ---------------------------------------------------------- */
 
@@ -230,7 +213,7 @@ body.nav-open {
 }
 
 .chart-card canvas {
-  background: #111;
+  background: #0b0f16;
   border-radius: 10px;
   padding: 10px;
 }
@@ -265,17 +248,8 @@ body.nav-open {
 ---------------------------------------------------------- */
 
 @media (min-width: 768px) {
-  .page-wrapper {
-    padding: 32px;
-    padding-left: 260px; /* space for sidebar */
-  }
-
-  #hamburger-menu {
-    display: none;
-  }
-
-  .mobile-nav {
-    display: none;
+  .content {
+    max-width: 1200px;
   }
 
   .filter-bar {
@@ -287,6 +261,7 @@ body.nav-open {
 
   .filter-group {
     width: auto;
+    min-width: 160px;
   }
 
   .charts-grid {

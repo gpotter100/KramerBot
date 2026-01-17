@@ -6,177 +6,159 @@
 
   <title>KramerBot – NFL Player Usage</title>
 
-  <!-- Shared global responsive styles -->
-  <link rel="stylesheet" href="/styles/main.css" />
+  <!-- App shell + mobile hamburger behavior -->
+  <link rel="stylesheet" href="/styles/layout.css" />
 
-  <!-- NFL‑specific overrides -->
+  <!-- Sidebar visuals + mobile sidebar open/close behavior -->
+  <link rel="stylesheet" href="/styles/sidebar.css" />
+
+  <!-- NFL page-specific UI -->
   <link rel="stylesheet" href="/styles/nfl.css" />
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 
-<body class="page-wrapper">
+<body>
+  <div id="app">
 
-  <!-- ===========================
-       MOBILE HAMBURGER
-  ============================ -->
-  <div id="hamburger-menu">
-    <button id="hamburger-toggle">&#9776;</button>
-  </div>
-
-  <!-- ===========================
-       MOBILE NAV DRAWER
-  ============================ -->
-  <nav id="mobile-nav" class="mobile-nav hidden">
-    <a href="/">Home</a>
-    <a href="/upload.html">Upload CSV</a>
-    <a href="/standings.html">Standings</a>
-    <a href="/stats.html">Basic Stats</a>
-    <a href="/visuals.html">Visuals</a>
-    <a href="/nfl.html" class="active">NFL Statistics</a>
-    <a href="/about.html">About</a>
-  </nav>
-
-  <!-- ===========================
-       LEFT SIDEBAR (DESKTOP)
-  ============================ -->
-  <aside id="sidebar">
-    <div class="sidebar-logo">
-      <span class="logo-main">KramerBot</span>
-      <span class="logo-sub">“I got stats… probably.”</span>
-    </div>
-
-    <nav class="sidebar-nav">
-      <button class="nav-btn" onclick="window.location.href='index.html'">Home</button>
-      <button class="nav-btn" onclick="window.location.href='upload.html'">Upload CSV</button>
-      <button class="nav-btn" onclick="window.location.href='standings.html'">Standings</button>
-      <button class="nav-btn" onclick="window.location.href='stats.html'">Basic Stats</button>
-      <button class="nav-btn" onclick="window.location.href='visuals.html'">Visuals</button>
-
-      <!-- ⭐ Active NFL page ⭐ -->
-      <button class="nav-btn active" onclick="window.location.href='nfl.html'">
-        NFL Statistics
-      </button>
-
-      <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
-    </nav>
-
-    <div class="sidebar-icon-container">
-      <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
-    </div>
-
-    <div class="sidebar-footer">
-      <span>KramerBot © 2026</span>
-      <span class="disclaimer">No guarantees. At all.</span>
-    </div>
-  </aside>
-
-  <!-- ===========================
-       MAIN CONTENT WRAPPER
-  ============================ -->
-  <main class="content">
-
-    <!-- ===========================
-         FILTER BAR
-    ============================ -->
-    <section class="filter-bar card">
-      <div class="filter-group">
-        <label for="season-input">Season</label>
-        <select id="season-input"></select>
+    <!-- LEFT SIDEBAR (desktop + mobile drawer) -->
+    <aside id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-main">KramerBot</span>
+        <span class="logo-sub">“I got stats… probably.”</span>
       </div>
 
-      <div class="filter-group">
-        <label for="week-input">Week</label>
-        <select id="week-input"></select>
+      <nav class="sidebar-nav">
+        <button class="nav-btn" onclick="window.location.href='index.html'">Home</button>
+        <button class="nav-btn" onclick="window.location.href='upload.html'">Upload CSV</button>
+        <button class="nav-btn" onclick="window.location.href='standings.html'">Standings</button>
+        <button class="nav-btn" onclick="window.location.href='stats.html'">Basic Stats</button>
+        <button class="nav-btn" onclick="window.location.href='visuals.html'">Visuals</button>
+
+        <button class="nav-btn active" onclick="window.location.href='nfl.html'">
+          NFL Statistics
+        </button>
+
+        <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
+      </nav>
+
+      <div class="sidebar-icon-container">
+        <img
+          src="assets/KramerBot_Icon.png"
+          id="sidebar-kramer-icon"
+          alt="KramerBot Icon"
+        />
       </div>
 
-      <div class="filter-group">
-        <label for="position-filter">Position</label>
-        <select id="position-filter">
-          <option value="ALL">All</option>
-          <option value="QB">QB</option>
-          <option value="RB">RB</option>
-          <option value="WR">WR</option>
-          <option value="TE">TE</option>
-          <option value="WR/TE">WR/TE</option>
-        </select>
+      <div class="sidebar-footer">
+        <span>KramerBot © 2026</span>
+        <span class="disclaimer">No guarantees. At all.</span>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div id="main">
+
+      <!-- MOBILE HAMBURGER (handled by layout.css; positioned top-left by nfl.css) -->
+      <div id="hamburger-menu">
+        <button id="hamburger-toggle" aria-label="Open menu">&#9776;</button>
       </div>
 
-      <button id="load-btn" class="primary-btn">Load Stats</button>
-    </section>
+      <main class="content">
 
-    <div id="loading-indicator" class="loading hidden">Loading…</div>
+        <!-- FILTER BAR -->
+        <section class="filter-bar card">
+          <div class="filter-group">
+            <label for="season-input">Season</label>
+            <select id="season-input"></select>
+          </div>
 
-    <!-- ===========================
-         TOP PERFORMERS
-    ============================ -->
-    <section id="top-performers" class="card hidden">
-      <h2>Top Performers</h2>
-      <ul id="top-list" class="top-list"></ul>
-    </section>
+          <div class="filter-group">
+            <label for="week-input">Week</label>
+            <select id="week-input"></select>
+          </div>
 
-    <!-- ===========================
-         USAGE TABLE
-    ============================ -->
-    <section id="table-wrapper" class="table-wrapper hidden">
-      <table id="usage-table" class="data-table">
-        <thead>
-          <tr>
-            <th data-sort="position">Pos</th>
-            <th data-sort="player_name">Player</th>
-            <th data-sort="team">Team</th>
-            <th data-sort="attempts">Att</th>
-            <th data-sort="receptions">Rec</th>
-            <th data-sort="targets">Tgt</th>
-            <th data-sort="carries">Carries</th>
-            <th data-sort="total_yards">Total Yds</th>
-            <th data-sort="touchdowns">TDs</th>
-            <th data-sort="fantasy_points">Std</th>
-            <th data-sort="fantasy_points_half">Half PPR</th>
-            <th data-sort="fantasy_points_ppr">PPR</th>
-            <th data-sort="touches">Touches</th>
-            <th data-sort="efficiency">Eff</th>
-            <th data-sort="fantasy_per_touch">PPR / Touch</th>
-          </tr>
-        </thead>
-        <tbody id="usage-body"></tbody>
-      </table>
-    </section>
+          <div class="filter-group">
+            <label for="position-filter">Position</label>
+            <select id="position-filter">
+              <option value="ALL">All</option>
+              <option value="QB">QB</option>
+              <option value="RB">RB</option>
+              <option value="WR">WR</option>
+              <option value="TE">TE</option>
+              <option value="WR/TE">WR/TE</option>
+            </select>
+          </div>
 
-    <!-- ===========================
-         CHARTS
-    ============================ -->
-    <section id="charts-container" class="charts-grid hidden">
-      <div class="chart-card card">
-        <h2>Touches & Snap %</h2>
-        <canvas id="touches-chart"></canvas>
-        <canvas id="snap-chart" style="margin-top:16px;"></canvas>
-      </div>
+          <button id="load-btn" class="primary-btn">Load Stats</button>
+        </section>
 
-      <div class="chart-card card">
-        <h2>Usage Breakdown</h2>
-        <canvas id="usage-donut"></canvas>
-      </div>
-    </section>
+        <div id="loading-indicator" class="loading hidden">Loading…</div>
 
-    <!-- ===========================
-         PLAYER COMPARISON
-    ============================ -->
-    <section id="compare-panel" class="card hidden">
-      <h2>Compare Players</h2>
-      <select id="compare-select"></select>
-      <div id="compare-metrics" class="compare-metrics"></div>
-    </section>
+        <!-- TOP PERFORMERS -->
+        <section id="top-performers" class="card hidden">
+          <h2>Top Performers</h2>
+          <ul id="top-list" class="top-list"></ul>
+        </section>
 
-  </main>
+        <!-- USAGE TABLE -->
+        <section id="table-wrapper" class="table-wrapper hidden">
+          <table id="usage-table" class="data-table">
+            <thead>
+              <tr>
+                <th data-sort="position">Pos</th>
+                <th data-sort="player_name">Player</th>
+                <th data-sort="team">Team</th>
+                <th data-sort="attempts">Att</th>
+                <th data-sort="receptions">Rec</th>
+                <th data-sort="targets">Tgt</th>
+                <th data-sort="carries">Carries</th>
+                <th data-sort="total_yards">Total Yds</th>
+                <th data-sort="touchdowns">TDs</th>
+                <th data-sort="fantasy_points">Std</th>
+                <th data-sort="fantasy_points_half">Half PPR</th>
+                <th data-sort="fantasy_points_ppr">PPR</th>
+                <th data-sort="touches">Touches</th>
+                <th data-sort="efficiency">Eff</th>
+                <th data-sort="fantasy_per_touch">PPR / Touch</th>
+              </tr>
+            </thead>
+            <tbody id="usage-body"></tbody>
+          </table>
+        </section>
 
-  <!-- ===========================
-       SCRIPTS
-  ============================ -->
+        <!-- CHARTS -->
+        <section id="charts-container" class="charts-grid hidden">
+          <div class="chart-card card">
+            <h2>Touches &amp; Snap %</h2>
+            <canvas id="touches-chart"></canvas>
+            <canvas id="snap-chart" style="margin-top:16px;"></canvas>
+          </div>
+
+          <div class="chart-card card">
+            <h2>Usage Breakdown</h2>
+            <canvas id="usage-donut"></canvas>
+          </div>
+        </section>
+
+        <!-- PLAYER COMPARISON -->
+        <section id="compare-panel" class="card hidden">
+          <h2>Compare Players</h2>
+          <select id="compare-select"></select>
+          <div id="compare-metrics" class="compare-metrics"></div>
+        </section>
+
+      </main>
+    </div> <!-- end #main -->
+
+  </div> <!-- end #app -->
+
+  <!-- SCRIPTS -->
   <script type="module" src="scripts/config.js"></script>
   <script type="module" src="scripts/nfl.js"></script>
-  <script type="module" src="scripts/mobile-nav.js"></script>
 
+  <!-- Uses #hamburger-toggle to toggle #sidebar.open (and any body classes you use) -->
+  <script type="module" src="scripts/mobile-nav.js"></script>
 </body>
 </html>
