@@ -7,6 +7,8 @@ import pkg_resources
 
 from services.presenters.usage_presenter import present_usage
 from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
+from services.loaders.id_harmonizer import harmonize_ids
+
 
 print(">>> nfl_data_py VERSION:", pkg_resources.get_distribution("nfl_data_py").version)
 
@@ -148,12 +150,12 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     if season <= 2024:
         try:
             print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
-            
+
             from nfl_data_py import import_weekly_data
 
             # Load full-season weekly data
             weekly = import_weekly_data([season])
-            
+
             # Filter to requested week
             if "week" in weekly.columns:
                 weekly = weekly[weekly["week"] == week]
@@ -161,43 +163,23 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
             # Load nflverse roster parquet
             rosters = load_rosters(season)
 
-            # ----------------------------------------------------
-            # Determine the best join key between weekly + roster
-            # ----------------------------------------------------
-            join_key = None
-            possible_keys = ["player_id", "gsis_id", "pfr_id", "sportradar_id", "espn_id"]
-
-            for key in possible_keys:
-                if key in weekly.columns and key in rosters.columns:
-                    join_key = key
-                    break
-
-            if join_key is None:
-                print("⚠️ No shared player ID column between weekly + roster — returning unmerged weekly data")
-                return weekly
-
-            print(f"🔗 Merging weekly + roster on {join_key}")
-
-            # Build roster subset
-            roster_cols = [join_key] + [c for c in ["team", "position"] if c in rosters.columns]
-
-            # Merge
-            weekly = weekly.merge(rosters[roster_cols], on=join_key, how="left")
-            
+            # Harmonize IDs and merge roster
+            weekly = harmonize_ids(weekly, rosters)
             return weekly
 
         except Exception as e:
             print(f"⚠️ Legacy loader failed for {season}: {e}")
             return pd.DataFrame()
-
+    
     # ----------------------------
     # Modern seasons (2025+)
     # Priority:
     #   1. nflverse parquet (official)
     #   2. custom PBP weekly builder
     # ----------------------------
+    
     print(f"📥 Checking nflverse weekly parquet for {season}")
-
+    
     # 1. Try nflverse official weekly parquet
     if nflverse_weekly_exists(season):
         try:
@@ -210,9 +192,7 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 
             # Merge roster for team + position
             rosters = load_rosters(season)
-            roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-            if roster_cols:
-                df = df.merge(rosters[roster_cols], on="player_id", how="left")
+            df = harmonize_ids(df, rosters)
 
             return df
 
@@ -226,12 +206,10 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 
         if df.empty:
             return df
-
+    
         # Merge roster for team + position
         rosters = load_rosters(season)
-        roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-        if roster_cols:
-            df = df.merge(rosters[roster_cols], on="player_id", how="left")
+        df = harmonize_ids(df, rosters)
 
         return df
 

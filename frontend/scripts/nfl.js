@@ -197,6 +197,8 @@ function renderTable(data) {
         <td>${p.carries}</td>
         <td>${p.total_yards}</td>
         <td>${p.touchdowns}</td>
+        <td>${p.fantasy_points}</td>
+        <td>${p.fantasy_points_half}</td>
         <td>${p.fantasy_points_ppr}</td>
         <td>${p.touches}</td>
         <td>${p.efficiency.toFixed(2)}</td>
