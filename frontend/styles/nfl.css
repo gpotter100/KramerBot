@@ -267,3 +267,83 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================
+   MOBILE ENHANCEMENTS
+========================================================== */
+
+@media (max-width: 768px) {
+  /* Make filters more touch-friendly */
+  #filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  #filters select,
+  #filters input,
+  #load-btn,
+  select,
+  button {
+    font-size: 16px;
+    padding: 10px 12px;
+    min-height: 44px;
+    width: 100%;
+  }
+
+  /* Chart layout becomes single column */
+  #charts-container {
+    grid-template-columns: 1fr;
+  }
+
+  /* Table scroll container */
+  #usage-table {
+    display: block;
+    overflow-x: auto;
+    font-size: 15px;
+  }
+
+  #usage-table th,
+  #usage-table td {
+    padding: 12px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  /* Sticky first two columns */
+  #usage-table th.sticky-col,
+  #usage-table td.sticky-col {
+    position: sticky;
+    left: 0;
+    background: #1a2d45;
+    z-index: 2;
+  }
+
+  #usage-table th.sticky-col + th.sticky-col,
+  #usage-table td.sticky-col + td.sticky-col {
+    left: 120px; /* Adjust based on actual column width */
+  }
+
+  /* Optional: highlight sticky columns */
+  #usage-table th.sticky-col {
+    background: #223b5c;
+  }
+
+  /* Top performers readability */
+  #top-performers h2 {
+    font-size: 20px;
+  }
+
+  .top-list li {
+    font-size: 16px;
+  }
+
+  /* Compare panel readability */
+  #compare-panel h2 {
+    font-size: 20px;
+  }
+
+  .compare-metrics {
+    font-size: 16px;
+  }
+}
