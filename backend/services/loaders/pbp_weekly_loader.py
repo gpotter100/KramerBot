@@ -3,9 +3,10 @@ from pathlib import Path
 
 PBP_BASE_PATH = Path("data/pbp")  # adjust to wherever you store pbp_2025.parquet etc.
 
-def load_pbp(season: int) -> pd.DataFrame:
-    path = PBP_BASE_PATH / f"pbp_{season}.parquet"
-    return pd.read_parquet(path)
+def load_pbp(season: int) -> pd.DataFrame: 
+    url = f"https://github.com/nflverse/nflverse-data/releases/download/pbp/pbp_{season}.parquet" 
+    print(f"📡 Downloading PBP from {url}") 
+    return pd.read_parquet(url)
 
 def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     pbp = load_pbp(season)
