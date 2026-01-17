@@ -285,9 +285,9 @@ canvas {
   #load-btn,
   select,
   button {
-    font-size: 16px;
+    font-size: 20px;
     padding: 10px 12px;
-    min-height: 44px;
+    min-height: 60px;
     width: 100%;
   }
 

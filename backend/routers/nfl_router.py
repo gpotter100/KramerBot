@@ -6,8 +6,9 @@ import threading
 import numpy as np
 import urllib.request
 import nfl_data_py
-print(">>> nfl_data_py VERSION:", nfl_data_py.__version__)
-print(">>> nfl_data_py CONTENTS:", dir(nfl_data_py))
+import pkg_resources
+print(">>> nfl_data_py VERSION:", pkg_resources.get_distribution("nfl_data_py").version)
+
 
 
 from services.presenters.usage_presenter import present_usage
