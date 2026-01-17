@@ -279,3 +279,7 @@
     min-width: 100%;
   }
 }
+
+body.nav-open {
+  overflow: hidden;
+}
