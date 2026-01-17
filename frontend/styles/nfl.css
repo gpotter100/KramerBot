@@ -18,34 +18,7 @@
   margin: 0 auto;
 }
 
-/* ----------------------------------------------------------
-   MOBILE HAMBURGER PLACEMENT
-   Match homepage: top-left
----------------------------------------------------------- */
 
-#hamburger-menu {
-  display: block; /* layout.css handles desktop hide */
-  position: fixed;
-  top: 12px;
-  left: 16px;
-  right: auto;
-  z-index: 1100;
-}
-
-#hamburger-toggle {
-  background: none;
-  border: none;
-  font-size: 30px;
-  color: #66ccff;
-  cursor: pointer;
-}
-
-/* Ensure content doesn’t sit under the fixed hamburger */
-@media (max-width: 768px) {
-  #main {
-    padding-top: 56px; /* gives breathing room under hamburger */
-  }
-}
 
 /* ----------------------------------------------------------
    CARD SYSTEM
