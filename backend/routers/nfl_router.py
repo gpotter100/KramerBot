@@ -148,22 +148,42 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     if season <= 2024:
         try:
             print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
-
+            
             from nfl_data_py import import_weekly_data
 
-            # nfl_data_py returns all weeks for the season
+            # Load full-season weekly data
             weekly = import_weekly_data([season])
-
+            
             # Filter to requested week
             if "week" in weekly.columns:
                 weekly = weekly[weekly["week"] == week]
 
-            # Merge nflverse rosters for team + position
+            # Load nflverse roster parquet
             rosters = load_rosters(season)
-            roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-            if roster_cols:
-                weekly = weekly.merge(rosters[roster_cols], on="player_id", how="left")
 
+            # ----------------------------------------------------
+            # Determine the best join key between weekly + roster
+            # ----------------------------------------------------
+            join_key = None
+            possible_keys = ["player_id", "gsis_id", "pfr_id", "sportradar_id", "espn_id"]
+
+            for key in possible_keys:
+                if key in weekly.columns and key in rosters.columns:
+                    join_key = key
+                    break
+
+            if join_key is None:
+                print("⚠️ No shared player ID column between weekly + roster — returning unmerged weekly data")
+                return weekly
+
+            print(f"🔗 Merging weekly + roster on {join_key}")
+
+            # Build roster subset
+            roster_cols = [join_key] + [c for c in ["team", "position"] if c in rosters.columns]
+
+            # Merge
+            weekly = weekly.merge(rosters[roster_cols], on=join_key, how="left")
+            
             return weekly
 
         except Exception as e:
