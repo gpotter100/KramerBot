@@ -100,6 +100,7 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     return df
 
 
+
 # ============================================================
 # PLAYER USAGE ROUTE
 # ============================================================
@@ -141,14 +142,25 @@ def get_player_usage(season: int, week: int):
             "pass_attempt": "attempts",
         }
 
+        # Apply renames first
         week_df = week_df.rename(
             columns={k: v for k, v in rename_map.items() if k in week_df.columns}
         )
 
+        # Ensure receptions exists BEFORE calculating 0.5 PPR
+        if "receptions" not in week_df.columns:
+            week_df["receptions"] = 0
+
+        # Create 0.5 PPR fantasy scoring
+        week_df["fantasy_points_0.5ppr"] = (
+            week_df.get("fantasy_points", 0) + 0.5 * week_df.get("receptions", 0)
+        )
+
+        # Ensure required columns exist
         required_cols = [
             "team", "attempts", "receptions", "targets", "carries",
             "passing_yards", "rushing_yards", "receiving_yards",
-            "fantasy_points", "fantasy_points_ppr",
+            "fantasy_points", "fantasy_points_ppr", "fantasy_points_0.5ppr",
             "passing_epa", "rushing_epa", "receiving_epa"
         ]
 
@@ -156,6 +168,7 @@ def get_player_usage(season: int, week: int):
             if col not in week_df.columns:
                 week_df[col] = 0
 
+        # Snap percentage fallback
         if "snap_pct" not in week_df.columns:
             week_df["snap_pct"] = 0.0
 
@@ -166,23 +179,44 @@ def get_player_usage(season: int, week: int):
             week_df
             .groupby("player_name", as_index=False)
             .agg({
+                # Passing
                 "attempts": "sum",
+                "completions": "sum",
+                "passing_yards": "sum",
+                "passing_tds": "sum",
+                "interceptions": "sum",
+                "passing_air_yards": "sum",
+                "passing_yac": "sum",
+                "passing_first_downs": "sum",
+                "passing_epa": "sum",
+                # Rushing
+                "carries": "sum",
+                "rushing_yards": "sum",
+                "rushing_tds": "sum",
+                "rushing_fumbles": "sum",
+                "rushing_fumbles_lost": "sum",
+                "rushing_first_downs": "sum",
+                "rushing_epa": "sum",
+                # Receiving
                 "receptions": "sum",
                 "targets": "sum",
-                "carries": "sum",
-                "passing_yards": "sum",
-                "rushing_yards": "sum",
                 "receiving_yards": "sum",
+                "receiving_tds": "sum",
+                "receiving_air_yards": "sum",
+                "receiving_yac": "sum",
+                "receiving_first_downs": "sum",
+                "receiving_epa": "sum",
+                # Fantasy
                 "fantasy_points": "sum",
                 "fantasy_points_ppr": "sum",
+                "fantasy_points_0.5ppr": "sum",
+                # Meta
                 "team": "first",
                 "position": "first",
                 "snap_pct": "mean",
-                "passing_epa": "sum",
-                "rushing_epa": "sum",
-                "receiving_epa": "sum"
             })
         )
+
 
         usage["touches"] = usage["attempts"] + usage["receptions"]
         usage = usage.sort_values(by="touches", ascending=False)

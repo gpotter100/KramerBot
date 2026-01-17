@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import json
 
 ESPN_BASE = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl"
 
@@ -22,16 +23,21 @@ def _get_scoreboard(season: int, week: int) -> dict:
 
 
 def _get_game_summary(event_id: str) -> dict:
-    """
-    Fetch ESPN game summary/boxscore for a specific event.
-    """
     url = f"{ESPN_BASE}/summary"
-    params = {
-        "event": event_id,
-    }
+    params = {"event": event_id}
     resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
-    return resp.json()
+    data = resp.json()
+
+    print(json.dumps(list(data.keys()), indent=2))
+
+    # TEMP DEBUG: print the first part of the JSON so we can see the structure
+    import json
+    print("\n\n===== ESPN SUMMARY DEBUG =====")
+    print(json.dumps(list(data.keys()), indent=2))  # show top-level keys
+    print("==============================\n\n")
+
+    return data
 
 
 def _extract_player_rows_from_boxscore(summary_json: dict, season: int, week: int) -> list[dict]:
