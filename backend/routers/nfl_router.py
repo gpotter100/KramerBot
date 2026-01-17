@@ -9,7 +9,6 @@ from services.presenters.usage_presenter import present_usage
 from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
 from services.loaders.id_harmonizer import harmonize_ids
 
-
 print(">>> nfl_data_py VERSION:", pkg_resources.get_distribution("nfl_data_py").version)
 
 router = APIRouter()
@@ -23,6 +22,9 @@ SEASON_CACHE = {
 }
 
 CACHE_LOCK = threading.Lock()
+
+# Most recent completed regular season
+CURRENT_COMPLETE_SEASON = 2025
 
 
 # ============================================================
@@ -61,14 +63,14 @@ def build_season_cache():
 
         seasons = []
 
-        # Known historical range for nfl_data_py
-        for year in range(2002, 2025):
+        # Historical range
+        for year in range(2002, CURRENT_COMPLETE_SEASON + 1):
             seasons.append(year)
 
-        # Modern seasons (2025+)
+        # Future / modern seasons (parquet or explicit support)
         CBS_SUPPORTED_YEARS = [2025]
 
-        for year in range(2025, 2035):
+        for year in range(CURRENT_COMPLETE_SEASON + 1, 2035):
             if parquet_exists(year) or year in CBS_SUPPORTED_YEARS:
                 seasons.append(year)
 
@@ -134,90 +136,28 @@ def load_rosters(season: int) -> pd.DataFrame:
 
 
 # ============================================================
-# WEEKLY LOADER (Legacy 2002–2024, nflverse-first 2025+)
+# WEEKLY LOADER (Hybrid: nflverse → nfl_data_py → PBP)
 # ============================================================
 def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     """
-    Priority-based weekly loader:
-    1. Legacy nfl_data_py for <= 2024
-    2. nflverse weekly parquet if published
-    3. Custom PBP-derived weekly builder if parquet not published
+    Hybrid priority-based weekly loader:
+    1. nflverse weekly parquet if published
+    2. nfl_data_py weekly for completed seasons
+    3. Custom PBP-derived weekly builder as last fallback
     """
 
-    print("Weekly columns:", weekly.columns.tolist())
-
     # ----------------------------
-    # Legacy seasons (2002–2024)
+    # 1. nflverse official weekly parquet (if exists)
     # ----------------------------
-    if season <= 2024:
-        try:
-            print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
-
-            from nfl_data_py import import_weekly_data
-
-            # Load full-season weekly data
-            weekly = import_weekly_data(
-                [season],
-                columns=[
-                    "player_id",
-                    "gsis_id",
-                    "pfr_id",
-                    "sportradar_id",
-                    "espn_id",
-                    "fantasy_id",
-                    "player_id",
-                    "gsis_id",
-                    "pfr_id",
-                    "sportradar_id",
-                    "espn_id",
-                    "fantasy_id",
-                    "player_name",
-                    "recent_team",
-                    "week",
-                    "season",
-                    # include all stat columns you rely on
-                    "attempts", "completions", "passing_yards", "passing_tds", "interceptions",
-                    "carries", "rushing_yards", "rushing_tds",
-                    "receptions", "targets", "receiving_yards", "receiving_tds",
-                    "fantasy_points", "fantasy_points_ppr", "fantasy_points_half",
-                ]
-            )   
-
-            # Filter to requested week
-            if "week" in weekly.columns:
-                weekly = weekly[weekly["week"] == week]
-
-            # Load nflverse roster parquet
-            rosters = load_rosters(season)
-
-            # Harmonize IDs and merge roster
-            weekly = harmonize_ids(weekly, rosters)
-            return weekly
-
-        except Exception as e:
-            print(f"⚠️ Legacy loader failed for {season}: {e}")
-            return pd.DataFrame()
-    
-    # ----------------------------
-    # Modern seasons (2025+)
-    # Priority:
-    #   1. nflverse parquet (official)
-    #   2. custom PBP weekly builder
-    # ----------------------------
-    
     print(f"📥 Checking nflverse weekly parquet for {season}")
-    
-    # 1. Try nflverse official weekly parquet
     if nflverse_weekly_exists(season):
         try:
             print(f"📡 Loading official nflverse weekly parquet for {season}")
             df = load_nflverse_weekly(season)
 
-            # Filter to requested week
             if "week" in df.columns:
                 df = df[df["week"] == week]
 
-            # Merge roster for team + position
             rosters = load_rosters(season)
             df = harmonize_ids(df, rosters)
 
@@ -226,15 +166,72 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
         except Exception as e:
             print(f"⚠️ nflverse parquet load failed for {season}: {e}")
 
-    # 2. Fall back to custom PBP weekly builder
+    # ----------------------------
+    # 2. nfl_data_py weekly for completed seasons
+    # ----------------------------
+    if season <= CURRENT_COMPLETE_SEASON:
+        try:
+            print(f"📥 Loading weekly data via nfl_data_py for {season}")
+
+            from nfl_data_py import import_weekly_data
+
+            # Try with explicit columns first
+            try:
+                weekly = import_weekly_data(
+                    [season],
+                    columns=[
+                        "player_id",
+                        "gsis_id",
+                        "pfr_id",
+                        "sportradar_id",
+                        "espn_id",
+                        "fantasy_id",
+                        "player_name",
+                        "recent_team",
+                        "week",
+                        "season",
+                        "attempts",
+                        "completions",
+                        "passing_yards",
+                        "passing_tds",
+                        "interceptions",
+                        "carries",
+                        "rushing_yards",
+                        "rushing_tds",
+                        "receptions",
+                        "targets",
+                        "receiving_yards",
+                        "receiving_tds",
+                        "fantasy_points",
+                        "fantasy_points_ppr",
+                        "fantasy_points_half",
+                    ],
+                )
+            except Exception as e:
+                print(f"⚠️ Column-specific import failed, retrying with default schema: {e}")
+                weekly = import_weekly_data([season])
+
+            if "week" in weekly.columns:
+                weekly = weekly[weekly["week"] == week]
+
+            rosters = load_rosters(season)
+            weekly = harmonize_ids(weekly, rosters)
+
+            return weekly
+
+        except Exception as e:
+            print(f"⚠️ nfl_data_py weekly loader failed for {season}: {e}")
+
+    # ----------------------------
+    # 3. Custom PBP weekly builder as last fallback
+    # ----------------------------
     print(f"📥 Falling back to custom PBP weekly builder for {season} week {week}")
     try:
         df = load_weekly_from_pbp(season, week)
 
         if df.empty:
             return df
-    
-        # Merge roster for team + position
+
         rosters = load_rosters(season)
         df = harmonize_ids(df, rosters)
 
@@ -253,26 +250,21 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
 
-        # Load weekly data (legacy or nflverse/PBP)
         df = load_weekly_data(season, week)
 
         print("📊 FULL DF SHAPE:", df.shape)
 
-        # Ensure week column exists
         if "week" not in df.columns:
             print("⚠️ No 'week' column found — returning empty")
             return []
 
-        # Filter to requested week (defensive)
         week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
         if week_df.empty:
             return []
 
-        # ============================================================
         # POSITION FILTERING (including WR/TE combo)
-        # ============================================================
         pos = position.upper()
 
         if pos == "WR/TE":
@@ -287,14 +279,8 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
         if week_df.empty:
             return []
 
-        # ============================================================
-        # PRESENTATION LAYER
-        # ============================================================
         week_df = present_usage(week_df, pos)
 
-        # ============================================================
-        # CLEAN INVALID FLOATS FOR JSON
-        # ============================================================
         week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
 
         return week_df.to_dict(orient="records")
