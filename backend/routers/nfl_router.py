@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException
-from .cbs_fallback import load_cbs_weekly_data
-from services.espn_weekly_loader import load_espn_weekly_data
-from services.presenters.usage_presenter import present_usage
-from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
 import pandas as pd
 import urllib.error
 import urllib.request
 import threading
+import numpy as np
+import urllib.request
+
+from services.presenters.usage_presenter import present_usage
+from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
 
 router = APIRouter()
 
@@ -72,16 +73,45 @@ def build_season_cache():
         SEASON_CACHE["loaded"] = True
 
 
-# ============================================================
-# WEEKLY LOADER (Legacy 2002–2024, PBP-Derived 2025+)
-# ============================================================
-from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
+def nflverse_weekly_exists(season: int) -> bool:
+    """
+    Fast HEAD request to check if nflverse weekly parquet exists.
+    """
+    url = (
+        "https://github.com/nflverse/nflverse-data/releases/download/"
+        f"stats_player/stats_player_{season}.parquet"
+    )
 
+    req = urllib.request.Request(url, method="HEAD")
+
+    try:
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+def load_nflverse_weekly(season: int) -> pd.DataFrame:
+    """
+    Loads official nflverse weekly parquet for a season.
+    """
+    url = (
+        "https://github.com/nflverse/nflverse-data/releases/download/"
+        f"stats_player/stats_player_{season}.parquet"
+    )
+
+    print(f"📡 Downloading nflverse weekly parquet: {url}")
+    return pd.read_parquet(url)
+
+
+# ============================================================
+# WEEKLY LOADER (Legacy 2002–2024, nflverse-first 2025+)
+# ============================================================
 def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     """
-    Loads weekly NFL player data.
-    - Uses nfl_data_py for seasons <= 2024
-    - Uses PBP-derived weekly stats for 2025+
+    Priority-based weekly loader:
+    1. Legacy nfl_data_py for <= 2024
+    2. nflverse weekly parquet if published
+    3. Custom PBP-derived weekly builder if parquet not published
     """
 
     # ----------------------------
@@ -89,25 +119,85 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     # ----------------------------
     if season <= 2024:
         try:
-            from nfl_data_py import import_weekly_data
+            from nfl_data_py import import_weekly_data, import_rosters
+
             print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
-            return import_weekly_data([season])
+            weekly = import_weekly_data([season])
+            rosters = import_rosters([season])
+
+            # Normalize roster schema
+            if "recent_team" in rosters.columns:
+                rosters = rosters.rename(columns={"recent_team": "team"})
+
+            roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
+            weekly = weekly.merge(rosters[roster_cols], on="player_id", how="left")
+
+            return weekly
+
         except Exception as e:
             print(f"⚠️ Legacy loader failed for {season}: {e}")
             return pd.DataFrame()
 
     # ----------------------------
-    # Modern seasons (2025+ via PBP)
+    # Modern seasons (2025+)
+    # Priority:
+    #   1. nflverse parquet (official)
+    #   2. custom PBP weekly builder
     # ----------------------------
-    print(f"📥 Loading modern weekly data via PBP for {season} week {week}")
-    df = load_weekly_from_pbp(season, week)
-    return df
+    print(f"📥 Checking nflverse weekly parquet for {season}")
+
+    # 1. Try nflverse official weekly parquet
+    if nflverse_weekly_exists(season):
+        try:
+            print(f"📡 Loading official nflverse weekly parquet for {season}")
+            df = load_nflverse_weekly(season)
+
+            # Filter to requested week
+            df = df[df["week"] == week]
+
+            # Merge roster for team + position
+            from nfl_data_py import import_rosters
+            rosters = import_rosters([season])
+
+            if "recent_team" in rosters.columns:
+                rosters = rosters.rename(columns={"recent_team": "team"})
+
+            roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
+            df = df.merge(rosters[roster_cols], on="player_id", how="left")
+
+            return df
+
+        except Exception as e:
+            print(f"⚠️ nflverse parquet load failed for {season}: {e}")
+
+    # 2. Fall back to custom PBP weekly builder
+    print(f"📥 Falling back to custom PBP weekly builder for {season} week {week}")
+    try:
+        from nfl_data_py import import_rosters
+
+        df = load_weekly_from_pbp(season, week)
+
+        if df.empty:
+            return df
+
+        # Merge roster for team + position
+        rosters = import_rosters([season])
+
+        if "recent_team" in rosters.columns:
+            rosters = rosters.rename(columns={"recent_team": "team"})
+
+        roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
+        df = df.merge(rosters[roster_cols], on="player_id", how="left")
+
+        return df
+
+    except Exception as e:
+        print(f"⚠️ Custom PBP loader failed for {season} week {week}: {e}")
+        return pd.DataFrame()
 
 # ============================================================
 # PLAYER USAGE ROUTE
 # ============================================================
-from services.presenters.usage_presenter import present_usage
-
 @router.get("/nfl/player-usage/{season}/{week}")
 def get_player_usage(season: int, week: int, position: str = "ALL"):
     try:
@@ -136,9 +226,11 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
         pos = position.upper()
 
         if pos == "WR/TE":
-            week_df = week_df[week_df["position"].isin(["WR", "TE"])]
+            if "position" in week_df.columns:
+                week_df = week_df[week_df["position"].isin(["WR", "TE"])]
         elif pos != "ALL":
-            week_df = week_df[week_df["position"] == pos]
+            if "position" in week_df.columns:
+                week_df = week_df[week_df["position"] == pos]
 
         print(f"🎯 FILTERED BY POSITION ({pos}) → {week_df.shape}")
 
@@ -153,101 +245,9 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
         # ============================================================
         # CLEAN INVALID FLOATS FOR JSON
         # ============================================================
-        import numpy as np
         week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
 
         return week_df.to_dict(orient="records")
-
-        # ============================================================
-        # NORMALIZE COLUMN NAMES
-        # ============================================================
-        rename_map = {
-            "recent_team": "team",
-            "club": "team",
-            "team_abbr": "team",
-            "rush_attempt": "carries",
-            "pass_attempt": "attempts",
-        }
-
-        # Apply renames first
-        week_df = week_df.rename(
-            columns={k: v for k, v in rename_map.items() if k in week_df.columns}
-        )
-
-        # Ensure receptions exists BEFORE calculating 0.5 PPR
-        if "receptions" not in week_df.columns:
-            week_df["receptions"] = 0
-
-        # Create 0.5 PPR fantasy scoring
-        week_df["fantasy_points_0.5ppr"] = (
-            week_df.get("fantasy_points", 0) + 0.5 * week_df.get("receptions", 0)
-        )
-
-        # Ensure required columns exist
-        required_cols = [
-            "team", "attempts", "receptions", "targets", "carries",
-            "passing_yards", "rushing_yards", "receiving_yards",
-            "fantasy_points", "fantasy_points_ppr", "fantasy_points_0.5ppr",
-            "passing_epa", "rushing_epa", "receiving_epa"
-        ]
-
-        for col in required_cols:
-            if col not in week_df.columns:
-                week_df[col] = 0
-
-        # Snap percentage fallback
-        if "snap_pct" not in week_df.columns:
-            week_df["snap_pct"] = 0.0
-
-        # ============================================================
-        # AGGREGATE PLAYER USAGE
-        # ============================================================
-        usage = (
-            week_df
-            .groupby("player_name", as_index=False)
-            .agg({
-                # Passing
-                "attempts": "sum",
-                "completions": "sum",
-                "passing_yards": "sum",
-                "passing_tds": "sum",
-                "interceptions": "sum",
-                "passing_air_yards": "sum",
-                "passing_first_downs": "sum",
-                "passing_epa": "sum",
-                # Rushing
-                "carries": "sum",
-                "rushing_yards": "sum",
-                "rushing_tds": "sum",
-                "rushing_fumbles": "sum",
-                "rushing_fumbles_lost": "sum",
-                "rushing_first_downs": "sum",
-                "rushing_epa": "sum",
-                # Receiving
-                "receptions": "sum",
-                "targets": "sum",
-                "receiving_yards": "sum",
-                "receiving_tds": "sum",
-                "receiving_air_yards": "sum",
-                "receiving_first_downs": "sum",
-                "receiving_epa": "sum",
-                # Fantasy
-                "fantasy_points": "sum",
-                "fantasy_points_ppr": "sum",
-                "fantasy_points_0.5ppr": "sum",
-                # Meta
-                "team": "first",
-                "position": "first",
-                "snap_pct": "mean",
-            })
-        )
-
-
-        usage["touches"] = usage["attempts"] + usage["receptions"]
-        usage = usage.sort_values(by="touches", ascending=False)
-
-        print("📈 USAGE SHAPE:", usage.shape)
-        return usage.fillna(0).to_dict(orient="records")
 
     except Exception as e:
         print("❌ ERROR IN NFL ROUTE:", e)
