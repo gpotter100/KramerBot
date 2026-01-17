@@ -144,6 +144,8 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     3. Custom PBP-derived weekly builder if parquet not published
     """
 
+    print("Weekly columns:", weekly.columns.tolist())
+
     # ----------------------------
     # Legacy seasons (2002–2024)
     # ----------------------------
@@ -154,7 +156,32 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
             from nfl_data_py import import_weekly_data
 
             # Load full-season weekly data
-            weekly = import_weekly_data([season])
+            weekly = import_weekly_data(
+                [season],
+                columns=[
+                    "player_id",
+                    "gsis_id",
+                    "pfr_id",
+                    "sportradar_id",
+                    "espn_id",
+                    "fantasy_id",
+                    "player_id",
+                    "gsis_id",
+                    "pfr_id",
+                    "sportradar_id",
+                    "espn_id",
+                    "fantasy_id",
+                    "player_name",
+                    "recent_team",
+                    "week",
+                    "season",
+                    # include all stat columns you rely on
+                    "attempts", "completions", "passing_yards", "passing_tds", "interceptions",
+                    "carries", "rushing_yards", "rushing_tds",
+                    "receptions", "targets", "receiving_yards", "receiving_tds",
+                    "fantasy_points", "fantasy_points_ppr", "fantasy_points_half",
+                ]
+            )   
 
             # Filter to requested week
             if "week" in weekly.columns:
