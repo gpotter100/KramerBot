@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from .cbs_fallback import load_cbs_weekly_data
 from services.espn_weekly_loader import load_espn_weekly_data
 from services.presenters.usage_presenter import present_usage
+from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
 import pandas as pd
 import urllib.error
 import urllib.request
@@ -72,13 +73,15 @@ def build_season_cache():
 
 
 # ============================================================
-# WEEKLY LOADER (Legacy 2002–2024, Modern 2025+)
+# WEEKLY LOADER (Legacy 2002–2024, PBP-Derived 2025+)
 # ============================================================
+from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
+
 def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     """
     Loads weekly NFL player data.
     - Uses nfl_data_py for seasons <= 2024
-    - Uses ESPN API for 2025+
+    - Uses PBP-derived weekly stats for 2025+
     """
 
     # ----------------------------
@@ -94,13 +97,11 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
             return pd.DataFrame()
 
     # ----------------------------
-    # Modern seasons (2025+ via ESPN)
+    # Modern seasons (2025+ via PBP)
     # ----------------------------
-    print(f"📥 Loading modern weekly data via ESPN for {season} week {week}")
-    df = load_espn_weekly_data(season, week)
+    print(f"📥 Loading modern weekly data via PBP for {season} week {week}")
+    df = load_weekly_from_pbp(season, week)
     return df
-
-
 
 # ============================================================
 # PLAYER USAGE ROUTE
@@ -112,21 +113,17 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
 
-        # Load weekly data
+        # Load weekly data (legacy or PBP)
         df = load_weekly_data(season, week)
-
-        # CBS fallback for 2025+
-        if df.empty and season >= 2025:
-            print("🔄 Falling back to CBS public league data...")
-            df = load_cbs_weekly_data(season, week)
 
         print("📊 FULL DF SHAPE:", df.shape)
 
-        # Filter to requested week
+        # Ensure week column exists
         if "week" not in df.columns:
             print("⚠️ No 'week' column found — returning empty")
             return []
 
+        # Filter to requested week
         week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
@@ -149,11 +146,10 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
             return []
 
         # ============================================================
-        # APPLY PRESENTATION LAYER (rounding, ordering, formatting)
+        # PRESENTATION LAYER
         # ============================================================
         week_df = present_usage(week_df, pos)
 
-        # Return JSON
         return week_df.to_dict(orient="records")
 
     except Exception as e:
