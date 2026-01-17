@@ -99,5 +99,31 @@ def harmonize_ids(df: pd.DataFrame, roster: pd.DataFrame) -> pd.DataFrame:
         on="nflverse_id",
         how="left"
     )
+    
+    # --------------------------------------------------------
+    # Step 5: Normalize positions (fix WR/TE issues)
+    # --------------------------------------------------------
+    if "position" in df.columns:
+        df["position"] = (
+            df["position"]
+            .astype(str)
+            .str.upper()
+            .str.strip()
+        )
+
+        # Fix common hybrid / mislabeled positions
+        df["position"] = df["position"].replace({
+            "HB": "RB",
+            "FB": "RB",
+            "TE/HB": "TE",
+            "WR/RB": "WR",
+            "TE/FB": "TE",
+            "": None,
+            "NONE": None,
+        })
+
+        # Optional: treat hybrid strings as WR/TE eligible
+        df.loc[df["position"].str.contains("WR", na=False), "position"] = "WR"
+        df.loc[df["position"].str.contains("TE", na=False), "position"] = "TE"
 
     return df
