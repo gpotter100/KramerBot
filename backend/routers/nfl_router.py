@@ -5,6 +5,10 @@ import urllib.request
 import threading
 import numpy as np
 import urllib.request
+import nfl_data_py
+print(">>> nfl_data_py VERSION:", nfl_data_py.__version__)
+print(">>> nfl_data_py CONTENTS:", dir(nfl_data_py))
+
 
 from services.presenters.usage_presenter import present_usage
 from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
