@@ -1,18 +1,14 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
-import urllib.error
 import urllib.request
 import threading
 import numpy as np
-import urllib.request
-import nfl_data_py
 import pkg_resources
-print(">>> nfl_data_py VERSION:", pkg_resources.get_distribution("nfl_data_py").version)
-
-
 
 from services.presenters.usage_presenter import present_usage
 from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
+
+print(">>> nfl_data_py VERSION:", pkg_resources.get_distribution("nfl_data_py").version)
 
 router = APIRouter()
 
@@ -78,6 +74,9 @@ def build_season_cache():
         SEASON_CACHE["loaded"] = True
 
 
+# ============================================================
+# NFLVERSE WEEKLY HELPERS
+# ============================================================
 def nflverse_weekly_exists(season: int) -> bool:
     """
     Fast HEAD request to check if nflverse weekly parquet exists.
@@ -95,6 +94,7 @@ def nflverse_weekly_exists(season: int) -> bool:
     except Exception:
         return False
 
+
 def load_nflverse_weekly(season: int) -> pd.DataFrame:
     """
     Loads official nflverse weekly parquet for a season.
@@ -107,6 +107,10 @@ def load_nflverse_weekly(season: int) -> pd.DataFrame:
     print(f"📡 Downloading nflverse weekly parquet: {url}")
     return pd.read_parquet(url)
 
+
+# ============================================================
+# ROSTER LOADER (nflverse parquet)
+# ============================================================
 def load_rosters(season: int) -> pd.DataFrame:
     """
     Loads official nflverse roster parquet for a season.
@@ -118,7 +122,13 @@ def load_rosters(season: int) -> pd.DataFrame:
     )
 
     print(f"📡 Loading nflverse roster parquet for {season}")
-    return pd.read_parquet(url)
+    df = pd.read_parquet(url)
+
+    # Normalize roster schema
+    if "recent_team" in df.columns:
+        df = df.rename(columns={"recent_team": "team"})
+
+    return df
 
 
 # ============================================================
@@ -137,18 +147,22 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     # ----------------------------
     if season <= 2024:
         try:
-            from nfl_data_py import import_weekly_data, import_rosters
-
             print(f"📥 Loading legacy weekly data via nfl_data_py for {season}")
+
+            from nfl_data_py import import_weekly_data
+
+            # nfl_data_py returns all weeks for the season
             weekly = import_weekly_data([season])
-            rosters = import_rosters([season])
 
-            # Normalize roster schema
-            if "recent_team" in rosters.columns:
-                rosters = rosters.rename(columns={"recent_team": "team"})
+            # Filter to requested week
+            if "week" in weekly.columns:
+                weekly = weekly[weekly["week"] == week]
 
+            # Merge nflverse rosters for team + position
+            rosters = load_rosters(season)
             roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-            weekly = weekly.merge(rosters[roster_cols], on="player_id", how="left")
+            if roster_cols:
+                weekly = weekly.merge(rosters[roster_cols], on="player_id", how="left")
 
             return weekly
 
@@ -171,17 +185,14 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
             df = load_nflverse_weekly(season)
 
             # Filter to requested week
-            df = df[df["week"] == week]
+            if "week" in df.columns:
+                df = df[df["week"] == week]
 
             # Merge roster for team + position
-            from nfl_data_py import import_rosters
-            rosters = import_rosters([season])
-
-            if "recent_team" in rosters.columns:
-                rosters = rosters.rename(columns={"recent_team": "team"})
-
+            rosters = load_rosters(season)
             roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-            df = df.merge(rosters[roster_cols], on="player_id", how="left")
+            if roster_cols:
+                df = df.merge(rosters[roster_cols], on="player_id", how="left")
 
             return df
 
@@ -191,27 +202,23 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     # 2. Fall back to custom PBP weekly builder
     print(f"📥 Falling back to custom PBP weekly builder for {season} week {week}")
     try:
-        from nfl_data_py import import_rosters
-
         df = load_weekly_from_pbp(season, week)
 
         if df.empty:
             return df
 
         # Merge roster for team + position
-        rosters = import_rosters([season])
-
-        if "recent_team" in rosters.columns:
-            rosters = rosters.rename(columns={"recent_team": "team"})
-
+        rosters = load_rosters(season)
         roster_cols = [c for c in ["player_id", "team", "position"] if c in rosters.columns]
-        df = df.merge(rosters[roster_cols], on="player_id", how="left")
+        if roster_cols:
+            df = df.merge(rosters[roster_cols], on="player_id", how="left")
 
         return df
 
     except Exception as e:
         print(f"⚠️ Custom PBP loader failed for {season} week {week}: {e}")
         return pd.DataFrame()
+
 
 # ============================================================
 # PLAYER USAGE ROUTE
@@ -221,7 +228,7 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
 
-        # Load weekly data (legacy or PBP)
+        # Load weekly data (legacy or nflverse/PBP)
         df = load_weekly_data(season, week)
 
         print("📊 FULL DF SHAPE:", df.shape)
@@ -231,7 +238,7 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
             print("⚠️ No 'week' column found — returning empty")
             return []
 
-        # Filter to requested week
+        # Filter to requested week (defensive)
         week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
