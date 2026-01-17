@@ -2,6 +2,8 @@ import requests
 import pandas as pd
 import json
 
+from KramerBot import data
+
 ESPN_BASE = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl"
 
 
@@ -32,9 +34,10 @@ def _get_game_summary(event_id: str) -> dict:
     print(json.dumps(list(data.keys()), indent=2))
 
     # TEMP DEBUG: print the first part of the JSON so we can see the structure
-    print("\n\n===== ESPN SUMMARY DEBUG =====")
-    print(json.dumps(list(data.keys()), indent=2))  # show top-level keys
-    print("==============================\n\n")
+    print("\n===== ESPN SUMMARY DEBUG: boxscore =====")
+    print(json.dumps(data.get("boxscore", {}), indent=2)[:5000])
+    print("========================================\n")
+
 
     return data
 
