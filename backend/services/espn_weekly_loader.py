@@ -23,19 +23,18 @@ def _get_scoreboard(season: int, week: int) -> dict:
 
 
 def _get_game_summary(event_id: str) -> dict:
-    url = f"{ESPN_BASE}/summary"
+    url = f"{ESPN_BASE}/gamepackage"
     params = {"event": event_id}
     resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
 
-    # TEMP DEBUG: print the first part of the JSON so we can see the structure
-    print("\n===== ESPN SUMMARY DEBUG: boxscore =====")
-    print(json.dumps(data.get("boxscore", {}), indent=2)[:5000])
-    print("========================================\n")
-
+    print("\n===== ESPN GAMEPACKAGE DEBUG =====")
+    print(json.dumps(list(data.keys()), indent=2))
+    print("==================================\n")
 
     return data
+
 
 
 def _extract_player_rows_from_boxscore(summary_json: dict, season: int, week: int) -> list[dict]:
