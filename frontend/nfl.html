@@ -156,8 +156,12 @@
   <!-- SCRIPTS -->
   <script type="module" src="scripts/config.js"></script>
   <script type="module" src="scripts/nfl.js"></script>
+  <script type="module" src="scripts/main.js?v=7"></script>
 
-  <!-- Uses #hamburger-toggle to toggle #sidebar.open (and any body classes you use) -->
-  <script type="module" src="scripts/mobile-nav.js"></script>
+  <script>
+    document.getElementById("hamburger-toggle").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+  </script>
 </body>
 </html>
