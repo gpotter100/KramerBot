@@ -29,8 +29,6 @@ def _get_game_summary(event_id: str) -> dict:
     resp.raise_for_status()
     data = resp.json()
 
-    print(json.dumps(list(data.keys()), indent=2))
-
     # TEMP DEBUG: print the first part of the JSON so we can see the structure
     print("\n===== ESPN SUMMARY DEBUG: boxscore =====")
     print(json.dumps(data.get("boxscore", {}), indent=2)[:5000])
