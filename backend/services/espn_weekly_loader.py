@@ -2,8 +2,6 @@ import requests
 import pandas as pd
 import json
 
-from KramerBot import data
-
 ESPN_BASE = "https://site.web.api.espn.com/apis/site/v2/sports/football/nfl"
 
 
