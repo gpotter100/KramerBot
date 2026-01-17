@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from .cbs_fallback import load_cbs_weekly_data
 from services.espn_weekly_loader import load_espn_weekly_data
+from services.presenters.usage_presenter import present_usage
 import pandas as pd
 import urllib.error
 import urllib.request
@@ -104,10 +105,12 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 # ============================================================
 # PLAYER USAGE ROUTE
 # ============================================================
+from services.presenters.usage_presenter import present_usage
+
 @router.get("/nfl/player-usage/{season}/{week}")
-def get_player_usage(season: int, week: int):
+def get_player_usage(season: int, week: int, position: str = "ALL"):
     try:
-        print(f"🔥 NFL ROUTE HIT: season={season}, week={week}")
+        print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
 
         # Load weekly data
         df = load_weekly_data(season, week)
@@ -120,16 +123,42 @@ def get_player_usage(season: int, week: int):
         print("📊 FULL DF SHAPE:", df.shape)
 
         # Filter to requested week
-        if "week" in df.columns:
-            week_df = df[df["week"] == week]
-        else:
+        if "week" not in df.columns:
             print("⚠️ No 'week' column found — returning empty")
             return []
 
+        week_df = df[df["week"] == week]
         print("📅 WEEK DF SHAPE:", week_df.shape)
 
         if week_df.empty:
             return []
+
+        # ============================================================
+        # POSITION FILTERING (including WR/TE combo)
+        # ============================================================
+        pos = position.upper()
+
+        if pos == "WR/TE":
+            week_df = week_df[week_df["position"].isin(["WR", "TE"])]
+        elif pos != "ALL":
+            week_df = week_df[week_df["position"] == pos]
+
+        print(f"🎯 FILTERED BY POSITION ({pos}) → {week_df.shape}")
+
+        if week_df.empty:
+            return []
+
+        # ============================================================
+        # APPLY PRESENTATION LAYER (rounding, ordering, formatting)
+        # ============================================================
+        week_df = present_usage(week_df, pos)
+
+        # Return JSON
+        return week_df.to_dict(orient="records")
+
+    except Exception as e:
+        print("❌ ERROR IN NFL ROUTE:", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
         # ============================================================
         # NORMALIZE COLUMN NAMES
