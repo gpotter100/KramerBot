@@ -1,3 +1,4 @@
+from turtle import pos
 from fastapi import APIRouter, HTTPException
 from .cbs_fallback import load_cbs_weekly_data
 from services.espn_weekly_loader import load_espn_weekly_data
@@ -150,11 +151,13 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
         # ============================================================
         week_df = present_usage(week_df, pos)
 
-        return week_df.to_dict(orient="records")
+        # ============================================================
+        # CLEAN INVALID FLOATS FOR JSON
+        # ============================================================
+        import numpy as np
+        week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
 
-    except Exception as e:
-        print("❌ ERROR IN NFL ROUTE:", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        return week_df.to_dict(orient="records")
 
         # ============================================================
         # NORMALIZE COLUMN NAMES
