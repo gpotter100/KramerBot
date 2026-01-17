@@ -1,6 +1,6 @@
 /* ==========================================================
    NFL PAGE — MOBILE‑FIRST, CINEMATIC UI
-   Matches index.html responsive system
+   Matches KramerBot sidebar + mobile drawer system
 ========================================================== */
 
 /* ----------------------------------------------------------
@@ -12,6 +12,7 @@
   color: #d9eaff;
   font-family: Arial, sans-serif;
   padding: 16px;
+  padding-left: 0; /* sidebar handles spacing on desktop */
 }
 
 .page-title {
@@ -22,23 +23,26 @@
 }
 
 /* ----------------------------------------------------------
-   MOBILE NAV
+   MOBILE HAMBURGER
 ---------------------------------------------------------- */
 
-.mobile-header {
+#hamburger-menu {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   padding: 12px 0;
 }
 
-.mobile-nav-toggle {
+#hamburger-toggle {
   background: none;
   border: none;
   color: #66ccff;
-  font-size: 26px;
+  font-size: 28px;
   cursor: pointer;
 }
+
+/* ----------------------------------------------------------
+   MOBILE NAV DRAWER
+---------------------------------------------------------- */
 
 .mobile-nav {
   background: #111827;
@@ -50,7 +54,7 @@
 
 .mobile-nav a {
   display: block;
-  padding: 10px 0;
+  padding: 12px 0;
   color: #d9eaff;
   text-decoration: none;
   font-size: 16px;
@@ -59,6 +63,11 @@
 .mobile-nav a.active {
   color: #66ccff;
   font-weight: 700;
+}
+
+/* Prevent scrolling when drawer is open */
+body.nav-open {
+  overflow: hidden;
 }
 
 /* ----------------------------------------------------------
@@ -258,6 +267,15 @@
 @media (min-width: 768px) {
   .page-wrapper {
     padding: 32px;
+    padding-left: 260px; /* space for sidebar */
+  }
+
+  #hamburger-menu {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: none;
   }
 
   .filter-bar {
@@ -278,8 +296,4 @@
   .data-table {
     min-width: 100%;
   }
-}
-
-body.nav-open {
-  overflow: hidden;
 }

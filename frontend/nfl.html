@@ -19,20 +19,58 @@
 <body class="page-wrapper">
 
   <!-- ===========================
-       MOBILE HEADER + NAV
+       MOBILE HAMBURGER
   ============================ -->
-  <header class="mobile-header">
-    <div class="mobile-header-left">
-      <button id="mobile-nav-toggle" class="mobile-nav-toggle">☰</button>
-      <h1 class="page-title">NFL Player Usage</h1>
-    </div>
-  </header>
+  <div id="hamburger-menu">
+    <button id="hamburger-toggle">&#9776;</button>
+  </div>
 
+  <!-- ===========================
+       MOBILE NAV DRAWER
+  ============================ -->
   <nav id="mobile-nav" class="mobile-nav hidden">
     <a href="/">Home</a>
-    <a href="/nfl.html" class="active">NFL Usage</a>
+    <a href="/upload.html">Upload CSV</a>
+    <a href="/standings.html">Standings</a>
+    <a href="/stats.html">Basic Stats</a>
+    <a href="/visuals.html">Visuals</a>
+    <a href="/nfl.html" class="active">NFL Statistics</a>
+    <a href="/about.html">About</a>
   </nav>
 
+  <!-- ===========================
+       LEFT SIDEBAR (DESKTOP)
+  ============================ -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-main">KramerBot</span>
+      <span class="logo-sub">“I got stats… probably.”</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn" onclick="window.location.href='index.html'">Home</button>
+      <button class="nav-btn" onclick="window.location.href='upload.html'">Upload CSV</button>
+      <button class="nav-btn" onclick="window.location.href='standings.html'">Standings</button>
+      <button class="nav-btn" onclick="window.location.href='stats.html'">Basic Stats</button>
+      <button class="nav-btn" onclick="window.location.href='visuals.html'">Visuals</button>
+
+      <!-- ⭐ Active NFL page ⭐ -->
+      <button class="nav-btn active" onclick="window.location.href='nfl.html'">
+        NFL Statistics
+      </button>
+
+      <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
+    </nav>
+
+    <div class="sidebar-icon-container">
+      <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon">
+    </div>
+
+    <div class="sidebar-footer">
+      <span>KramerBot © 2026</span>
+      <span class="disclaimer">No guarantees. At all.</span>
+    </div>
+  </aside>
 
   <!-- ===========================
        MAIN CONTENT WRAPPER
@@ -40,7 +78,7 @@
   <main class="content">
 
     <!-- ===========================
-         FILTER BAR (mobile‑friendly)
+         FILTER BAR
     ============================ -->
     <section class="filter-bar card">
       <div class="filter-group">
@@ -79,7 +117,7 @@
     </section>
 
     <!-- ===========================
-         USAGE TABLE (mobile scroll)
+         USAGE TABLE
     ============================ -->
     <section id="table-wrapper" class="table-wrapper hidden">
       <table id="usage-table" class="data-table">
@@ -107,7 +145,7 @@
     </section>
 
     <!-- ===========================
-         CHARTS (responsive grid)
+         CHARTS
     ============================ -->
     <section id="charts-container" class="charts-grid hidden">
       <div class="chart-card card">
