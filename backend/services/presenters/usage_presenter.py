@@ -1,17 +1,35 @@
 import pandas as pd
 
 def present_usage(df: pd.DataFrame, position: str = "ALL") -> pd.DataFrame:
+    """
+    Premium presentation layer for weekly usage + scoring + metrics.
+    Dynamically selects the best column set based on position and
+    gracefully handles missing columns.
+    """
+
     df = df.copy()
 
     # ============================================================
     # ROUNDING
     # ============================================================
-    fantasy_cols = [
+    round_2 = [
         "fantasy_points",
         "fantasy_points_ppr",
         "fantasy_points_0.5ppr",
+        "vandalay_points",
+        "vandalay_def_points",
+        "vandalay_total_points",
+        "fantasy_per_touch",
+        "vandalay_per_touch",
+        "yards_per_target",
+        "yards_per_reception",
+        "yards_per_carry",
+        "yards_per_attempt",
+        "td_rate",
+        "int_rate",
     ]
-    for col in fantasy_cols:
+
+    for col in round_2:
         if col in df.columns:
             df[col] = df[col].round(2)
 
@@ -22,59 +40,94 @@ def present_usage(df: pd.DataFrame, position: str = "ALL") -> pd.DataFrame:
     # PREMIUM COLUMN SETS
     # ============================================================
 
-    ALL_COLUMNS = [
-        # Identity
-        "player_name", "team", "position", "snap_pct",
+    # --- Universal identity columns ---
+    IDENTITY = [
+        "player_name", "team", "position", "snap_pct"
+    ]
 
-        # Receiving usage
+    # --- Core usage columns ---
+    RECEIVING = [
         "targets", "receptions", "receiving_yards", "receiving_tds",
-        "air_yards", "target_share", "receiving_first_downs",
+        "receiving_air_yards", "receiving_first_downs",
+    ]
 
-        # Rushing usage
+    RUSHING = [
         "carries", "rushing_yards", "rushing_tds",
+        "rushing_first_downs",
+    ]
 
-        # Passing usage
-        "attempts", "passing_yards", "passing_tds", "interceptions",
+    PASSING = [
+        "attempts", "completions", "passing_yards",
+        "passing_tds", "interceptions",
+        "passing_air_yards", "passing_first_downs",
+    ]
 
-        # Efficiency
+    # --- Efficiency metrics ---
+    EFFICIENCY = [
+        "yards_per_target", "yards_per_reception",
+        "yards_per_carry", "yards_per_attempt",
+        "td_rate", "int_rate",
         "receiving_epa", "rushing_epa", "passing_epa",
-
-        # Fantasy
-        "fantasy_points", "fantasy_points_ppr", "fantasy_points_0.5ppr",
     ]
 
-    WR_TE_COLUMNS = [
-        "player_name", "team", "position", "snap_pct",
-
-        # Receiving usage
-        "targets", "receptions", "receiving_yards", "receiving_tds",
-        "air_yards", "target_share", "receiving_first_downs",
-
-        # Rushing usage (added per your request)
-        "carries", "rushing_yards", "rushing_tds",
-
-        # Efficiency
-        "receiving_epa", "rushing_epa",
-
-        # Fantasy
-        "fantasy_points_ppr",
-    ]
-
-    RB_COLUMNS = [
-        "player_name", "team", "position", "snap_pct",
-        "carries", "rushing_yards", "rushing_tds",
-        "targets", "receptions", "receiving_yards",
-        "rushing_epa", "receiving_epa",
-        "fantasy_points_ppr",
-    ]
-
-    QB_COLUMNS = [
-        "player_name", "team", "position", "snap_pct",
-        "attempts", "passing_yards", "passing_tds", "interceptions",
-        "rushing_yards", "rushing_tds",
-        "passing_epa",
+    # --- Fantasy scoring ---
+    FANTASY = [
         "fantasy_points",
+        "fantasy_points_ppr",
+        "fantasy_points_0.5ppr",
+        "vandalay_points",
+        "vandalay_def_points",
+        "vandalay_total_points",
+        "fantasy_per_touch",
+        "vandalay_per_touch",
     ]
+
+    # --- Attribution percentages (only include if present) ---
+    ATTRIBUTION = [c for c in df.columns if c.endswith("_pts_pct")]
+
+    # ============================================================
+    # POSITION‑AWARE COLUMN GROUPS
+    # ============================================================
+
+    ALL_COLUMNS = (
+        IDENTITY +
+        RECEIVING +
+        RUSHING +
+        PASSING +
+        EFFICIENCY +
+        FANTASY +
+        ATTRIBUTION
+    )
+
+    WR_TE_COLUMNS = (
+        IDENTITY +
+        RECEIVING +
+        RUSHING +  # WR rushing usage is valuable
+        ["yards_per_target", "yards_per_reception"] +
+        ["receiving_epa", "rushing_epa"] +
+        ["fantasy_points_ppr", "vandalay_points"] +
+        ATTRIBUTION
+    )
+
+    RB_COLUMNS = (
+        IDENTITY +
+        RUSHING +
+        RECEIVING +  # RB receiving usage matters
+        ["yards_per_carry", "yards_per_target"] +
+        ["rushing_epa", "receiving_epa"] +
+        ["fantasy_points_ppr", "vandalay_points"] +
+        ATTRIBUTION
+    )
+
+    QB_COLUMNS = (
+        IDENTITY +
+        PASSING +
+        RUSHING +  # QB rushing matters
+        ["yards_per_attempt", "td_rate", "int_rate"] +
+        ["passing_epa", "rushing_epa"] +
+        ["fantasy_points", "vandalay_points"] +
+        ATTRIBUTION
+    )
 
     # ============================================================
     # SELECT COLUMN SET BASED ON POSITION

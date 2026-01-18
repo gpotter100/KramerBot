@@ -1,130 +1,139 @@
 import pandas as pd
+import polars as pl
 from pathlib import Path
 
+# ------------------------------------------------------------
+# Local PBP directory (written by your R ingestion pipeline)
+# ------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parents[2]
 LOCAL_PBP_DIR = BASE_DIR / "tmp" / "kramerbot_pbp_cache"
 
-def load_pbp(season: int) -> pd.DataFrame:
+
+# ------------------------------------------------------------
+# Unified PBP Loader (local parquet only)
+# ------------------------------------------------------------
+def load_pbp_local(season: int) -> pl.LazyFrame:
     """
-    Loads PBP data.
-
-    For 2025:
-        Always load from local cached parquet.
-    For older seasons:
-        Load from nflverse GitHub.
+    Loads PBP for a season from local parquet written by the R ingestion pipeline.
     """
-    local_path = LOCAL_PBP_DIR / f"pbp_{season}.parquet"
+    path = LOCAL_PBP_DIR / f"pbp_{season}.parquet"
 
-    # 2025 → always local
-    if season == 2025:
-        if local_path.exists():
-            print(f"🔥 Using local 2025 PBP parquet: {local_path}")
-            return pd.read_parquet(local_path)
-        print(f"⚠️ Local 2025 PBP parquet missing: {local_path}")
-        return pd.DataFrame()
+    if not path.exists():
+        print(f"⚠️ Missing local PBP parquet for {season}: {path}")
+        return pl.LazyFrame()
 
-    # Historical seasons → nflverse
-    url = (
-        "https://github.com/nflverse/nflverse-data/releases/download/"
-        f"pbp/pbp_{season}.parquet"
-    )
-
-    print(f"📡 Downloading PBP from {url}")
-    return pd.read_parquet(url)
+    print(f"🔥 Loading local PBP parquet for {season}: {path}")
+    return pl.scan_parquet(path)
 
 
+# ------------------------------------------------------------
+# Weekly Builder (PBP → player-level weekly stats)
+# ------------------------------------------------------------
 def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     """
-    Builds weekly player-level stats from PBP.
+    Builds weekly player-level stats from local PBP parquet.
+    This is the unified weekly builder for ALL seasons.
     """
-    pbp = load_pbp(season)
 
-    pbp_week = pbp[pbp["week"] == week].copy()
+    lf = load_pbp_local(season)
+    if lf.is_empty():
+        return pd.DataFrame()
+
+    # Filter to week
+    lf_week = lf.filter(pl.col("week") == week)
+
+    # Collect to pandas for now (Phase 2 will stay in Polars)
+    try:
+        pbp_week = lf_week.collect().to_pandas()
+    except Exception:
+        return pd.DataFrame()
+
     if pbp_week.empty:
         return pd.DataFrame()
 
-    # -----------------------------
+    # ------------------------------------------------------------
     # RECEIVING
-    # -----------------------------
-    rec_events = pbp_week[pbp_week["pass_attempt"] == 1]
-    rec_group = rec_events.groupby(
-        ["receiver_id", "receiver", "posteam"], dropna=True
+    # ------------------------------------------------------------
+    rec_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
+    rec_df = (
+        rec_events.groupby(["receiver_id", "receiver", "posteam"], dropna=True)
+        .agg(
+            targets=("receiver_id", "count"),
+            receptions=("complete_pass", "sum"),
+            receiving_yards=("yards_gained", "sum"),
+            receiving_tds=("touchdown", "sum"),
+            receiving_air_yards=("air_yards", "sum"),
+            receiving_first_downs=("first_down", "sum"),
+            receiving_epa=("epa", "sum"),
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "receiver_id": "player_id",
+                "receiver": "player_name",
+                "posteam": "team",
+            }
+        )
     )
 
-    rec_df = rec_group.agg(
-        targets=("receiver_id", "count"),
-        receptions=("complete_pass", "sum"),
-        receiving_yards=("yards_gained", "sum"),
-        receiving_tds=("touchdown", "sum"),
-        air_yards=("air_yards", "sum"),
-        receiving_first_downs=("first_down", "sum"),
-        receiving_epa=("epa", "sum"),
-    ).reset_index()
-
-    rec_df.rename(
-        columns={
-            "receiver_id": "player_id",
-            "receiver": "player_name",
-            "posteam": "team",
-        },
-        inplace=True,
-    )
-
-    # -----------------------------
+    # ------------------------------------------------------------
     # RUSHING
-    # -----------------------------
-    rush_events = pbp_week[pbp_week["rush_attempt"] == 1]
-    rush_group = rush_events.groupby(
-        ["rusher_id", "rusher", "posteam"], dropna=True
+    # ------------------------------------------------------------
+    rush_events = pbp_week[pbp_week.get("rush_attempt", 0) == 1]
+    rush_df = (
+        rush_events.groupby(["rusher_id", "rusher", "posteam"], dropna=True)
+        .agg(
+            carries=("rusher_id", "count"),
+            rushing_yards=("yards_gained", "sum"),
+            rushing_tds=("touchdown", "sum"),
+            rushing_epa=("epa", "sum"),
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "rusher_id": "player_id",
+                "rusher": "player_name",
+                "posteam": "team",
+            }
+        )
     )
 
-    rush_df = rush_group.agg(
-        carries=("rusher_id", "count"),
-        rushing_yards=("yards_gained", "sum"),
-        rushing_tds=("touchdown", "sum"),
-        rushing_epa=("epa", "sum"),
-    ).reset_index()
-
-    rush_df.rename(
-        columns={
-            "rusher_id": "player_id",
-            "rusher": "player_name",
-            "posteam": "team",
-        },
-        inplace=True,
-    )
-
-    # -----------------------------
+    # ------------------------------------------------------------
     # PASSING
-    # -----------------------------
-    pass_events = pbp_week[pbp_week["pass_attempt"] == 1]
-    pass_group = pass_events.groupby(
-        ["passer_id", "passer", "posteam"], dropna=True
+    # ------------------------------------------------------------
+    pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
+    pass_df = (
+        pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
+        .agg(
+            attempts=("pass_attempt", "sum"),
+            completions=("complete_pass", "sum"),
+            passing_yards=("yards_gained", "sum"),
+            passing_tds=("touchdown", "sum"),
+            interceptions=("interception", "sum"),
+            passing_air_yards=("air_yards", "sum"),
+            passing_first_downs=("first_down", "sum"),
+            passing_epa=("epa", "sum"),
+        )
+        .reset_index()
+        .rename(
+            columns={
+                "passer_id": "player_id",
+                "passer": "player_name",
+                "posteam": "team",
+            }
+        )
     )
 
-    pass_df = pass_group.agg(
-        attempts=("pass_attempt", "sum"),
-        completions=("complete_pass", "sum"),
-        passing_yards=("yards_gained", "sum"),
-        passing_tds=("touchdown", "sum"),
-        interceptions=("interception", "sum"),
-        passing_epa=("epa", "sum"),
-    ).reset_index()
-
-    pass_df.rename(
-        columns={
-            "passer_id": "player_id",
-            "passer": "player_name",
-            "posteam": "team",
-        },
-        inplace=True,
-    )
-
-    # -----------------------------
+    # ------------------------------------------------------------
     # MERGE ALL THREE
-    # -----------------------------
+    # ------------------------------------------------------------
     from functools import reduce
+
     dfs = [rec_df, rush_df, pass_df]
+    dfs = [df for df in dfs if not df.empty]
+
+    if not dfs:
+        return pd.DataFrame()
 
     weekly = reduce(
         lambda left, right: pd.merge(
@@ -136,9 +145,9 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     weekly["season"] = season
     weekly["week"] = week
 
-    # -----------------------------
-    # FANTASY
-    # -----------------------------
+    # ------------------------------------------------------------
+    # FANTASY SCORING
+    # ------------------------------------------------------------
     for col in [
         "targets", "receptions", "receiving_yards", "receiving_tds",
         "carries", "rushing_yards", "rushing_tds",
