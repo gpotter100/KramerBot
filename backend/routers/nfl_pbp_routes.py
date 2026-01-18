@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.services.nfl_pbp_service import (
+from services.nfl_pbp_service import (
     pbp_games_index,
     pbp_by_game,
 )
