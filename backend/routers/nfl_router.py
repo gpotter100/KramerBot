@@ -61,13 +61,29 @@ def load_rosters(season: int) -> pd.DataFrame:
     print(f"📡 Loading nflverse roster parquet for {season}")
     df = pd.read_parquet(url)
 
+    # Normalize columns
+    df.columns = [c.lower() for c in df.columns]
+
+    # Use recent_team as team
     if "recent_team" in df.columns:
         df = df.rename(columns={"recent_team": "team"})
 
+    # Filter to active roster rows only
+    if "status" in df.columns:
+        df = df[df["status"].isin(["ACT", "PRA", "RES"])]
+
+    # Drop rows with no player_id
+    df = df[df["player_id"].notna()]
+
+    # Deduplicate by player_id (keep most recent)
+    df = df.sort_values("season", ascending=False).drop_duplicates("player_id")
+
+    # Ensure position exists
     if "position" not in df.columns:
         df["position"] = None
 
     return df
+
 
 
 # ============================================================
