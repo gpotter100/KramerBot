@@ -9,7 +9,7 @@ import polars as pl
 # So parents[2] = backend/
 BASE_DIR = Path(__file__).resolve().parents[2]
 
-LOCAL_PBP_DIR = BASE_DIR / "tmp" / "kramerbot_pbp_cache"
+LOCAL_PBP_DIR = BASE_DIR / "data" / "pbp"
 
 
 # ------------------------------------------------------------
