@@ -161,12 +161,22 @@ def compute_vandalay_defense_components(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ============================================================
-#  ATTRIBUTION %
+#  ATTRIBUTION % — SAFE VERSION
 # ============================================================
 
 def compute_attribution_percentages(components: pd.DataFrame) -> pd.DataFrame:
-    total = components.sum(axis=1).replace(0, np.nan)
-    pct = components.div(total, axis=0).fillna(0)
+    """
+    Computes attribution percentages safely, avoiding division-by-zero
+    and Pandas downcasting warnings.
+    """
+    total = components.sum(axis=1)
+
+    # Replace 0 totals with NA to avoid division-by-zero
+    total = total.where(total != 0, pd.NA)
+
+    pct = components.div(total, axis=0)
+    pct = pct.fillna(0)
+
     return pct.add_suffix("_pct")
 
 
