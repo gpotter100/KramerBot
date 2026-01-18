@@ -89,7 +89,12 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     df = harmonize_ids(df, rosters)
 
     # Snap counts
-    snaps = load_snap_counts(season, week)
+    # Skip snap counts for seasons where nflverse has no data
+    if season >= 2025:
+        snaps = pd.DataFrame({"player_id": [], "snap_pct": []})
+    else:
+    
+        snaps = load_snap_counts(season, week)
 
     if not snaps.empty:
         # Normalize column names
