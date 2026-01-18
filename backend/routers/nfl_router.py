@@ -30,6 +30,7 @@ LOCAL_PBP_DIR = BASE_DIR / "data" / "pbp"
 
 def build_season_cache():
     print("DEBUG: PBP FILES FOUND:", list(LOCAL_PBP_DIR.glob("pbp_*.parquet")))
+    print("DEBUG: LOCAL_PBP_DIR =", LOCAL_PBP_DIR)
 
     with CACHE_LOCK:
         if SEASON_CACHE["loaded"]:
