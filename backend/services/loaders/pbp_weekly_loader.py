@@ -6,7 +6,7 @@ from pathlib import Path
 # Local PBP directory (written by your R ingestion pipeline)
 # ------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parents[2]
-LOCAL_PBP_DIR = BASE_DIR / "backend" / "data" / "pbp"   # <-- UPDATED PATH
+LOCAL_PBP_DIR = BASE_DIR / "data" / "pbp"   # <-- UPDATED PATH
 
 
 # ------------------------------------------------------------
