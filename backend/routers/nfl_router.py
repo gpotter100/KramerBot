@@ -20,7 +20,7 @@ SEASON_CACHE = {"seasons": [], "loaded": False}
 CACHE_LOCK = threading.Lock()
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-LOCAL_PBP_DIR = BASE_DIR / "data" / "pbp"
+LOCAL_PBP_DIR = BASE_DIR / "backend" / "data" / "pbp"
 
 
 
