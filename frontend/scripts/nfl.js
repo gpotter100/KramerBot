@@ -201,7 +201,7 @@ async function loadStats() {
   const week = Number(weekInput?.value);
 
   // Reset UI
-  setHidden(tableWrapper, true);
+  setHidden(tableWrapper, false);
   setHidden(chartsContainer, true);
   setHidden(topPanel, true);
   setHidden(comparePanel, true);
