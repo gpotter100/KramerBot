@@ -101,7 +101,13 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
         return df
 
     # Harmonize IDs
-    rosters = load_rosters(season)
+    # Skip roster harmonization for future seasons (roster files incomplete)
+    if season >= 2025:
+        rosters = pd.DataFrame({"player_id": [], "player_name": [], "team": [], "position": []})
+    
+    else:
+        rosters = load_rosters(season)
+
     df = harmonize_ids(df, rosters)
 
     # Snap counts
