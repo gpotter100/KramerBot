@@ -127,6 +127,52 @@
           </table>
         </section>
 
+        <section id="pbp-panel" class="card hidden">
+          <h2>Play-by-play</h2>
+
+          <div class="filter-bar" style="margin-bottom: 12px;">
+            <div class="filter-group">
+              <label for="pbp-season-type">Season type</label>
+              <select id="pbp-season-type">
+                <option value="REG" selected>REG</option>
+                <option value="POST">POST</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="pbp-games-select">Game</label>
+              <select id="pbp-games-select"></select>
+            </div>
+
+            <button id="pbp-load-btn" class="primary-btn" type="button">Load PBP</button>
+          </div>
+  
+          <div id="pbp-loading" class="loading hidden">Loading play-by-play…</div>
+
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Q</th>
+                  <th>Down</th>
+                  <th>To go</th>
+                  <th>Ydline</th>
+                  <th>Off</th>
+                  <th>Type</th>
+                  <th>Yds</th>
+                  <th>EPA</th>
+                  <th>WP</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="pbp-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <script type="module" src="/js/pbp.js"></script>
+
+
         <!-- CHARTS -->
         <section id="charts-container" class="charts-grid hidden">
           <div class="chart-card card">

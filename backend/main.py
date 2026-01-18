@@ -16,6 +16,7 @@ from routers.upload import router as upload_router
 from routers.stats import router as stats_router
 from routers.visuals import router as visuals_router
 from routers.league_public import router as league_public_router
+from routers.nfl_pbp_routes import router as nfl_pbp_router
 
 # IMPORTANT: use the router-based NFL system
 from routers import nfl_router
@@ -47,6 +48,7 @@ app.include_router(upload_router)
 app.include_router(stats_router)
 app.include_router(visuals_router)
 app.include_router(league_public_router)
+app.include_router(nfl_pbp_router)
 
 # The correct NFL router (Option A)
 app.include_router(nfl_router)
