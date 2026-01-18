@@ -6,7 +6,7 @@ from pathlib import Path
 # Local PBP directory (written by your R ingestion pipeline)
 # ------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parents[2]
-LOCAL_PBP_DIR = BASE_DIR / "tmp" / "kramerbot_pbp_cache"
+LOCAL_PBP_DIR = BASE_DIR / "backend" / "data" / "pbp"   # <-- UPDATED PATH
 
 
 # ------------------------------------------------------------
@@ -15,12 +15,13 @@ LOCAL_PBP_DIR = BASE_DIR / "tmp" / "kramerbot_pbp_cache"
 def load_pbp_local(season: int) -> pl.LazyFrame:
     """
     Loads PBP for a season from local parquet written by the R ingestion pipeline.
+    Always returns a LazyFrame (may be empty).
     """
     path = LOCAL_PBP_DIR / f"pbp_{season}.parquet"
 
     if not path.exists():
         print(f"⚠️ Missing local PBP parquet for {season}: {path}")
-        return pl.LazyFrame()
+        return pl.LazyFrame()  # empty LF
 
     print(f"🔥 Loading local PBP parquet for {season}: {path}")
     return pl.scan_parquet(path)
@@ -36,16 +37,18 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     """
 
     lf = load_pbp_local(season)
-    if lf.is_empty():
-        return pd.DataFrame()
 
-    # Filter to week
-    lf_week = lf.filter(pl.col("week") == week)
-
-    # Collect to pandas for now (Phase 2 will stay in Polars)
+    # ------------------------------------------------------------
+    # FIX #1 — LazyFrame has no .is_empty(), so we check via collect()
+    # ------------------------------------------------------------
     try:
+        # Filter by week inside Polars (fast)
+        lf_week = lf.filter(pl.col("week") == week)
+
+        # Collect to pandas
         pbp_week = lf_week.collect().to_pandas()
-    except Exception:
+    except Exception as e:
+        print(f"❌ ERROR collecting PBP for {season} week {week}: {e}")
         return pd.DataFrame()
 
     if pbp_week.empty:
