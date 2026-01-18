@@ -90,9 +90,29 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 
     # Snap counts
     snaps = load_snap_counts(season, week)
+
     if not snaps.empty:
-        df = df.merge(snaps[["player_id", "snap_pct"]], on="player_id", how="left")
+        # Normalize column names
+        snaps.columns = [c.lower() for c in snaps.columns]
+        
+        # Use offense_pct as snap_pct (primary offensive usage)
+        if "offense_pct" in snaps.columns:
+            snaps = snaps.rename(columns={"offense_pct": "snap_pct"})
+        else:
+            # If no offense_pct exists, create a safe default
+            snaps["snap_pct"] = 0
+
+        # Merge safely
+        df = df.merge(
+            snaps[["player_id", "snap_pct"]],
+            on="player_id",
+            how="left"
+        )
+
         df["snap_pct"] = df["snap_pct"].fillna(0)
+    else:
+        # No snap data at all
+        df["snap_pct"] = 0
 
     return df
 
