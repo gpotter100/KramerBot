@@ -23,7 +23,7 @@ const positionFilter = document.getElementById("position-filter");
 const loadBtn = document.getElementById("load-btn");
 
 const loadingIndicator = document.getElementById("loading-indicator");
-const usageTable = document.getElementById("usage-table");
+const tableWrapper = document.getElementById("table-wrapper");
 const usageBody = document.getElementById("usage-body");
 
 const chartsContainer = document.getElementById("charts-container");
@@ -201,7 +201,7 @@ async function loadStats() {
   const week = Number(weekInput?.value);
 
   // Reset UI
-  setHidden(usageTable, true);
+  setHidden(tableWrapper, true);
   setHidden(chartsContainer, true);
   setHidden(topPanel, true);
   setHidden(comparePanel, true);
@@ -221,7 +221,7 @@ async function loadStats() {
 
     if (!rows.length) {
       usageBody.innerHTML = `<tr><td colspan="15">No data returned for this week.</td></tr>`;
-      setHidden(usageTable, false);
+      setHidden(tableWrapper, false);
       return;
     }
 
@@ -235,7 +235,7 @@ async function loadStats() {
   } catch (err) {
     console.error("Error loading NFL data:", err);
     usageBody.innerHTML = `<tr><td colspan="15">Error loading data.</td></tr>`;
-    setHidden(usageTable, false);
+    setHidden(tableWrapper, false);
   } finally {
     setHidden(loadingIndicator, true);
   }
@@ -288,7 +288,7 @@ function sortBy(column) {
 function renderTable(data) {
   if (!Array.isArray(data) || data.length === 0) {
     usageBody.innerHTML = `<tr><td colspan="15">No players match your filters.</td></tr>`;
-    setHidden(usageTable, false);
+    setHidden(tableWrapper, false);
     return;
   }
 
@@ -312,7 +312,7 @@ function renderTable(data) {
     </tr>
   `).join("");
 
-  setHidden(usageTable, false);
+  setHidden(tableWrapper, false);
 }
 
 /* ===============================
