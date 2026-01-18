@@ -90,16 +90,29 @@ function normalizePlayer(raw) {
   // Derived outputs (deterministic)
   const totalYards = passingYards + rushingYards + receivingYards;
 
-  // Touches in your UI historically = attempts + receptions (keep this, even if imperfect)
+  // Historically in this UI: touches = attempts + receptions
+  // (We can revisit to use carries + receptions later if you want.)
   const touches = attempts + receptions;
 
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
 
-  const fantasyPoints = num(raw.fantasy_points);
-  const fantasyPointsPPR = num(raw.fantasy_points_ppr);
+  // Backend may or may not provide these; vandalay_points is now reliable.
+  const vandalayPoints = num(raw.vandalay_points);
 
-  // If backend doesn't provide half PPR, derive it.
-  // If backend does provide it in the future, prefer backend value.
+  // Base fantasy points (non-PPR):
+  // Prefer explicit backend field; otherwise fall back to vandalay_points.
+  const fantasyPoints = raw.fantasy_points !== undefined
+    ? num(raw.fantasy_points)
+    : vandalayPoints;
+
+  // Full PPR:
+  // Prefer backend value; otherwise derive from base + 1 per reception.
+  const fantasyPointsPPR = raw.fantasy_points_ppr !== undefined
+    ? num(raw.fantasy_points_ppr)
+    : (fantasyPoints + receptions);
+
+  // Half PPR:
+  // Prefer backend value; otherwise derive from base + 0.5 per reception.
   const fantasyPointsHalf = raw.fantasy_points_half !== undefined
     ? num(raw.fantasy_points_half)
     : (fantasyPoints + 0.5 * receptions);
@@ -112,7 +125,7 @@ function normalizePlayer(raw) {
 
     // normalized strings
     player_name: text(raw.player_name),
-    position: text(raw.position, "").toUpperCase(),
+    position: text(raw.position || raw.pos, "").toUpperCase(),
     team: text(raw.team, text(raw.recent_team, "")), // tolerate alt keys
 
     // core numeric fields (ensures numbers)
