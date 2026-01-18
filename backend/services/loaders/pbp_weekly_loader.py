@@ -1,9 +1,29 @@
 import pandas as pd
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+LOCAL_PBP_DIR = BASE_DIR / "tmp" / "kramerbot_pbp_cache"
 
 def load_pbp(season: int) -> pd.DataFrame:
     """
-    Loads PBP parquet directly from nflverse GitHub.
+    Loads PBP data.
+
+    For 2025:
+        Always load from local cached parquet.
+    For older seasons:
+        Load from nflverse GitHub.
     """
+    local_path = LOCAL_PBP_DIR / f"pbp_{season}.parquet"
+
+    # 2025 → always local
+    if season == 2025:
+        if local_path.exists():
+            print(f"🔥 Using local 2025 PBP parquet: {local_path}")
+            return pd.read_parquet(local_path)
+        print(f"⚠️ Local 2025 PBP parquet missing: {local_path}")
+        return pd.DataFrame()
+
+    # Historical seasons → nflverse
     url = (
         "https://github.com/nflverse/nflverse-data/releases/download/"
         f"pbp/pbp_{season}.parquet"
