@@ -9,11 +9,12 @@ import { initVisuals } from "./visuals.js";
 ============================================================ */
 function initSidebarNav() {
   const buttons = document.querySelectorAll(".nav-btn");
+  if (!buttons.length) return;
+
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      // Future: switch content based on data-page
     });
   });
 }
@@ -24,13 +25,11 @@ function initSidebarNav() {
 function initMultiWeekDropdown(selectEl) {
   if (!selectEl) return;
 
-  // Populate with ALL + weeks 1–18
   selectEl.innerHTML = `
     <option value="ALL">ALL</option>
     ${Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
   `;
 
-  // If ALL is selected → select everything
   selectEl.addEventListener("change", () => {
     const selected = Array.from(selectEl.selectedOptions).map(o => o.value);
     if (selected.includes("ALL")) {
@@ -40,15 +39,20 @@ function initMultiWeekDropdown(selectEl) {
 }
 
 /* ============================================================
-   TAB SWITCHING
+   TAB SWITCHING (ONLY IF TABS EXIST)
 ============================================================ */
 function initTabs() {
-  document.querySelectorAll(".tab-btn").forEach(btn => {
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const tabPanels = document.querySelectorAll(".tab-panel");
+
+  if (!tabButtons.length || !tabPanels.length) return;
+
+  tabButtons.forEach(btn => {
     btn.addEventListener("click", () => {
       const target = btn.dataset.tab;
 
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+      tabButtons.forEach(b => b.classList.remove("active"));
+      tabPanels.forEach(p => p.classList.remove("active"));
 
       btn.classList.add("active");
       document.getElementById(`tab-${target}`).classList.add("active");
@@ -57,10 +61,23 @@ function initTabs() {
 }
 
 /* ============================================================
+   PAGE DETECTION
+============================================================ */
+function detectPage() {
+  if (document.getElementById("usage-table")) return "weekly";
+  if (document.getElementById("multi-usage-table")) return "multi-usage";
+  if (document.getElementById("pbp-body") && document.getElementById("pbp-week-input")) return "multi-pbp";
+  return "unknown";
+}
+
+/* ============================================================
    MAIN INITIALIZATION
 ============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Main init running");
+
+  const page = detectPage();
+  console.log("Detected page:", page);
 
   initSidebarNav();
   initTabs();
@@ -68,15 +85,20 @@ document.addEventListener("DOMContentLoaded", () => {
   initUpload();
   initVisuals();
 
-  // Initialize multi-week dropdowns
+  // Initialize multi-week dropdowns ONLY if they exist
   initMultiWeekDropdown(document.getElementById("multi-week-input"));
   initMultiWeekDropdown(document.getElementById("pbp-multi-week-input"));
 });
 
-// Sidebar dropdown toggle
+/* ============================================================
+   SIDEBAR DROPDOWN TOGGLE
+============================================================ */
 document.querySelectorAll(".sidebar-dropdown .dropdown-toggle").forEach(btn => {
   btn.addEventListener("click", () => {
     const menu = btn.nextElementSibling;
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    if (menu) {
+      menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    }
   });
 });
+
