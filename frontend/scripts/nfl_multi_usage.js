@@ -21,9 +21,9 @@ const weekInput = document.getElementById("multi-week-input");
 const scoringFilter = document.getElementById("multi-scoring-filter");
 const loadBtn = document.getElementById("multi-load-btn");
 
-const tableWrapper = document.getElementById("multi-table-wrapper");
+const tableWrapper = document.getElementById("multi-usage-table-wrapper");
+const loadingIndicator = document.getElementById("multi-loading");
 const usageBody = document.getElementById("multi-usage-body");
-const loadingIndicator = document.getElementById("multi-loading-indicator");
 
 /* ==========================================================
    LOAD SEASONS (NEW)

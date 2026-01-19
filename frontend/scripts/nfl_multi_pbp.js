@@ -1,18 +1,13 @@
 import { API_BASE as BACKEND_URL } from "./config.js";
 
 /* ==========================================================
-   MULTI-WEEK PBP EXPLORER (UPGRADED)
-   - Loads seasons dynamically
-   - Loads week options dynamically
-   - Multi-select week filter
-   - Aggregates PBP rows across weeks
-   - Schema-tolerant normalization
+   MULTI-WEEK PBP EXPLORER (UPGRADED + FIXED)
 ========================================================== */
 
 let pbpData = [];
 
 /* ===============================
-   DOM ELEMENTS
+   DOM ELEMENTS (FIXED IDS)
 =============================== */
 const seasonInput = document.getElementById("pbp-season-input");
 const weekInput = document.getElementById("pbp-week-input");
@@ -20,10 +15,11 @@ const loadBtn = document.getElementById("pbp-load-btn");
 
 const tableWrapper = document.getElementById("pbp-table-wrapper");
 const pbpBody = document.getElementById("pbp-body");
-const loadingIndicator = document.getElementById("pbp-loading-indicator");
+const loadingIndicator = document.getElementById("pbp-loading");   // FIXED
+const chartsContainer = document.getElementById("pbp-charts");      // OPTIONAL CHARTS
 
 /* ==========================================================
-   LOAD SEASONS (NEW)
+   LOAD SEASONS
 ========================================================== */
 async function loadSeasons() {
   try {
@@ -46,7 +42,6 @@ async function loadSeasons() {
       seasonInput.appendChild(opt);
     });
 
-    // Auto-select latest season
     if (seasons.length) {
       seasonInput.value = seasons[seasons.length - 1];
     }
@@ -57,7 +52,7 @@ async function loadSeasons() {
 }
 
 /* ==========================================================
-   LOAD WEEK OPTIONS (NEW)
+   LOAD WEEK OPTIONS
 ========================================================== */
 function loadWeekOptions() {
   if (!weekInput) {
@@ -67,13 +62,11 @@ function loadWeekOptions() {
 
   weekInput.innerHTML = "";
 
-  // ALL option
   const allOpt = document.createElement("option");
   allOpt.value = "ALL";
   allOpt.textContent = "ALL Weeks";
   weekInput.appendChild(allOpt);
 
-  // Weeks 1–18
   for (let w = 1; w <= 18; w++) {
     const opt = document.createElement("option");
     opt.value = w;
@@ -96,7 +89,7 @@ function getSelectedWeeks() {
 }
 
 /* ==========================================================
-   NORMALIZATION
+   NORMALIZATION (SAFE)
 ========================================================== */
 function num(v) {
   if (typeof v === "number" && !Number.isNaN(v)) return v;
@@ -125,12 +118,17 @@ function normalizePBP(raw) {
 }
 
 /* ==========================================================
-   LOAD MULTI-WEEK PBP
+   LOAD MULTI-WEEK PBP (FIXED)
 ========================================================== */
 async function loadMultiPBP() {
-  const season = Number(seasonInput.value);
+  const season = Number(seasonInput?.value);
   const weeks = getSelectedWeeks();
   const weekParam = weeks.join(",");
+
+  if (!pbpBody || !tableWrapper || !loadingIndicator) {
+    console.error("❌ Missing required DOM elements for PBP rendering");
+    return;
+  }
 
   pbpBody.innerHTML = "";
   tableWrapper.classList.add("hidden");
@@ -149,6 +147,13 @@ async function loadMultiPBP() {
     pbpData = rows.map(normalizePBP);
 
     renderTable(pbpData);
+
+    // OPTIONAL: show charts if present
+    if (chartsContainer) {
+      chartsContainer.classList.remove("hidden");
+      // future: renderEPAChart(pbpData)
+    }
+
   } catch (err) {
     console.error("❌ Error loading multi-week PBP:", err);
     pbpBody.innerHTML = `<tr><td colspan="10">Error loading data.</td></tr>`;
@@ -159,9 +164,11 @@ async function loadMultiPBP() {
 }
 
 /* ==========================================================
-   TABLE RENDERING
+   TABLE RENDERING (SAFE)
 ========================================================== */
 function renderTable(data) {
+  if (!pbpBody) return;
+
   if (!data.length) {
     pbpBody.innerHTML = `<tr><td colspan="10">No PBP data returned.</td></tr>`;
     return;
@@ -184,7 +191,7 @@ function renderTable(data) {
 }
 
 /* ==========================================================
-   INIT (NEW)
+   INIT
 ========================================================== */
 document.addEventListener("DOMContentLoaded", () => {
   loadSeasons();
@@ -192,6 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================================
-   EVENT BINDINGS
+   EVENT BINDINGS (SAFE)
 ========================================================== */
 loadBtn?.addEventListener("click", loadMultiPBP);
