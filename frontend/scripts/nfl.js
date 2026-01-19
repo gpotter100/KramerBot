@@ -19,7 +19,11 @@ const positionIcons = { QB: "🧢", RB: "🏈", WR: "👟", TE: "👕" };
    DOM ELEMENTS
 =============================== */
 const seasonInput = document.getElementById("season-input");
+const multiSeasonInput = document.getElementById("multi-season-input");
+const multiPbpSeasonInput = document.getElementById("pbp-multi-season-input");
 const weekInput = document.getElementById("week-input");
+const multiWeekInput = document.getElementById("multi-week-input");
+const pbpMultiWeekInput = document.getElementById("pbp-multi-week-input");
 const positionFilter = document.getElementById("position-filter");
 const scoringFilter = document.getElementById("scoring-filter");
 const loadBtn = document.getElementById("load-btn");

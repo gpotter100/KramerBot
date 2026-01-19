@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KramerBot – Multi‑Week Usage</title>
+
+  <link rel="stylesheet" href="/styles/layout.css" />
+  <link rel="stylesheet" href="/styles/sidebar.css" />
+  <link rel="stylesheet" href="/styles/nfl.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-main">KramerBot</span>
+        <span class="logo-sub">“I got stats… probably.”</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn" onclick="window.location.href='index.html'">Home</button>
+        <button class="nav-btn" onclick="window.location.href='upload.html'">Upload CSV</button>
+        <button class="nav-btn" onclick="window.location.href='standings.html'">Standings</button>
+        <button class="nav-btn" onclick="window.location.href='stats.html'">Basic Stats</button>
+        <button class="nav-btn" onclick="window.location.href='visuals.html'">Visuals</button>
+
+        <!-- NFL DROPDOWN -->
+        <div class="sidebar-dropdown">
+          <button class="nav-btn dropdown-toggle">NFL Statistics ▾</button>
+          <div class="dropdown-menu">
+            <button class="nav-sub-btn" onclick="window.location.href='nfl_usage.html'">Weekly Usage</button>
+            <button class="nav-sub-btn active" onclick="window.location.href='nfl_multi_usage.html'">Multi‑Week Usage</button>
+            <button class="nav-sub-btn" onclick="window.location.href='nfl_multi_pbp.html'">PBP Explorer</button>
+          </div>
+        </div>
+
+        <button class="nav-btn" onclick="window.location.href='about.html'">About</button>
+      </nav>
+
+      <div class="sidebar-icon-container">
+        <img src="assets/KramerBot_Icon.png" id="sidebar-kramer-icon" alt="KramerBot Icon" />
+      </div>
+
+      <div class="sidebar-footer">
+        <span>KramerBot © 2026</span>
+        <span class="disclaimer">No guarantees. At all.</span>
+      </div>
+    </aside>
+
+    <!-- MOBILE HAMBURGER -->
+    <div id="hamburger-menu">
+      <button id="hamburger-toggle">&#9776;</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main">
+      <main class="content">
+
+        <!-- FILTER BAR -->
+        <section class="filter-bar card">
+
+          <div class="filter-group">
+            <label for="multi-season-input">Season</label>
+            <select id="multi-season-input"></select>
+          </div>
+
+          <div class="filter-group">
+            <label for="multi-week-input">Weeks</label>
+            <select id="multi-week-input" multiple size="10" class="multi-week-select"></select>
+          </div>
+
+          <div class="filter-group">
+            <label for="multi-position-filter">Position</label>
+            <select id="multi-position-filter">
+              <option value="ALL">All</option>
+              <option value="QB">QB</option>
+              <option value="RB">RB</option>
+              <option value="WR">WR</option>
+              <option value="TE">TE</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="multi-scoring-filter">Scoring</label>
+            <select id="multi-scoring-filter">
+              <option value="standard">Standard</option>
+              <option value="ppr">PPR</option>
+              <option value="half-ppr">Half-PPR</option>
+              <option value="vandalay">Vandalay</option>
+              <option value="shen2000">SHEN 2000</option>
+            </select>
+          </div>
+
+          <button id="multi-load-btn" class="primary-btn">Load Multi‑Week</button>
+        </section>
+
+        <div id="multi-loading" class="loading hidden">Loading multi‑week usage…</div>
+
+        <!-- MULTI-WEEK USAGE TABLE -->
+        <section id="multi-usage-table-wrapper" class="table-wrapper hidden">
+          <table id="multi-usage-table" class="data-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Pos</th>
+                <th>Weeks</th>
+                <th>Total Touches</th>
+                <th>Total Fantasy</th>
+                <th>Fantasy / Week</th>
+                <th>Usage Share</th>
+              </tr>
+            </thead>
+            <tbody id="multi-usage-body"></tbody>
+          </table>
+        </section>
+
+        <!-- MULTI-WEEK CHARTS -->
+        <section id="multi-usage-charts" class="charts-grid hidden">
+          <div class="chart-card card">
+            <h2>Fantasy Attribution</h2>
+            <canvas id="attr-stacked"></canvas>
+            <canvas id="attr-donut" style="margin-top: 16px;"></canvas>
+          </div>
+
+          <div class="chart-card card">
+            <h2>Usage Trends</h2>
+            <canvas id="multi-usage-trend-chart"></canvas>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script type="module" src="scripts/config.js"></script>
+  <script type="module" src="scripts/charts_attribution.js"></script>
+  <script type="module" src="scripts/nfl_multi_usage.js"></script>
+  <script type="module" src="scripts/main.js"></script>
+
+  <script>
+    document.getElementById("hamburger-toggle").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("open");
+    });
+
+    // Sidebar dropdown
+    document.querySelectorAll(".sidebar-dropdown .dropdown-toggle").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const menu = btn.nextElementSibling;
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -72,3 +72,11 @@ document.addEventListener("DOMContentLoaded", () => {
   initMultiWeekDropdown(document.getElementById("multi-week-input"));
   initMultiWeekDropdown(document.getElementById("pbp-multi-week-input"));
 });
+
+// Sidebar dropdown toggle
+document.querySelectorAll(".sidebar-dropdown .dropdown-toggle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const menu = btn.nextElementSibling;
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  });
+});

@@ -1,7 +1,9 @@
 import { API_BASE as BACKEND_URL } from "./config.js";
 
 /* ==========================================================
-   MULTI-WEEK USAGE + ATTRIBUTION
+   MULTI-WEEK USAGE + ATTRIBUTION (UPGRADED)
+   - Loads seasons dynamically
+   - Loads week options dynamically
    - Multi-select week filter
    - Aggregates usage across weeks
    - Schema-tolerant normalization
@@ -23,9 +25,69 @@ const tableWrapper = document.getElementById("multi-table-wrapper");
 const usageBody = document.getElementById("multi-usage-body");
 const loadingIndicator = document.getElementById("multi-loading-indicator");
 
-/* ===============================
+/* ==========================================================
+   LOAD SEASONS (NEW)
+========================================================== */
+async function loadSeasons() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
+    const seasons = await res.json();
+
+    console.log("SEASONS FETCHED (multi-week):", seasons);
+
+    if (!seasonInput) {
+      console.error("❌ multi-season-input element missing");
+      return;
+    }
+
+    seasonInput.innerHTML = "";
+
+    seasons.forEach(season => {
+      const opt = document.createElement("option");
+      opt.value = season;
+      opt.textContent = season;
+      seasonInput.appendChild(opt);
+    });
+
+    // Auto-select latest season
+    if (seasons.length) {
+      seasonInput.value = seasons[seasons.length - 1];
+    }
+
+  } catch (err) {
+    console.error("❌ Failed to load seasons:", err);
+  }
+}
+
+/* ==========================================================
+   LOAD WEEK OPTIONS (NEW)
+========================================================== */
+function loadWeekOptions() {
+  if (!weekInput) {
+    console.error("❌ multi-week-input element missing");
+    return;
+  }
+
+  weekInput.innerHTML = "";
+
+  // ALL option
+  const allOpt = document.createElement("option");
+  allOpt.value = "ALL";
+  allOpt.textContent = "ALL Weeks";
+  weekInput.appendChild(allOpt);
+
+  // Weeks 1–18
+  for (let w = 1; w <= 18; w++) {
+    const opt = document.createElement("option");
+    opt.value = w;
+    opt.textContent = `Week ${w}`;
+    weekInput.appendChild(opt);
+  }
+}
+
+/* ==========================================================
    MULTI-SELECT WEEK HELPER
-=============================== */
+========================================================== */
 function getSelectedWeeks() {
   const selected = Array.from(weekInput.selectedOptions).map(o => o.value);
 
@@ -36,9 +98,9 @@ function getSelectedWeeks() {
   return selected.map(Number);
 }
 
-/* ===============================
+/* ==========================================================
    NORMALIZATION
-=============================== */
+========================================================== */
 function num(v) {
   if (typeof v === "number" && !Number.isNaN(v)) return v;
   if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
@@ -54,8 +116,6 @@ function text(v, fallback = "—") {
 function normalizeRow(raw) {
   const attempts = num(raw.attempts);
   const receptions = num(raw.receptions);
-  const targets = num(raw.targets);
-  const carries = num(raw.carries);
 
   const passingYards = num(raw.passing_yards);
   const rushingYards = num(raw.rushing_yards);
@@ -65,15 +125,6 @@ function normalizeRow(raw) {
   const rushingTDs = num(raw.rushing_tds);
   const receivingTDs = num(raw.receiving_tds);
 
-  const totalYards = passingYards + rushingYards + receivingYards;
-  const touches = attempts + receptions;
-  const touchdowns = passingTDs + rushingTDs + receivingTDs;
-
-  const fantasyPoints = num(raw.fantasy_points);
-  const fantasyPointsPPR = num(raw.fantasy_points_ppr);
-  const fantasyPointsHalf = num(raw.fantasy_points_half);
-  const fantasyPointsShen = num(raw.fantasy_points_shen2000);
-
   return {
     ...raw,
     player_name: text(raw.player_name),
@@ -82,25 +133,24 @@ function normalizeRow(raw) {
 
     attempts,
     receptions,
-    targets,
-    carries,
     passing_yards: passingYards,
     rushing_yards: rushingYards,
     receiving_yards: receivingYards,
-    total_yards: totalYards,
-    touchdowns,
-    touches,
 
-    fantasy_points: fantasyPoints,
-    fantasy_points_ppr: fantasyPointsPPR,
-    fantasy_points_half: fantasyPointsHalf,
-    fantasy_points_shen2000: fantasyPointsShen
+    total_yards: passingYards + rushingYards + receivingYards,
+    touchdowns: passingTDs + rushingTDs + receivingTDs,
+    touches: attempts + receptions,
+
+    fantasy_points: num(raw.fantasy_points),
+    fantasy_points_ppr: num(raw.fantasy_points_ppr),
+    fantasy_points_half: num(raw.fantasy_points_half),
+    fantasy_points_shen2000: num(raw.fantasy_points_shen2000)
   };
 }
 
-/* ===============================
+/* ==========================================================
    SCORING FIELD
-=============================== */
+========================================================== */
 function scoringField() {
   const scoring = (scoringFilter?.value || "standard").toLowerCase();
 
@@ -111,6 +161,7 @@ function scoringField() {
       return "fantasy_points_ppr";
     case "half-ppr":
     case "half_ppr":
+    case "half":
       return "fantasy_points_half";
     case "vandalay":
       return "fantasy_points";
@@ -121,9 +172,9 @@ function scoringField() {
   }
 }
 
-/* ===============================
+/* ==========================================================
    LOAD MULTI-WEEK DATA
-=============================== */
+========================================================== */
 async function loadMultiUsage() {
   const season = Number(seasonInput.value);
   const weeks = getSelectedWeeks();
@@ -149,7 +200,7 @@ async function loadMultiUsage() {
 
     renderTable(multiData);
   } catch (err) {
-    console.error("Error loading multi-week usage:", err);
+    console.error("❌ Error loading multi-week usage:", err);
     usageBody.innerHTML = `<tr><td colspan="15">Error loading data.</td></tr>`;
   } finally {
     loadingIndicator.classList.add("hidden");
@@ -157,9 +208,9 @@ async function loadMultiUsage() {
   }
 }
 
-/* ===============================
+/* ==========================================================
    TABLE RENDERING
-=============================== */
+========================================================== */
 function renderTable(data) {
   if (!data.length) {
     usageBody.innerHTML = `<tr><td colspan="15">No data returned.</td></tr>`;
@@ -183,7 +234,15 @@ function renderTable(data) {
     .join("");
 }
 
-/* ===============================
+/* ==========================================================
+   INIT (NEW)
+========================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  loadSeasons();
+  loadWeekOptions();
+});
+
+/* ==========================================================
    EVENT BINDINGS
-=============================== */
+========================================================== */
 loadBtn?.addEventListener("click", loadMultiUsage);
