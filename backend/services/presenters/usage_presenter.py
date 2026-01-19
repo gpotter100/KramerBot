@@ -1,13 +1,85 @@
 import pandas as pd
+import numpy as np
 
-def present_usage(df: pd.DataFrame, position: str = "ALL") -> pd.DataFrame:
+# ============================================================
+#  PRESENT WEEKLY OR MULTI-WEEK USAGE
+# ============================================================
+
+def present_usage(df: pd.DataFrame, position_filter: str = "ALL") -> pd.DataFrame:
     """
-    Premium presentation layer for weekly usage + scoring + metrics.
-    Dynamically selects the best column set based on position and
-    gracefully handles missing columns.
+    Produces a clean, frontend-ready usage dataframe.
+    - Preserves player_name, team, position
+    - Aggregates numeric usage fields
+    - Supports WR/TE combined filtering
+    - Supports ALL positions
     """
 
-    df = df.copy()
+    if df.empty:
+        return df
+
+    # Ensure required identity columns exist
+    for col in ["player_id", "player_name", "team", "position"]:
+        if col not in df.columns:
+            df[col] = ""
+
+    # Normalize position
+    df["position"] = df["position"].fillna("").astype(str).str.upper()
+
+    # Apply position filter BEFORE aggregation
+    pos = (position_filter or "ALL").upper()
+
+    if pos == "WR/TE":
+        df = df[df["position"].isin(["WR", "TE"])]
+    elif pos != "ALL":
+        df = df[df["position"] == pos]
+
+    if df.empty:
+        return df
+
+    # Identify numeric usage fields (safe auto-detection)
+    numeric_cols = [
+        c for c in df.columns
+        if df[c].dtype != "object"
+        and c not in ["week", "season"]
+    ]
+
+    # Identity columns preserved via "first"
+    identity_cols = ["player_id", "player_name", "team", "position"]
+
+    agg_dict = {col: "first" for col in identity_cols}
+    agg_dict.update({col: "sum" for col in numeric_cols})
+
+    # Group by player_id (canonical)
+    grouped = df.groupby("player_id", as_index=False).agg(agg_dict)
+
+    # Recompute derived usage metrics
+    grouped["touches"] = (
+        grouped.get("attempts", 0)
+        + grouped.get("receptions", 0)
+    )
+
+    grouped["total_yards"] = (
+        grouped.get("passing_yards", 0)
+        + grouped.get("rushing_yards", 0)
+        + grouped.get("receiving_yards", 0)
+    )
+
+    grouped["total_tds"] = (
+        grouped.get("passing_tds", 0)
+        + grouped.get("rushing_tds", 0)
+        + grouped.get("receiving_tds", 0)
+    )
+
+    # Weeks played (for multi-week)
+    if "week" in df.columns:
+        grouped["weeks"] = df.groupby("player_id")["week"].nunique().values
+    else:
+        grouped["weeks"] = 1
+
+    # Clean up NaN / inf
+    grouped = grouped.replace([np.inf, -np.inf], 0).fillna(0)
+
+    return grouped
 
     # ============================================================
     # ROUNDING
