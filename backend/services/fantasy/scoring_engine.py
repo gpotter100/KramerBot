@@ -234,6 +234,205 @@ def apply_vandalay_total_scoring(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def apply_standard_scoring(df: pd.DataFrame, int_penalty=-1) -> pd.DataFrame:
+    """
+    Applies your Standard Fantasy Scoring system.
+    Produces:
+      - fantasy_points
+      - fantasy_points_ppr
+      - fantasy_points_half
+    """
+
+    d = df.copy()
+
+    # Ensure missing fields exist
+    needed = [
+        "passing_yards", "passing_tds", "interceptions",
+        "rushing_yards", "rushing_tds",
+        "receptions", "receiving_yards", "receiving_tds",
+        "two_point_conversions", "fumbles_lost",
+        "fumble_recovery_tds",
+
+        # Defense
+        "def_sacks", "def_interceptions", "def_fumbles_recovered",
+        "def_safeties", "def_tds", "def_return_tds",
+        "def_two_point_return", "points_allowed",
+
+        # Kicking
+        "fg_0_39_made", "fg_40_49_made", "fg_50_plus_made",
+        "xp_made", "fg_0_39_missed", "fg_40_49_missed",
+    ]
+
+    for col in needed:
+        if col not in d.columns:
+            d[col] = 0
+
+    # ------------------------------
+    # OFFENSE
+    # ------------------------------
+    offense = (
+        d["passing_yards"] / 25 +
+        d["passing_tds"] * 4 +
+        d["interceptions"] * int_penalty +
+        d["rushing_yards"] / 10 +
+        d["rushing_tds"] * 6 +
+        d["receiving_yards"] / 10 +
+        d["receiving_tds"] * 6 +
+        d["two_point_conversions"] * 2 +
+        d["fumble_recovery_tds"] * 6 +
+        d["fumbles_lost"] * -2
+    )
+
+    # ------------------------------
+    # DEFENSE / SPECIAL TEAMS
+    # ------------------------------
+    pa = d["points_allowed"]
+
+    pa_points = (
+        np.where(pa == 0, 10,
+        np.where(pa <= 6, 7,
+        np.where(pa <= 13, 4,
+        np.where(pa <= 20, 1,
+        np.where(pa <= 27, 0,
+        np.where(pa <= 34, -1, -4)))))))
+    
+
+    defense = (
+        d["def_sacks"] * 1 +
+        d["def_interceptions"] * 2 +
+        d["def_fumbles_recovered"] * 2 +
+        d["def_safeties"] * 2 +
+        d["def_tds"] * 6 +
+        d["def_return_tds"] * 6 +
+        d["def_two_point_return"] * 2 +
+        pa_points
+    )
+
+    # ------------------------------
+    # KICKERS
+    # ------------------------------
+    kicking = (
+        d["fg_50_plus_made"] * 5 +
+        d["fg_40_49_made"] * 4 +
+        d["fg_0_39_made"] * 3 +
+        d["xp_made"] * 1 +
+        d["fg_0_39_missed"] * -2 +
+        d["fg_40_49_missed"] * -1
+    )
+
+    # ------------------------------
+    # TOTAL STANDARD FANTASY POINTS
+    # ------------------------------
+    d["fantasy_points"] = offense + defense + kicking
+
+    # ------------------------------
+    # PPR VARIANTS
+    # ------------------------------
+    d["fantasy_points_ppr"] = d["fantasy_points"] + d["receptions"]
+    d["fantasy_points_half"] = d["fantasy_points"] + 0.5 * d["receptions"]
+
+    return d
+
+
+def apply_shen2000_scoring(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    SHEN 2000 Scoring System
+    - 0.5 PPR
+    - Yahoo-style offense, defense, and kicking
+    """
+
+    d = df.copy()
+
+    # Ensure missing fields exist
+    needed = [
+        # Offense
+        "passing_yards", "passing_tds", "interceptions",
+        "rushing_yards", "rushing_tds",
+        "receptions", "receiving_yards", "receiving_tds",
+        "return_tds", "two_point_conversions",
+        "fumbles_lost", "off_fumble_recovery_tds",
+
+        # Defense
+        "def_sacks", "def_interceptions", "def_fumbles_recovered",
+        "def_tds", "def_safeties", "def_block_kicks",
+        "def_return_tds", "def_two_point_return",
+        "points_allowed",
+
+        # Kicking
+        "fg_0_19_made", "fg_20_29_made", "fg_30_39_made",
+        "fg_40_49_made", "fg_50_plus_made",
+        "xp_made",
+    ]
+
+    for col in needed:
+        if col not in d.columns:
+            d[col] = 0
+
+    # ------------------------------
+    # OFFENSE
+    # ------------------------------
+    offense = (
+        d["passing_yards"] / 25 +
+        d["passing_tds"] * 4 +
+        d["interceptions"] * -1 +
+        d["rushing_yards"] / 10 +
+        d["rushing_tds"] * 6 +
+        d["receiving_yards"] / 10 +
+        d["receiving_tds"] * 6 +
+        d["receptions"] * 0.5 +  # SHEN 2000 is 0.5 PPR
+        d["return_tds"] * 6 +
+        d["two_point_conversions"] * 2 +
+        d["fumbles_lost"] * -1 +  # SHEN uses -1, not -2
+        d["off_fumble_recovery_tds"] * 6
+    )
+
+    # ------------------------------
+    # DEFENSE / SPECIAL TEAMS
+    # ------------------------------
+    pa = d["points_allowed"]
+
+    pa_points = (
+        np.where(pa == 0, 10,
+        np.where(pa <= 6, 7,
+        np.where(pa <= 13, 4,
+        np.where(pa <= 20, 1,
+        np.where(pa <= 27, 0,
+        np.where(pa <= 34, -1, -4)))))))
+    
+
+    defense = (
+        d["def_sacks"] * 1 +
+        d["def_interceptions"] * 2 +
+        d["def_fumbles_recovered"] * 2 +
+        d["def_tds"] * 6 +
+        d["def_safeties"] * 2 +
+        d["def_block_kicks"] * 2 +
+        d["def_return_tds"] * 6 +
+        d["def_two_point_return"] * 2 +
+        pa_points
+    )
+
+    # ------------------------------
+    # KICKERS
+    # ------------------------------
+    kicking = (
+        d["fg_0_19_made"] * 3 +
+        d["fg_20_29_made"] * 3 +
+        d["fg_30_39_made"] * 3 +
+        d["fg_40_49_made"] * 4 +
+        d["fg_50_plus_made"] * 5 +
+        d["xp_made"] * 1
+    )
+
+    # ------------------------------
+    # TOTAL SHEN 2000 FANTASY POINTS
+    # ------------------------------
+    d["fantasy_points_shen2000"] = offense + defense + kicking
+
+    
+    
+    return d
+
 
 # ============================================================
 #  REGISTER SCHEMES
@@ -242,3 +441,5 @@ def apply_vandalay_total_scoring(df: pd.DataFrame) -> pd.DataFrame:
 register_scoring_scheme("vandalay_offense", apply_vandalay_scoring)
 register_scoring_scheme("vandalay_defense", apply_vandalay_defense)
 register_scoring_scheme("vandalay_total", apply_vandalay_total_scoring)
+register_scoring_scheme("standard", apply_standard_scoring)
+register_scoring_scheme("shen2000", apply_shen2000_scoring)

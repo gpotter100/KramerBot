@@ -149,7 +149,8 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 # ============================================================
 
 @router.get("/nfl/player-usage/{season}/{week}")
-def get_player_usage(season: int, week: int, position: str = "ALL"):
+def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str = "standard"):
+
     try:
         print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
 
@@ -174,8 +175,9 @@ def get_player_usage(season: int, week: int, position: str = "ALL"):
         # Present usage
         week_df = present_usage(week_df, pos)
 
-        # Apply Vandalay scoring
-        week_df = apply_scoring(week_df, "vandalay_offense")
+        # Apply scoring
+        week_df = apply_scoring(week_df, scoring)
+
 
         # Add advanced metrics
         week_df = add_efficiency_metrics(week_df)

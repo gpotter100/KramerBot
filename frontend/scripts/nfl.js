@@ -7,6 +7,7 @@ import { API_BASE as BACKEND_URL } from "./config.js";
    - Derive missing fields deterministically (half-PPR, TDs, totals)
    - Never call .toFixed() on undefined
    - Render table + top performers + charts reliably
+   - Support selectable scoring systems
 ========================================================== */
 
 let currentData = [];
@@ -20,6 +21,7 @@ const positionIcons = { QB: "🧢", RB: "🏈", WR: "👟", TE: "👕" };
 const seasonInput = document.getElementById("season-input");
 const weekInput = document.getElementById("week-input");
 const positionFilter = document.getElementById("position-filter");
+const scoringFilter = document.getElementById("scoring-filter");
 const loadBtn = document.getElementById("load-btn");
 
 const loadingIndicator = document.getElementById("loading-indicator");
@@ -74,6 +76,29 @@ function setHidden(el, hidden) {
   el.classList.toggle("hidden", hidden);
 }
 
+function scoringFieldForCurrentSelection() {
+  const scoring = (scoringFilter?.value || "standard").toLowerCase();
+
+  // Map scoring system → field name on the row object
+  // Assumes backend populates these fields accordingly.
+  switch (scoring) {
+    case "standard":
+      return "fantasy_points";          // base standard
+    case "ppr":
+      return "fantasy_points_ppr";      // full PPR
+    case "half-ppr":
+    case "half_ppr":
+      return "fantasy_points_half";     // half PPR
+    case "vandalay_total":
+      return "vandalay_total_points";   // vandalay total
+    case "shen2000":
+    case "shen 2000 scoring":
+      return "fantasy_points_shen2000"; // SHEN 2000 base
+    default:
+      return "fantasy_points_ppr";
+  }
+}
+
 function normalizePlayer(raw) {
   // Core inputs (whatever backend gives us)
   const attempts = num(raw.attempts);           // passing attempts (QB)
@@ -91,7 +116,6 @@ function normalizePlayer(raw) {
   const totalYards = passingYards + rushingYards + receivingYards;
 
   // Historically in this UI: touches = attempts + receptions
-  // (We can revisit to use carries + receptions later if you want.)
   const touches = attempts + receptions;
 
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
@@ -195,6 +219,7 @@ initDropdowns();
 =============================== */
 loadBtn?.addEventListener("click", loadStats);
 positionFilter?.addEventListener("change", applyFilters);
+scoringFilter?.addEventListener("change", applyFilters);
 
 document.querySelectorAll("#usage-table th").forEach(th => {
   th.addEventListener("click", () => {
@@ -212,6 +237,7 @@ compareSelect?.addEventListener("change", renderCompare);
 async function loadStats() {
   const season = Number(seasonInput?.value);
   const week = Number(weekInput?.value);
+  const scoring = scoringFilter?.value || "standard";
 
   // Reset UI
   setHidden(tableWrapper, false);
@@ -226,7 +252,9 @@ async function loadStats() {
   compareMetrics.innerHTML = "";
 
   try {
-    const res = await fetch(`${BACKEND_URL}/nfl/player-usage/${season}/${week}`);
+    const res = await fetch(
+      `${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`
+    );
     if (!res.ok) throw new Error(`Backend returned ${res.status}`);
 
     const payload = await res.json();
@@ -243,8 +271,7 @@ async function loadStats() {
 
     // Populate UI
     populateCompareSelect(currentData);
-    applyFilters();
-    renderTopPerformers(currentData);
+    applyFilters();              // will render table, charts, and top performers
   } catch (err) {
     console.error("Error loading NFL data:", err);
     usageBody.innerHTML = `<tr><td colspan="15">Error loading data.</td></tr>`;
@@ -280,6 +307,7 @@ function applyFilters() {
 
   renderTable(filtered);
   renderCharts(filtered);
+  renderTopPerformers(filtered);
 }
 
 /* ===============================
@@ -332,14 +360,22 @@ function renderTable(data) {
    TOP PERFORMERS
 =============================== */
 function renderTopPerformers(data) {
+  if (!Array.isArray(data) || data.length === 0) {
+    topList.innerHTML = "";
+    setHidden(topPanel, true);
+    return;
+  }
+
+  const field = scoringFieldForCurrentSelection();
+
   const top = [...data]
-    .sort((a, b) => num(b.fantasy_points_ppr) - num(a.fantasy_points_ppr))
+    .sort((a, b) => num(b[field]) - num(a[field]))
     .slice(0, 10);
 
   topList.innerHTML = top.map(p => `
     <li>
       ${positionIcons[p.position] || ""}
-      <strong>${text(p.player_name)}</strong> — ${fmt1(p.fantasy_points_ppr)} pts
+      <strong>${text(p.player_name)}</strong> — ${fmt1(p[field])} pts
     </li>
   `).join("");
 
@@ -350,8 +386,6 @@ function renderTopPerformers(data) {
    COMPARE PANEL
 =============================== */
 function populateCompareSelect(data) {
-  // Use stable identity even when names collide
-  // If backend later provides a player_id, we can switch to that.
   compareSelect.innerHTML = data
     .map((p, idx) => {
       const label = `${text(p.player_name)}${p.team ? ` (${p.team})` : ""}`;
@@ -361,7 +395,6 @@ function populateCompareSelect(data) {
 
   setHidden(comparePanel, false);
 
-  // Render first by default
   if (data.length) {
     compareSelect.value = "0";
     renderCompare();
@@ -373,14 +406,15 @@ function renderCompare() {
   const player = currentData[idx];
   if (!player) return;
 
+  const field = scoringFieldForCurrentSelection();
+
   compareMetrics.innerHTML = `
     <p><strong>${text(player.player_name)}</strong>${player.team ? ` — ${text(player.team)}` : ""}</p>
     <p>Pos: ${text(player.position, "—")}</p>
     <p>Touches: ${fmtInt(player.touches)}</p>
     <p>Total Yards: ${fmtInt(player.total_yards)}</p>
     <p>TDs: ${fmtInt(player.touchdowns)}</p>
-    <p>Fantasy (PPR): ${fmt1(player.fantasy_points_ppr)}</p>
-    <p>Fantasy (Half): ${fmt1(player.fantasy_points_half)}</p>
+    <p>Fantasy (${text(scoringFilter?.value || "Standard")}): ${fmt1(player[field])}</p>
     <p>Efficiency (yds/touch): ${fmt2(player.efficiency)}</p>
   `;
 }
@@ -391,7 +425,6 @@ function renderCompare() {
 function renderCharts(data) {
   if (!Array.isArray(data) || data.length === 0) return;
 
-  // Limit chart density to keep canvas readable
   const chartData = [...data]
     .sort((a, b) => num(b.touches) - num(a.touches))
     .slice(0, 25);
