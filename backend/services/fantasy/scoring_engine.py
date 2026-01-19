@@ -32,207 +32,283 @@ def apply_scoring(df: pd.DataFrame, scheme: str) -> pd.DataFrame:
     return SCORING_REGISTRY[scheme](df)
 
 
-# ============================================================
-#  VANDALAY OFFENSE COMPONENTS
-# ============================================================
+# vandalay_scoring.py
 
-def compute_vandalay_components(df: pd.DataFrame) -> pd.DataFrame:
-    d = df.copy()
+import pandas as pd
+import numpy as np
 
-    needed = [
-        "passing_yards", "passing_tds", "interceptions",
-        "rushing_yards", "rushing_tds",
-        "receiving_yards", "receiving_tds", "receptions",
-        "two_point_pass", "two_point_rush", "two_point_receive",
-        "fumbles_lost",
-        "kick_return_tds", "punt_return_tds",
-        "off_fumble_recovery_tds",
-    ]
+# --- helpers ---------------------------------------------------------------
 
-    d = coerce_numeric(d, needed)
+def _num(series, default=0.0):
+    if series is None:
+        return 0.0
+    return pd.to_numeric(series, errors="coerce").fillna(default)
 
-    for c in needed:
-        if c not in d.columns:
-            d[c] = 0
+def _bonus_tiers(value, tiers):
+    """
+    tiers: list of (threshold, points) where threshold is inclusive.
+    Applied in order; all matching tiers stack.
+    """
+    pts = 0.0
+    for threshold, bonus in tiers:
+        if value >= threshold:
+            pts += bonus
+    return pts
 
-    comp = pd.DataFrame(index=d.index)
+# --- offensive scoring -----------------------------------------------------
 
-    comp["passing_yards_pts"] = d["passing_yards"] * 0.04
-    comp["passing_tds_pts"] = d["passing_tds"] * 4
-    comp["interceptions_pts"] = d["interceptions"] * -2
+def _vandalay_offense_points(df: pd.DataFrame) -> pd.Series:
+    """
+    Offensive Vandalay scoring for non-DST players.
+    Assumes df has one row per player-week.
+    """
 
-    comp["rushing_yards_pts"] = d["rushing_yards"] * 0.1
-    comp["rushing_tds_pts"] = d["rushing_tds"] * 6
+    pa_yds = _num(df.get("passing_yards", 0))
+    pa_tds = _num(df.get("passing_tds", 0))
+    pa_int = _num(df.get("interceptions", df.get("passing_int", 0)))
+    pa_2pt = _num(df.get("passing_two_pt", df.get("pa_two_pt", 0)))
 
-    comp["receiving_yards_pts"] = d["receiving_yards"] * 0.1
-    comp["receiving_tds_pts"] = d["receiving_tds"] * 6
-    comp["receptions_pts"] = d["receptions"] * 0.5
+    ru_yds = _num(df.get("rushing_yards", 0))
+    ru_tds = _num(df.get("rushing_tds", 0))
+    ru_2pt = _num(df.get("rushing_two_pt", df.get("ru_two_pt", 0)))
 
-    comp["two_point_pass_pts"] = d["two_point_pass"] * 2
-    comp["two_point_rush_pts"] = d["two_point_rush"] * 2
-    comp["two_point_receive_pts"] = d["two_point_receive"] * 2
+    re_yds = _num(df.get("receiving_yards", 0))
+    re_tds = _num(df.get("receiving_tds", 0))
+    re_2pt = _num(df.get("receiving_two_pt", df.get("re_two_pt", 0)))
 
-    comp["fumbles_lost_pts"] = d["fumbles_lost"] * -2
+    rec = _num(df.get("receptions", 0))
 
-    comp["kick_return_tds_pts"] = d["kick_return_tds"] * 6
-    comp["punt_return_tds_pts"] = d["punt_return_tds"] * 6
-    comp["off_fumble_recovery_tds_pts"] = d["off_fumble_recovery_tds"] * 6
+    fum_lost = _num(df.get("fumbles_lost", df.get("fl", 0)))
+
+    # Return / fumble recovery TDs (offense / individual)
+    ikr_td = _num(df.get("kick_return_tds", df.get("ikrt_d", 0)))
+    ipr_td = _num(df.get("punt_return_tds", df.get("iprt_d", 0)))
+    ofr_td = _num(df.get("off_fumble_rec_tds", df.get("ofrt_d", 0)))
+    ifr_td = _num(df.get("ind_fumble_rec_tds", df.get("ifrt_d", 0)))
+
+    # Base yardage scoring
+    pa_pts = pa_yds * 0.04
+    ru_pts = ru_yds * 0.1
+    re_pts = re_yds * 0.1
 
     # Yardage bonuses
-    comp["passing_bonus_pts"] = (
-        (d["passing_yards"] >= 300).astype(int) * 3 +
-        (d["passing_yards"] >= 350).astype(int) * 1 +
-        (d["passing_yards"] >= 400).astype(int) * 1 +
-        (d["passing_yards"] >= 450).astype(int) * 1 +
-        (d["passing_yards"] >= 500).astype(int) * 1
+    pa_bonus = pa_yds.apply(
+        lambda y: _bonus_tiers(
+            y,
+            [
+                (300, 3),
+                (350, 1),
+                (400, 1),
+                (450, 1),
+                (500, 1),
+            ],
+        )
     )
 
-    comp["receiving_bonus_pts"] = (
-        (d["receiving_yards"] >= 100).astype(int) * 3 +
-        (d["receiving_yards"] >= 150).astype(int) * 1 +
-        (d["receiving_yards"] >= 200).astype(int) * 1 +
-        (d["receiving_yards"] >= 250).astype(int) * 1 +
-        (d["receiving_yards"] >= 300).astype(int) * 1
+    ru_bonus = ru_yds.apply(
+        lambda y: _bonus_tiers(
+            y,
+            [
+                (100, 3),
+                (150, 1),
+                (200, 1),
+                (250, 1),
+                (300, 1),
+            ],
+        )
     )
 
-    comp["rushing_bonus_pts"] = (
-        (d["rushing_yards"] >= 100).astype(int) * 3 +
-        (d["rushing_yards"] >= 150).astype(int) * 1 +
-        (d["rushing_yards"] >= 200).astype(int) * 1 +
-        (d["rushing_yards"] >= 250).astype(int) * 1 +
-        (d["rushing_yards"] >= 300).astype(int) * 1
+    re_bonus = re_yds.apply(
+        lambda y: _bonus_tiers(
+            y,
+            [
+                (100, 3),
+                (150, 1),
+                (200, 1),
+                (250, 1),
+                (300, 1),
+            ],
+        )
     )
 
-    return comp
-
-
-# ============================================================
-#  VANDALAY DEFENSE COMPONENTS
-# ============================================================
-
-def compute_vandalay_defense_components(df: pd.DataFrame) -> pd.DataFrame:
-    d = df.copy()
-
-    needed = [
-        "def_fumble_recoveries",
-        "def_interceptions",
-        "def_sacks",
-        "def_safeties",
-        "def_one_point_safety",
-        "def_two_point_return",
-        "def_tds",
-        "def_td_yards",
-        "points_allowed",
-    ]
-
-    d = coerce_numeric(d, needed)
-
-    for c in needed:
-        if c not in d.columns:
-            d[c] = 0
-
-    comp = pd.DataFrame(index=d.index)
-
-    comp["fumble_recovery_pts"] = d["def_fumble_recoveries"] * 2
-    comp["interceptions_pts"] = d["def_interceptions"] * 2
-    comp["sacks_pts"] = d["def_sacks"] * 1
-    comp["safety_pts"] = d["def_safeties"] * 2
-    comp["one_point_safety_pts"] = d["def_one_point_safety"] * 1
-    comp["two_point_return_pts"] = d["def_two_point_return"] * 2
-
-    comp["def_tds_pts"] = d["def_tds"] * 6
-
-    yards = d["def_td_yards"]
-    comp["def_td_bonus_pts"] = (
-        (yards >= 60).astype(int) * 2 +
-        (yards >= 70).astype(int) * 4 +
-        (yards >= 80).astype(int) * 6
+    # TDs and conversions
+    td_pts = (
+        pa_tds * 4
+        + ru_tds * 6
+        + re_tds * 6
+        + ikr_td * 6
+        + ipr_td * 6
+        + ofr_td * 6
+        + ifr_td * 0  # IFRTD is 0 in your rules
     )
 
-    pa = d["points_allowed"]
-    comp["points_allowed_pts"] = (
-        np.where(pa <= 6, 8,
-        np.where(pa <= 13, 6,
-        np.where(pa <= 20, 4,
-        np.where(pa <= 27, 2, 0))))
+    two_pt_pts = (pa_2pt + ru_2pt + re_2pt) * 2
+
+    # Receptions (fixed 0.5 PPR)
+    rec_pts = rec * 0.5
+
+    # Turnovers
+    turnover_pts = pa_int * -2 + fum_lost * -2
+
+    total_off = (
+        pa_pts
+        + ru_pts
+        + re_pts
+        + pa_bonus
+        + ru_bonus
+        + re_bonus
+        + td_pts
+        + two_pt_pts
+        + rec_pts
+        + turnover_pts
     )
 
-    return comp
+    return total_off
 
+# --- DST / defensive scoring ----------------------------------------------
 
-# ============================================================
-#  ATTRIBUTION %
-# ============================================================
+def _vandalay_dst_points(df_dst: pd.DataFrame) -> pd.Series:
+    """
+    Defensive/ST Vandalay scoring for DST rows only.
+    df_dst is a subset of df with position == 'DST'.
+    """
 
-def compute_attribution_percentages(components: pd.DataFrame) -> pd.DataFrame:
-    total = components.sum(axis=1)
-    total = total.where(total != 0, pd.NA)
-    pct = components.div(total, axis=0).fillna(0)
-    return pct.add_suffix("_pct")
+    sacks = _num(df_dst.get("def_sacks", df_dst.get("sacks", 0)))
+    interceptions = _num(df_dst.get("def_interceptions", df_dst.get("def_int", 0)))
+    fumbles_rec = _num(df_dst.get("def_fumbles_recovered", df_dst.get("dfr", 0)))
+    safeties = _num(df_dst.get("safeties", df_dst.get("sty", 0)))
+    one_pt_safety = _num(df_dst.get("one_pt_safety", df_dst.get("sty1pt", 0)))
+    st_2pt = _num(df_dst.get("st_two_pt_returns", df_dst.get("st2pt", 0)))
 
+    dtd = _num(df_dst.get("def_tds", df_dst.get("dtd", 0)))
+    dtd_yds = _num(df_dst.get("def_td_yards", df_dst.get("dtd_yds", 0)))
 
-# ============================================================
-#  VANDALAY OFFENSE
-# ============================================================
+    points_allowed = _num(df_dst.get("points_allowed", 0))
+    yards_allowed = _num(df_dst.get("yards_allowed", df_dst.get("yds_allowed", 0)))
+
+    # Base DST scoring
+    base_pts = (
+        sacks * 1
+        + interceptions * 2
+        + fumbles_rec * 2
+        + safeties * 2
+        + one_pt_safety * 1
+        + st_2pt * 2
+        + dtd * 6
+    )
+
+    # DTD yardage bonuses
+    dtd_bonus = dtd_yds.apply(
+        lambda y: _bonus_tiers(
+            y,
+            [
+                (60, 2),
+                (70, 4),
+                (80, 6),
+            ],
+        )
+    )
+
+    # Points allowed tiers
+    def _points_allowed_tier(pa: float) -> float:
+        if pa <= 6:
+            return 8
+        if pa <= 13:
+            return 6
+        if pa <= 20:
+            return 4
+        if pa <= 27:
+            return 2
+        return 0
+
+    pa_pts = points_allowed.apply(_points_allowed_tier)
+
+    # Yards allowed tiers
+    def _yards_allowed_tier(ya: float) -> float:
+        if ya <= 49:
+            return 12
+        if ya <= 99:
+            return 10
+        if ya <= 149:
+            return 8
+        if ya <= 199:
+            return 6
+        if ya <= 249:
+            return 4
+        if ya <= 299:
+            return 2
+        return 0
+
+    ya_pts = yards_allowed.apply(_yards_allowed_tier)
+
+    total_def = base_pts + dtd_bonus + pa_pts + ya_pts
+    return total_def
+
+# --- main entrypoint -------------------------------------------------------
 
 def apply_vandalay_scoring(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty:
-        return df.assign(vandalay_points=0)
+    """
+    Unified Vandalay scoring:
+    - Offensive rules for non-DST players
+    - Defensive rules ONLY for DST rows
+    - Automatically generates a DST row per team if none exist
+    - Outputs a single field: fantasy_points
+    """
 
-    comp = compute_vandalay_components(df)
-    pct = compute_attribution_percentages(comp)
+    df = df.copy()
 
-    out = df.copy()
-    out["vandalay_points"] = comp.sum(axis=1)
+    # Ensure we have a canonical team + position
+    if "team" not in df.columns:
+        raise ValueError("Vandalay scoring requires a 'team' column")
 
-    return out.join(comp).join(pct)
+    pos_col = "position" if "position" in df.columns else "pos"
+    if pos_col not in df.columns:
+        df[pos_col] = ""
 
+    # --- generate DST rows if none exist -----------------------------------
+    dst_mask = df[pos_col].str.upper() == "DST"
+    if not dst_mask.any():
+        # group by team and synthesize a DST row per team
+        dst_rows = []
+        for team, grp in df.groupby("team"):
+            # if you later add real defensive stats, aggregate them here
+            dst_row = {
+                "player_name": f"{team} DST",
+                "team": team,
+                pos_col: "DST",
+                # placeholders for defensive stats; safe defaults
+                "def_sacks": 0,
+                "def_interceptions": 0,
+                "def_fumbles_recovered": 0,
+                "def_tds": 0,
+                "def_td_yards": 0,
+                "points_allowed": 0,
+                "yards_allowed": 0,
+            }
+            dst_rows.append(dst_row)
 
-# ============================================================
-#  VANDALAY DEFENSE
-# ============================================================
+        if dst_rows:
+            df = pd.concat([df, pd.DataFrame(dst_rows)], ignore_index=True)
+            dst_mask = df[pos_col].str.upper() == "DST"
 
-def apply_vandalay_defense(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty:
-        return df.assign(vandalay_def_points=0)
+    # --- offense scoring for non-DST ---------------------------------------
+    offense_mask = ~dst_mask
+    offense_points = _vandalay_offense_points(df[offense_mask])
 
-    comp = compute_vandalay_defense_components(df)
-    pct = compute_attribution_percentages(comp)
+    # --- defense scoring for DST only --------------------------------------
+    if dst_mask.any():
+        dst_points = _vandalay_dst_points(df[dst_mask])
+    else:
+        dst_points = pd.Series([], dtype=float)
 
-    out = df.copy()
-    out["vandalay_def_points"] = comp.sum(axis=1)
+    # --- combine into fantasy_points ---------------------------------------
+    fantasy_points = pd.Series(0.0, index=df.index)
 
-    return out.join(comp).join(pct)
+    fantasy_points.loc[offense_mask] += offense_points.values
+    if dst_mask.any():
+        fantasy_points.loc[dst_mask] += dst_points.values
 
-
-# ============================================================
-#  VANDALAY TOTAL
-# ============================================================
-
-def apply_vandalay_total_scoring(df: pd.DataFrame) -> pd.DataFrame:
-    if df.empty:
-        return df.assign(
-            vandalay_points=0,
-            vandalay_def_points=0,
-            vandalay_total_points=0,
-            fantasy_points=0,
-            fantasy_points_ppr=0,
-            fantasy_points_half=0,
-        )
-
-    df = apply_vandalay_scoring(df)
-    df = apply_vandalay_defense(df)
-
-    df["vandalay_total_points"] = (
-        df.get("vandalay_points", 0) +
-        df.get("vandalay_def_points", 0)
-    )
-
-    rec = df.get("receptions", 0)
-
-    df["fantasy_points"] = df["vandalay_total_points"]
-    df["fantasy_points_ppr"] = df["fantasy_points"] + rec
-    df["fantasy_points_half"] = df["fantasy_points"] + 0.5 * rec
+    df["fantasy_points"] = fantasy_points
 
     return df
 
@@ -403,8 +479,6 @@ def apply_shen2000_scoring(df: pd.DataFrame) -> pd.DataFrame:
 #  REGISTER SCHEMES
 # ============================================================
 
-register_scoring_scheme("vandalay_offense", apply_vandalay_scoring)
-register_scoring_scheme("vandalay_defense", apply_vandalay_defense)
-register_scoring_scheme("vandalay_total", apply_vandalay_total_scoring)
+register_scoring_scheme("vandalay", apply_vandalay_scoring)
 register_scoring_scheme("standard", apply_standard_scoring)
 register_scoring_scheme("shen2000", apply_shen2000_scoring)
