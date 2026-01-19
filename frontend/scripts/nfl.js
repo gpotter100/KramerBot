@@ -346,8 +346,7 @@ function renderTable(data) {
       <td>${fmtInt(p.carries)}</td>
       <td>${fmtInt(p.total_yards)}</td>
       <td>${fmtInt(p.touchdowns)}</td>
-      <td>${fmtInt(p.vandalay_points)}</td>
-
+      
       <!-- DYNAMIC SCORING COLUMN -->
       <td>${fmt1(p[scoringField])}</td>
 
