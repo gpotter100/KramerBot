@@ -213,14 +213,15 @@
         <!-- TAB: MULTI-WEEK USAGE + ATTRIBUTION -->
         <section id="tab-multi-usage" class="tab-panel">
           <section class="filter-bar card">
+
             <div class="filter-group">
               <label for="multi-season-input">Season</label>
               <select id="multi-season-input"></select>
             </div>
 
             <div class="filter-group">
-              <label for="multi-weeks-input">Weeks</label>
-              <input id="multi-weeks-input" type="text" placeholder="e.g. 1-4,6,8" />
+              <label for="multi-week-input">Weeks</label>
+              <select id="multi-week-input" multiple size="10" class="multi-week-select"></select>
             </div>
 
             <div class="filter-group">
@@ -240,7 +241,7 @@
                 <option value="standard">Standard</option>
                 <option value="ppr">PPR</option>
                 <option value="half-ppr">Half-PPR</option>
-                <option value="vandalay_total">Vandalay</option>
+                <option value="vandalay">Vandalay</option>
                 <option value="shen2000">SHEN 2000</option>
               </select>
             </div>
@@ -280,17 +281,19 @@
           </section>
         </section>
 
+
         <!-- TAB: MULTI-WEEK PBP EXPLORER -->
         <section id="tab-multi-pbp" class="tab-panel">
           <section class="filter-bar card">
+
             <div class="filter-group">
               <label for="pbp-multi-season-input">Season</label>
               <select id="pbp-multi-season-input"></select>
             </div>
 
             <div class="filter-group">
-              <label for="pbp-multi-weeks-input">Weeks</label>
-              <input id="pbp-multi-weeks-input" type="text" placeholder="e.g. 1-4,6,8" />
+              <label for="pbp-multi-week-input">Weeks</label>
+              <select id="pbp-multi-week-input" multiple size="10" class="multi-week-select"></select>
             </div>
 
             <div class="filter-group">
@@ -326,21 +329,21 @@
                   <th>Description</th>
                 </tr>
               </thead>
-              <tbody id="pbp-multi-body"></tbody>
-            </table>
-          </section>
-
-          <section id="pbp-multi-charts" class="charts-grid hidden">
-            <div class="chart-card card">
-              <h2>EPA by Play</h2>
-              <canvas id="pbp-multi-epa-chart"></canvas>
-            </div>
-            <div class="chart-card card">
-              <h2>Air Yards / Depth</h2>
-              <canvas id="pbp-multi-air-chart"></canvas>
-            </div>
-          </section>
+            <tbody id="pbp-multi-body"></tbody>
+          </table>
         </section>
+
+        <section id="pbp-multi-charts" class="charts-grid hidden">
+          <div class="chart-card card">
+            <h2>EPA by Play</h2>
+            <canvas id="pbp-multi-epa-chart"></canvas>
+          </div>
+          <div class="chart-card card">
+            <h2>Air Yards / Depth</h2>
+            <canvas id="pbp-multi-air-chart"></canvas>
+          </div>
+        </section>
+      </section>
 
       </main>
     </div> <!-- end #main -->

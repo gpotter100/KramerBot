@@ -4,6 +4,9 @@ import { initChat } from "./chat.js";
 import { initUpload } from "./upload.js";
 import { initVisuals } from "./visuals.js";
 
+/* ============================================================
+   SIDEBAR NAV
+============================================================ */
 function initSidebarNav() {
   const buttons = document.querySelectorAll(".nav-btn");
   buttons.forEach(btn => {
@@ -15,23 +18,57 @@ function initSidebarNav() {
   });
 }
 
+/* ============================================================
+   MULTI-WEEK DROPDOWN INITIALIZER
+============================================================ */
+function initMultiWeekDropdown(selectEl) {
+  if (!selectEl) return;
+
+  // Populate with ALL + weeks 1–18
+  selectEl.innerHTML = `
+    <option value="ALL">ALL</option>
+    ${Array.from({ length: 18 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
+  `;
+
+  // If ALL is selected → select everything
+  selectEl.addEventListener("change", () => {
+    const selected = Array.from(selectEl.selectedOptions).map(o => o.value);
+    if (selected.includes("ALL")) {
+      Array.from(selectEl.options).forEach(o => (o.selected = true));
+    }
+  });
+}
+
+/* ============================================================
+   TAB SWITCHING
+============================================================ */
+function initTabs() {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+
+      btn.classList.add("active");
+      document.getElementById(`tab-${target}`).classList.add("active");
+    });
+  });
+}
+
+/* ============================================================
+   MAIN INITIALIZATION
+============================================================ */
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Main init running");
 
   initSidebarNav();
+  initTabs();
   initChat();
   initUpload();
   initVisuals();
-});
 
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const target = btn.dataset.tab;
-
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-
-    btn.classList.add("active");
-    document.getElementById(`tab-${target}`).classList.add("active");
-  });
+  // Initialize multi-week dropdowns
+  initMultiWeekDropdown(document.getElementById("multi-week-input"));
+  initMultiWeekDropdown(document.getElementById("pbp-multi-week-input"));
 });
