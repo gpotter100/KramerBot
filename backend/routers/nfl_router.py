@@ -110,6 +110,8 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 
     df = harmonize_ids(df, rosters)
 
+    print("DEBUG AFTER HARMONIZE:", df[["player_id", "player_name", "team", "position"]].head(20))
+
     # Snap counts
     # Skip snap counts for seasons where nflverse has no data
     if season >= 2025:
@@ -140,6 +142,8 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     else:
         # No snap data at all
         df["snap_pct"] = 0
+
+    print("DEBUG FINAL COLUMNS:", df.columns.tolist())
 
     return df
 
