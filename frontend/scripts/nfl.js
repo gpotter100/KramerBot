@@ -91,11 +91,11 @@ function scoringFieldForCurrentSelection() {
     case "half-ppr":
     case "half_ppr":
       return "fantasy_points_half";
-    case "vandalay_total":
-      return "vandalay_total_points";
+    case "vandalay":
+      return "fantasy_points";            // Vandalay uses the base field
     case "shen2000":
-    case "shen 2000 scoring":
-      return "fantasy_points_shen2000";
+    case "shen 2000":
+      return "fantasy_points_shen2000";   // SHEN 2000 backend field
     default:
       return "fantasy_points_ppr";
   }
@@ -117,15 +117,15 @@ function normalizePlayer(raw) {
   const touches = attempts + receptions;
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
 
-  const vandalayPoints = num(raw.vandalay_total_points ?? raw.vandalay_points);
+  // Backend now ALWAYS provides fantasy_points for Vandalay
+  const fantasyPoints = num(raw.fantasy_points);
 
-  const fantasyPoints = isFiniteNumber(raw.fantasy_points)
-  ? num(raw.fantasy_points)
-  : vandalayPoints;
+  // SHEN 2000 backend field
+  const shen2000Points = num(raw.fantasy_points_shen2000);
 
   const fantasyPointsPPR = isFiniteNumber(raw.fantasy_points_ppr)
-  ? num(raw.fantasy_points_ppr)
-  : (fantasyPoints + receptions);
+    ? num(raw.fantasy_points_ppr)
+    : (fantasyPoints + receptions);
 
   const fantasyPointsHalf = isFiniteNumber(raw.fantasy_points_half)
     ? num(raw.fantasy_points_half)
@@ -133,6 +133,7 @@ function normalizePlayer(raw) {
 
   const efficiency = touches > 0 ? totalYards / touches : 0;
   const fantasyPerTouch = touches > 0 ? fantasyPointsPPR / touches : 0;
+
 
   return {
     ...raw,
