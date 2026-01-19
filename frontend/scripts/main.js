@@ -81,7 +81,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initSidebarNav();
   initTabs();
-  initChat();
+
+  // Only initialize chat if chat container exists
+  if (document.getElementById("chat-container")) {
+    initChat();
+  }
+
   initUpload();
   initVisuals();
 
