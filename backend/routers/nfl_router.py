@@ -90,60 +90,65 @@ def load_rosters(season: int) -> pd.DataFrame:
 # UNIFIED WEEKLY LOADER
 # ============================================================
 
+# ============================================================
+# UNIFIED WEEKLY LOADER (FIXED FOR POSITION)
+# ============================================================
+
 def load_weekly_data(season: int, week: int) -> pd.DataFrame:
     from services.loaders.id_harmonizer import harmonize_ids  # avoid circular import
 
     print(f"🔥 Loading weekly data from local PBP for {season} week {week}")
 
+    # Load weekly PBP-derived stats
     df = load_weekly_from_pbp(season, week)
     if df.empty:
         print(f"⚠️ No weekly data for {season} week {week}")
         return df
 
-    # Harmonize IDs
-    # Skip roster harmonization for future seasons (roster files incomplete)
-    if season >= 2025:
-        rosters = pd.DataFrame({"player_id": [], "player_name": [], "team": [], "position": []})
-    
-    else:
+    # ------------------------------------------------------------
+    # FIX: Always load real rosters (2025+ included)
+    # ------------------------------------------------------------
+    try:
         rosters = load_rosters(season)
+        print(f"📘 Loaded roster rows: {len(rosters)} for season {season}")
+    except Exception as e:
+        print(f"⚠️ Failed to load rosters for {season}: {e}")
+        rosters = pd.DataFrame({"player_id": [], "player_name": [], "team": [], "position": []})
 
+    # Harmonize IDs + attach player_name, team, position
     df = harmonize_ids(df, rosters)
 
-    print("DEBUG AFTER HARMONIZE:", df[["player_id", "player_name", "team", "position"]].head(20))
+    # Debug: verify position is present after harmonization
+    try:
+        print("DEBUG AFTER HARMONIZE (first 10 rows):")
+        print(df[["player_id", "player_name", "team", "position"]].head(10))
+    except Exception:
+        print("⚠️ DEBUG: position column missing after harmonize_ids")
 
-    # Snap counts
-    # Skip snap counts for seasons where nflverse has no data
+    # ------------------------------------------------------------
+    # Snap counts (skip for seasons without data)
+    # ------------------------------------------------------------
     if season >= 2025:
         snaps = pd.DataFrame({"player_id": [], "snap_pct": []})
     else:
-    
         snaps = load_snap_counts(season, week)
 
     if not snaps.empty:
-        # Normalize column names
         snaps.columns = [c.lower() for c in snaps.columns]
-        
-        # Use offense_pct as snap_pct (primary offensive usage)
+
         if "offense_pct" in snaps.columns:
             snaps = snaps.rename(columns={"offense_pct": "snap_pct"})
         else:
-            # If no offense_pct exists, create a safe default
             snaps["snap_pct"] = 0
 
-        # Merge safely
         df = df.merge(
             snaps[["player_id", "snap_pct"]],
             on="player_id",
             how="left"
         )
-
         df["snap_pct"] = df["snap_pct"].fillna(0)
     else:
-        # No snap data at all
         df["snap_pct"] = 0
-
-    print("DEBUG FINAL COLUMNS:", df.columns.tolist())
 
     return df
 
