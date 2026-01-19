@@ -126,3 +126,20 @@ def load_raw_weekly(season: int, week: int) -> pd.DataFrame:
     Replace this with your actual ESPN/nfl_data_py/parquet loader.
     """
     raise NotImplementedError("Implement your raw weekly ingestion here.")
+
+import pandas as pd
+
+def load_weekly_pbp(season: int, week: int) -> pd.DataFrame:
+    """
+    Load play-by-play data for a given season and week.
+    Source: nflverse GitHub or your internal storage.
+    """
+    try:
+        url = f"https://github.com/nflverse/nflverse-data/releases/download/pbp/pbp_{season}_week_{week}.parquet"
+        df = pd.read_parquet(url)
+        df["season"] = season
+        df["week"] = week
+        return df
+    except Exception as e:
+        print(f"❌ Failed to load PBP for season {season}, week {week}: {e}")
+        return pd.DataFrame()
