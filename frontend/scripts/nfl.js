@@ -53,6 +53,10 @@ function num(v) {
   return 0;
 }
 
+function isFiniteNumber(v) {
+  return typeof v === "number" && Number.isFinite(v);
+}
+
 function text(v, fallback = "—") {
   if (v === undefined || v === null) return fallback;
   const s = String(v);
@@ -79,32 +83,29 @@ function setHidden(el, hidden) {
 function scoringFieldForCurrentSelection() {
   const scoring = (scoringFilter?.value || "standard").toLowerCase();
 
-  // Map scoring system → field name on the row object
-  // Assumes backend populates these fields accordingly.
   switch (scoring) {
     case "standard":
-      return "fantasy_points";          // base standard
+      return "fantasy_points";
     case "ppr":
-      return "fantasy_points_ppr";      // full PPR
+      return "fantasy_points_ppr";
     case "half-ppr":
     case "half_ppr":
-      return "fantasy_points_half";     // half PPR
+      return "fantasy_points_half";
     case "vandalay_total":
-      return "vandalay_total_points";   // vandalay total
+      return "vandalay_total_points";
     case "shen2000":
     case "shen 2000 scoring":
-      return "fantasy_points_shen2000"; // SHEN 2000 base
+      return "fantasy_points_shen2000";
     default:
       return "fantasy_points_ppr";
   }
 }
 
 function normalizePlayer(raw) {
-  // Core inputs (whatever backend gives us)
-  const attempts = num(raw.attempts);           // passing attempts (QB)
+  const attempts = num(raw.attempts);
   const receptions = num(raw.receptions);
   const targets = num(raw.targets);
-  const carries = num(raw.carries);             // rushing attempts (RB/WR/QB)
+  const carries = num(raw.carries);
   const passingYards = num(raw.passing_yards);
   const rushingYards = num(raw.rushing_yards);
   const receivingYards = num(raw.receiving_yards);
@@ -112,32 +113,21 @@ function normalizePlayer(raw) {
   const rushingTDs = num(raw.rushing_tds);
   const receivingTDs = num(raw.receiving_tds);
 
-  // Derived outputs (deterministic)
   const totalYards = passingYards + rushingYards + receivingYards;
-
-  // Historically in this UI: touches = attempts + receptions
   const touches = attempts + receptions;
-
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
 
-  // Backend may or may not provide these; vandalay_points is now reliable.
   const vandalayPoints = num(raw.vandalay_points);
 
-  // Base fantasy points (non-PPR):
-  // Prefer explicit backend field; otherwise fall back to vandalay_points.
-  const fantasyPoints = raw.fantasy_points !== undefined
+  const fantasyPoints = isFiniteNumber(raw.fantasy_points)
     ? num(raw.fantasy_points)
     : vandalayPoints;
 
-  // Full PPR:
-  // Prefer backend value; otherwise derive from base + 1 per reception.
-  const fantasyPointsPPR = raw.fantasy_points_ppr !== undefined
+  const fantasyPointsPPR = isFiniteNumber(raw.fantasy_points_ppr)
     ? num(raw.fantasy_points_ppr)
     : (fantasyPoints + receptions);
 
-  // Half PPR:
-  // Prefer backend value; otherwise derive from base + 0.5 per reception.
-  const fantasyPointsHalf = raw.fantasy_points_half !== undefined
+  const fantasyPointsHalf = isFiniteNumber(raw.fantasy_points_half)
     ? num(raw.fantasy_points_half)
     : (fantasyPoints + 0.5 * receptions);
 
@@ -146,13 +136,10 @@ function normalizePlayer(raw) {
 
   return {
     ...raw,
-
-    // normalized strings
     player_name: text(raw.player_name),
     position: text(raw.position || raw.pos, "").toUpperCase(),
-    team: text(raw.team, text(raw.recent_team, "")), // tolerate alt keys
+    team: text(raw.team, text(raw.recent_team, "")),
 
-    // core numeric fields (ensures numbers)
     attempts,
     receptions,
     targets,
@@ -164,7 +151,6 @@ function normalizePlayer(raw) {
     rushing_tds: rushingTDs,
     receiving_tds: receivingTDs,
 
-    // derived fields used by UI
     total_yards: totalYards,
     touches,
     touchdowns,
@@ -174,13 +160,11 @@ function normalizePlayer(raw) {
     efficiency,
     fantasy_per_touch: fantasyPerTouch,
 
-    // optional chart input
     snap_pct: num(raw.snap_pct),
   };
 }
 
 function safeSortValue(v) {
-  // sort numbers numerically when possible, otherwise strings
   if (typeof v === "number") return v;
   if (typeof v === "string") return v.toLowerCase();
   return v ?? 0;
@@ -223,8 +207,14 @@ scoringFilter?.addEventListener("change", applyFilters);
 
 document.querySelectorAll("#usage-table th").forEach(th => {
   th.addEventListener("click", () => {
-    const col = th.dataset.sort;
+    let col = th.dataset.sort;
     if (!col) return;
+
+    // If sorting by fantasy, map to current scoring field
+    if (col === "fantasy_points") {
+      col = scoringFieldForCurrentSelection();
+    }
+
     sortBy(col);
   });
 });
@@ -239,7 +229,6 @@ async function loadStats() {
   const week = Number(weekInput?.value);
   const scoring = scoringFilter?.value || "standard";
 
-  // Reset UI
   setHidden(tableWrapper, false);
   setHidden(chartsContainer, true);
   setHidden(topPanel, true);
@@ -266,12 +255,10 @@ async function loadStats() {
       return;
     }
 
-    // Normalize + derive fields
     currentData = rows.map(normalizePlayer);
 
-    // Populate UI
     populateCompareSelect(currentData);
-    applyFilters();              // will render table, charts, and top performers
+    applyFilters();
   } catch (err) {
     console.error("Error loading NFL data:", err);
     usageBody.innerHTML = `<tr><td colspan="15">Error loading data.</td></tr>`;
@@ -346,10 +333,7 @@ function renderTable(data) {
       <td>${fmtInt(p.carries)}</td>
       <td>${fmtInt(p.total_yards)}</td>
       <td>${fmtInt(p.touchdowns)}</td>
-      
-      <!-- DYNAMIC SCORING COLUMN -->
       <td>${fmt1(p[scoringField])}</td>
-
       <td>${fmtInt(p.touches)}</td>
       <td>${fmt2(p.efficiency)}</td>
       <td>${fmt2(p.fantasy_per_touch)}</td>
@@ -379,7 +363,6 @@ function renderTopPerformers(data) {
     <li>
       ${positionIcons[p.position] || ""}
       <strong>${text(p.player_name)}</strong> — ${fmt1(p[field])} pts
- pts
     </li>
   `).join("");
 
