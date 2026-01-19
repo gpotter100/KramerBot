@@ -378,7 +378,7 @@ function renderTopPerformers(data) {
   topList.innerHTML = top.map(p => `
     <li>
       ${positionIcons[p.position] || ""}
-      <strong>${text(p.player_name)}</strong> — ${fmt1(p[field])} pts
+      <strong>${text(p.player_name)}</strong> — ${fmt1(p[scoringFieldForCurrentSelection])} pts
     </li>
   `).join("");
 
