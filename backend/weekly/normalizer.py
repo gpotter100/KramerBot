@@ -1,9 +1,45 @@
 import pandas as pd
+import numpy as np
 from weekly.schema import WEEKLY_SCHEMA
 
 
 # ============================================================
-# NORMALIZE NFL WEEKLY DATA (nfl_data_py or ESPN)
+#  NUMERIC COERCION (critical for scoring)
+# ============================================================
+
+NUMERIC_FIELDS = [
+    "attempts", "carries", "targets", "receptions",
+    "passing_yards", "passing_tds", "interceptions",
+    "rushing_yards", "rushing_tds",
+    "receiving_yards", "receiving_tds",
+    "two_point_conversions", "fumbles_lost",
+    "fumble_recovery_tds",
+    "kick_return_tds", "punt_return_tds",
+    "off_fumble_recovery_tds",
+    "passing_air_yards", "passing_yac",
+    "receiving_air_yards", "receiving_yac",
+    "def_sacks", "def_interceptions", "def_fumbles_recovered",
+    "def_safeties", "def_tds", "def_return_tds",
+    "def_two_point_return", "points_allowed",
+    "fg_0_39_made", "fg_40_49_made", "fg_50_plus_made",
+    "xp_made", "fg_0_39_missed", "fg_40_49_missed",
+    "snap_pct",
+]
+
+
+def coerce_numeric(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensures all numeric fields are numeric.
+    Prevents string arithmetic from breaking scoring.
+    """
+    for col in NUMERIC_FIELDS:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+    return df
+
+
+# ============================================================
+#  NORMALIZE NFL WEEKLY DATA
 # ============================================================
 
 def normalize_weekly_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -11,13 +47,15 @@ def normalize_weekly_df(df: pd.DataFrame) -> pd.DataFrame:
     Normalizes a weekly stats DataFrame into the canonical WEEKLY_SCHEMA.
     Ensures:
       - consistent column names
-      - all required columns exist
-      - missing values filled with 0
-      - fantasy_points_0.5ppr calculated
+      - numeric fields coerced to numeric
+      - missing columns created but never overwriting existing values
+      - no fantasy scoring done here (scoring_engine handles that)
     """
 
     if df is None or df.empty:
         return empty_weekly_df()
+
+    df = df.copy()
 
     # ------------------------------------------------------------
     # 1. RENAME COLUMNS TO CANONICAL NAMES
@@ -47,25 +85,25 @@ def normalize_weekly_df(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
 
     # ------------------------------------------------------------
-    # 2. ENSURE RECEPTIONS EXISTS BEFORE CALCULATING 0.5 PPR
+    # 2. ENSURE RECEPTIONS EXISTS
     # ------------------------------------------------------------
     if "receptions" not in df.columns:
         df["receptions"] = 0
 
     # ------------------------------------------------------------
-    # 3. CALCULATE 0.5 PPR FANTASY POINTS
+    # 3. COERCE NUMERIC FIELDS
     # ------------------------------------------------------------
-    df["fantasy_points_0.5ppr"] = (
-        df.get("fantasy_points", 0) + 0.5 * df.get("receptions", 0)
-    )
+    df = coerce_numeric(df)
 
     # ------------------------------------------------------------
-    # 4. ENSURE ALL REQUIRED COLUMNS EXIST
+    # 4. ENSURE ALL REQUIRED COLUMNS EXIST (NO OVERWRITES)
     # ------------------------------------------------------------
     for col in WEEKLY_SCHEMA:
         if col not in df.columns:
-            # numeric columns default to 0, strings default to ""
-            df[col] = 0 if col not in ["player_name", "player_id", "team", "position"] else ""
+            if col in ["player_name", "player_id", "team", "position"]:
+                df[col] = ""
+            else:
+                df[col] = 0
 
     # ------------------------------------------------------------
     # 5. SNAP PERCENTAGE FALLBACK
@@ -82,12 +120,8 @@ def normalize_weekly_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ============================================================
-# EMPTY WEEKLY DATAFRAME (for missing seasons)
+#  EMPTY WEEKLY DATAFRAME
 # ============================================================
 
 def empty_weekly_df() -> pd.DataFrame:
-    """
-    Returns an empty DataFrame with the canonical WEEKLY_SCHEMA.
-    """
-    df = pd.DataFrame({col: [] for col in WEEKLY_SCHEMA})
-    return df
+    return pd.DataFrame({col: [] for col in WEEKLY_SCHEMA})
