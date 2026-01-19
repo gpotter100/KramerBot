@@ -64,6 +64,18 @@ def load_rosters(season: int) -> pd.DataFrame:
     # Normalize columns
     df.columns = [c.lower() for c in df.columns]
 
+    # Fallback: nflverse 2025+ sometimes uses gsis_id or nfl_id instead of player_id
+    if "player_id" not in df.columns:
+        print("⚠️ roster file missing player_id — attempting fallback ID mapping")
+
+        if "gsis_id" in df.columns:
+            df = df.rename(columns={"gsis_id": "player_id"})
+        elif "nfl_id" in df.columns:
+            df = df.rename(columns={"nfl_id": "player_id"})
+        else:
+            print("❌ No usable ID column found in roster — returning empty roster")
+            return pd.DataFrame({"player_id": [], "player_name": [], "team": [], "position": []})
+
     # Use recent_team as team
     if "recent_team" in df.columns:
         df = df.rename(columns={"recent_team": "team"})
@@ -72,10 +84,7 @@ def load_rosters(season: int) -> pd.DataFrame:
     if "status" in df.columns:
         df = df[df["status"].isin(["ACT", "PRA", "RES"])]
 
-    # Drop rows with no player_id
-    df = df[df["player_id"].notna()]
-
-    # Deduplicate by player_id (keep most recent)
+    # Deduplicate by player_id
     df = df.sort_values("season", ascending=False).drop_duplicates("player_id")
 
     # Ensure position exists
@@ -83,12 +92,6 @@ def load_rosters(season: int) -> pd.DataFrame:
         df["position"] = None
 
     return df
-
-
-
-# ============================================================
-# UNIFIED WEEKLY LOADER
-# ============================================================
 
 # ============================================================
 # UNIFIED WEEKLY LOADER (FIXED FOR POSITION)
