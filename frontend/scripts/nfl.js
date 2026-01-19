@@ -117,15 +117,15 @@ function normalizePlayer(raw) {
   const touches = attempts + receptions;
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
 
-  const vandalayPoints = num(raw.vandalay_points);
+  const vandalayPoints = num(raw.vandalay_total_points ?? raw.vandalay_points);
 
   const fantasyPoints = isFiniteNumber(raw.fantasy_points)
-    ? num(raw.fantasy_points)
-    : vandalayPoints;
+  ? num(raw.fantasy_points)
+  : vandalayPoints;
 
   const fantasyPointsPPR = isFiniteNumber(raw.fantasy_points_ppr)
-    ? num(raw.fantasy_points_ppr)
-    : (fantasyPoints + receptions);
+  ? num(raw.fantasy_points_ppr)
+  : (fantasyPoints + receptions);
 
   const fantasyPointsHalf = isFiniteNumber(raw.fantasy_points_half)
     ? num(raw.fantasy_points_half)
