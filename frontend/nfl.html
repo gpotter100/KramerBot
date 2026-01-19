@@ -56,114 +56,264 @@
       </div>
     </aside>
 
-      <!-- MOBILE HAMBURGER -->
+    <!-- MOBILE HAMBURGER -->
     <div id="hamburger-menu">
       <button id="hamburger-toggle">&#9776;</button>
     </div>
 
     <!-- MAIN CONTENT -->
     <div id="main">
-
       <main class="content">
 
-        <!-- FILTER BAR -->
-        <section class="filter-bar card">
-          <div class="filter-group">
-            <label for="season-input">Season</label>
-            <select id="season-input"></select>
-          </div>
-
-          <div class="filter-group">
-            <label for="week-input">Week</label>
-            <select id="week-input"></select>
-          </div>
-
-          <div class="filter-group">
-            <label for="position-filter">Position</label>
-            <select id="position-filter">
-              <option value="ALL">All</option>
-              <option value="QB">QB</option>
-              <option value="RB">RB</option>
-              <option value="WR">WR</option>
-              <option value="TE">TE</option>
-              <option value="WR/TE">WR/TE</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label for="scoring-filter">Scoring</label>
-            <select id="scoring-filter">
-              <option value="standard">Standard</option>
-              <option value="ppr">PPR</option>
-              <option value="half-ppr">Half PPR</option>
-              <option value="shen2000">SHEN 2000</option>
-              <option value="vandalay_total">Vandalay</option>
-            </select>
-          </div>
-
-          <button id="load-btn" class="primary-btn">Load Stats</button>
+        <!-- TAB BAR -->
+        <section class="tab-bar card">
+          <button class="tab-btn active" data-tab="weekly-usage">Weekly Usage</button>
+          <button class="tab-btn" data-tab="multi-usage">Multi-Week Usage</button>
+          <button class="tab-btn" data-tab="multi-pbp">PBP Explorer</button>
         </section>
 
-        <div id="loading-indicator" class="loading hidden">Loading…</div>
-
-        <!-- TOP PERFORMERS -->
-        <section id="top-performers" class="card hidden">
-          <h2>Top Performers</h2>
-          <ul id="top-list" class="top-list"></ul>
-        </section>
-
-        <!-- USAGE TABLE -->
-        <section id="table-wrapper" class="table-wrapper hidden">
-          <table id="usage-table" class="data-table">
-            <thead>
-              <tr>
-                <th data-sort="position">Pos</th>
-                <th data-sort="player_name">Player</th>
-                <th data-sort="team">Team</th>
-                <th data-sort="attempts">Att</th>
-                <th data-sort="receptions">Rec</th>
-                <th data-sort="targets">Tgt</th>
-                <th data-sort="carries">Carries</th>
-                <th data-sort="total_yards">Total Yds</th>
-                <th data-sort="touchdowns">TDs</th>
-                <th data-sort="fantasy_points">Std</th>
-                <th data-sort="fantasy_points_half">Half PPR</th>
-                <th data-sort="fantasy_points_ppr">PPR</th>
-                <th data-sort="touches">Touches</th>
-                <th data-sort="efficiency">Eff</th>
-                <th data-sort="fantasy_per_touch">PPR / Touch</th>
-              </tr>
-            </thead>
-            <tbody id="usage-body"></tbody>
-          </table>
-        </section>
-
-        <section id="pbp-panel" class="card hidden">
-          <h2>Play-by-play</h2>
-
-          <div class="filter-bar" style="margin-bottom: 12px;">
+        <!-- TAB: WEEKLY USAGE (existing page) -->
+        <section id="tab-weekly-usage" class="tab-panel active">
+          <!-- FILTER BAR -->
+          <section class="filter-bar card">
             <div class="filter-group">
-              <label for="pbp-season-type">Season type</label>
-              <select id="pbp-season-type">
-                <option value="REG" selected>REG</option>
-                <option value="POST">POST</option>
+              <label for="season-input">Season</label>
+              <select id="season-input"></select>
+            </div>
+
+            <div class="filter-group">
+              <label for="week-input">Week</label>
+              <select id="week-input"></select>
+            </div>
+
+            <div class="filter-group">
+              <label for="position-filter">Position</label>
+              <select id="position-filter">
+                <option value="ALL">All</option>
+                <option value="QB">QB</option>
+                <option value="RB">RB</option>
+                <option value="WR">WR</option>
+                <option value="TE">TE</option>
+                <option value="WR/TE">WR/TE</option>
               </select>
             </div>
 
             <div class="filter-group">
-              <label for="pbp-games-select">Game</label>
-              <select id="pbp-games-select"></select>
+              <label for="scoring-filter">Scoring</label>
+              <select id="scoring-filter">
+                <option value="standard">Standard</option>
+                <option value="ppr">PPR</option>
+                <option value="half-ppr">Half-PPR</option>
+                <option value="vandalay_total">Vandalay Total</option>
+                <option value="shen2000">SHEN 2000 Scoring</option>
+              </select>
             </div>
 
-            <button id="pbp-load-btn" class="primary-btn" type="button">Load PBP</button>
-          </div>
-  
-          <div id="pbp-loading" class="loading hidden">Loading play-by-play…</div>
+            <button id="load-btn" class="primary-btn">Load Stats</button>
+          </section>
 
-          <div class="table-wrapper">
+          <div id="loading-indicator" class="loading hidden">Loading…</div>
+
+          <!-- TOP PERFORMERS -->
+          <section id="top-performers" class="card hidden">
+            <h2>Top Performers</h2>
+            <ul id="top-list" class="top-list"></ul>
+          </section>
+
+          <!-- USAGE TABLE -->
+          <section id="table-wrapper" class="table-wrapper hidden">
+            <table id="usage-table" class="data-table">
+              <thead>
+                <tr>
+                  <th data-sort="position">Pos</th>
+                  <th data-sort="player_name">Player</th>
+                  <th data-sort="team">Team</th>
+                  <th data-sort="attempts">Att</th>
+                  <th data-sort="receptions">Rec</th>
+                  <th data-sort="targets">Tgt</th>
+                  <th data-sort="carries">Carries</th>
+                  <th data-sort="total_yards">Total Yds</th>
+                  <th data-sort="touchdowns">TDs</th>
+                  <th data-sort="dynamic_fantasy">Fantasy</th>
+                  <th data-sort="touches">Touches</th>
+                  <th data-sort="efficiency">Eff</th>
+                  <th data-sort="fantasy_per_touch">PPR / Touch</th>
+                </tr>
+              </thead>
+              <tbody id="usage-body"></tbody>
+            </table>
+          </section>
+
+          <!-- PBP PANEL (single-week, existing) -->
+          <section id="pbp-panel" class="card hidden">
+            <h2>Play-by-play</h2>
+
+            <div class="filter-bar" style="margin-bottom: 12px;">
+              <div class="filter-group">
+                <label for="pbp-season-type">Season type</label>
+                <select id="pbp-season-type">
+                  <option value="REG" selected>REG</option>
+                  <option value="POST">POST</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label for="pbp-games-select">Game</label>
+                <select id="pbp-games-select"></select>
+              </div>
+
+              <button id="pbp-load-btn" class="primary-btn" type="button">Load PBP</button>
+            </div>
+
+            <div id="pbp-loading" class="loading hidden">Loading play-by-play…</div>
+
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Q</th>
+                    <th>Down</th>
+                    <th>To go</th>
+                    <th>Ydline</th>
+                    <th>Off</th>
+                    <th>Type</th>
+                    <th>Yds</th>
+                    <th>EPA</th>
+                    <th>WP</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="pbp-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- CHARTS -->
+          <section id="charts-container" class="charts-grid hidden">
+            <div class="chart-card card">
+              <h2>Touches &amp; Snap %</h2>
+              <canvas id="touches-chart"></canvas>
+              <canvas id="snap-chart" style="margin-top:16px;"></canvas>
+            </div>
+
+            <div class="chart-card card">
+              <h2>Usage Breakdown</h2>
+              <canvas id="usage-donut"></canvas>
+            </div>
+          </section>
+
+          <!-- PLAYER COMPARISON -->
+          <section id="compare-panel" class="card hidden">
+            <h2>Compare Players</h2>
+            <select id="compare-select"></select>
+            <div id="compare-metrics" class="compare-metrics"></div>
+          </section>
+        </section>
+
+        <!-- TAB: MULTI-WEEK USAGE + ATTRIBUTION -->
+        <section id="tab-multi-usage" class="tab-panel">
+          <section class="filter-bar card">
+            <div class="filter-group">
+              <label for="multi-season-input">Season</label>
+              <select id="multi-season-input"></select>
+            </div>
+
+            <div class="filter-group">
+              <label for="multi-weeks-input">Weeks</label>
+              <input id="multi-weeks-input" type="text" placeholder="e.g. 1-4,6,8" />
+            </div>
+
+            <div class="filter-group">
+              <label for="multi-position-filter">Position</label>
+              <select id="multi-position-filter">
+                <option value="ALL">All</option>
+                <option value="QB">QB</option>
+                <option value="RB">RB</option>
+                <option value="WR">WR</option>
+                <option value="TE">TE</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="multi-scoring-filter">Scoring</label>
+              <select id="multi-scoring-filter">
+                <option value="standard">Standard</option>
+                <option value="ppr">PPR</option>
+                <option value="half-ppr">Half-PPR</option>
+                <option value="vandalay_total">Vandalay</option>
+                <option value="shen2000">SHEN 2000</option>
+              </select>
+            </div>
+
+            <button id="multi-load-btn" class="primary-btn">Load Multi-Week</button>
+          </section>
+
+          <div id="multi-loading" class="loading hidden">Loading multi-week usage…</div>
+
+          <section id="multi-usage-table-wrapper" class="table-wrapper hidden">
+            <table id="multi-usage-table" class="data-table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Team</th>
+                  <th>Pos</th>
+                  <th>Weeks</th>
+                  <th>Total Touches</th>
+                  <th>Total Fantasy</th>
+                  <th>Fantasy / Week</th>
+                  <th>Usage Share</th>
+                </tr>
+              </thead>
+              <tbody id="multi-usage-body"></tbody>
+            </table>
+          </section>
+
+          <section id="multi-usage-charts" class="charts-grid hidden">
+            <div class="chart-card card">
+              <h2>Fantasy Attribution</h2>
+              <canvas id="multi-attrib-chart"></canvas>
+            </div>
+            <div class="chart-card card">
+              <h2>Usage Trends</h2>
+              <canvas id="multi-usage-trend-chart"></canvas>
+            </div>
+          </section>
+        </section>
+
+        <!-- TAB: MULTI-WEEK PBP EXPLORER -->
+        <section id="tab-multi-pbp" class="tab-panel">
+          <section class="filter-bar card">
+            <div class="filter-group">
+              <label for="pbp-multi-season-input">Season</label>
+              <select id="pbp-multi-season-input"></select>
+            </div>
+
+            <div class="filter-group">
+              <label for="pbp-multi-weeks-input">Weeks</label>
+              <input id="pbp-multi-weeks-input" type="text" placeholder="e.g. 1-4,6,8" />
+            </div>
+
+            <div class="filter-group">
+              <label for="pbp-multi-game-select">Game</label>
+              <select id="pbp-multi-game-select"></select>
+            </div>
+
+            <div class="filter-group">
+              <label for="pbp-multi-player-select">Player</label>
+              <select id="pbp-multi-player-select"></select>
+            </div>
+
+            <button id="pbp-multi-load-btn" class="primary-btn" type="button">Load PBP</button>
+          </section>
+
+          <div id="pbp-multi-loading" class="loading hidden">Loading multi-week PBP…</div>
+
+          <section class="table-wrapper">
             <table class="data-table">
               <thead>
                 <tr>
+                  <th>Week</th>
+                  <th>Game</th>
                   <th>Q</th>
                   <th>Down</th>
                   <th>To go</th>
@@ -176,33 +326,20 @@
                   <th>Description</th>
                 </tr>
               </thead>
-              <tbody id="pbp-body"></tbody>
+              <tbody id="pbp-multi-body"></tbody>
             </table>
-          </div>
-        </section>
+          </section>
 
-        <script type="module" src="/js/pbp.js"></script>
-
-
-        <!-- CHARTS -->
-        <section id="charts-container" class="charts-grid hidden">
-          <div class="chart-card card">
-            <h2>Touches &amp; Snap %</h2>
-            <canvas id="touches-chart"></canvas>
-            <canvas id="snap-chart" style="margin-top:16px;"></canvas>
-          </div>
-
-          <div class="chart-card card">
-            <h2>Usage Breakdown</h2>
-            <canvas id="usage-donut"></canvas>
-          </div>
-        </section>
-
-        <!-- PLAYER COMPARISON -->
-        <section id="compare-panel" class="card hidden">
-          <h2>Compare Players</h2>
-          <select id="compare-select"></select>
-          <div id="compare-metrics" class="compare-metrics"></div>
+          <section id="pbp-multi-charts" class="charts-grid hidden">
+            <div class="chart-card card">
+              <h2>EPA by Play</h2>
+              <canvas id="pbp-multi-epa-chart"></canvas>
+            </div>
+            <div class="chart-card card">
+              <h2>Air Yards / Depth</h2>
+              <canvas id="pbp-multi-air-chart"></canvas>
+            </div>
+          </section>
         </section>
 
       </main>
@@ -213,11 +350,26 @@
   <!-- SCRIPTS -->
   <script type="module" src="scripts/config.js"></script>
   <script type="module" src="scripts/nfl.js"></script>
-  <script type="module" src="scripts/main.js?v=7"></script>
+  <script type="module" src="scripts/nfl_multi_usage.js"></script>
+  <script type="module" src="scripts/nfl_multi_pbp.js"></script>
+  <script type="module" src="scripts/main.js?v=8"></script>
 
   <script>
     document.getElementById("hamburger-toggle").addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("open");
+    });
+
+    // Simple tab switching
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.tab;
+
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+
+        btn.classList.add("active");
+        document.getElementById(`tab-${target}`).classList.add("active");
+      });
     });
   </script>
 </body>

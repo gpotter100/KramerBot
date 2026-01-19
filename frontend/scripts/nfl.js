@@ -333,6 +333,8 @@ function renderTable(data) {
     return;
   }
 
+  const scoringField = scoringFieldForCurrentSelection();
+
   usageBody.innerHTML = data.map(p => `
     <tr>
       <td>${positionIcons[p.position] || text(p.position, "")}</td>
@@ -344,9 +346,10 @@ function renderTable(data) {
       <td>${fmtInt(p.carries)}</td>
       <td>${fmtInt(p.total_yards)}</td>
       <td>${fmtInt(p.touchdowns)}</td>
-      <td>${fmt1(p.fantasy_points)}</td>
-      <td>${fmt1(p.fantasy_points_half)}</td>
-      <td>${fmt1(p.fantasy_points_ppr)}</td>
+
+      <!-- DYNAMIC SCORING COLUMN -->
+      <td>${fmt1(p[scoringField])}</td>
+
       <td>${fmtInt(p.touches)}</td>
       <td>${fmt2(p.efficiency)}</td>
       <td>${fmt2(p.fantasy_per_touch)}</td>
