@@ -7,3 +7,5 @@ from .visuals import router as visuals_router
 from .nfl_router import router as nfl_router
 from .league_public import router as league_public_router
 from .nfl_pbp_routes import router as nfl_pbp_router
+from .pbp import router as pbp_router
+from .attribution import router as attribution_router
