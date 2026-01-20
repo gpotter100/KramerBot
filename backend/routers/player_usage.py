@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from weekly.loader import load_weekly_data
+from routers.nfl_router import load_weekly_data
 from weekly.usage import aggregate_player_usage
 
 router = APIRouter()

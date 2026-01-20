@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from weekly.loader import load_weekly_data, load_weekly_pbp
+from routers.nfl_router import load_weekly_data
+from weekly.loader import load_weekly_pbp
 from weekly.usage import aggregate_player_usage
 from analytics.attribution_engine import compute_multiweek_attribution
 
