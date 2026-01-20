@@ -125,3 +125,39 @@ def normalize_weekly_df(df: pd.DataFrame) -> pd.DataFrame:
 
 def empty_weekly_df() -> pd.DataFrame:
     return pd.DataFrame({col: [] for col in WEEKLY_SCHEMA})
+
+def normalize_pbp_row(raw):
+    """
+    Normalize a single PBP row into a consistent schema.
+    """
+    return {
+        "game_id": raw.get("game_id"),
+        "play_id": raw.get("play_id"),
+        "season": raw.get("season"),
+        "week": raw.get("week"),
+
+        "posteam": raw.get("posteam"),
+        "defteam": raw.get("defteam"),
+
+        # Yardage
+        "rushing_yards": raw.get("rushing_yards", 0),
+        "receiving_yards": raw.get("receiving_yards", 0),
+        "passing_yards": raw.get("passing_yards", 0),
+
+        # Touchdowns
+        "rushing_tds": raw.get("rushing_tds", 0),
+        "receiving_tds": raw.get("receiving_tds", 0),
+        "passing_tds": raw.get("passing_tds", 0),
+
+        # EPA + success
+        "epa": raw.get("epa", 0),
+        "success": bool(raw.get("success", False)),
+
+        # Player IDs
+        "rusher_player_id": raw.get("rusher_player_id"),
+        "receiver_player_id": raw.get("receiver_player_id"),
+        "passer_player_id": raw.get("passer_player_id"),
+
+        # Description
+        "desc": raw.get("desc", ""),
+    }
