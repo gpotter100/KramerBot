@@ -19,6 +19,7 @@ from routers.league_public import router as league_public_router
 from routers.nfl_pbp_routes import router as nfl_pbp_router
 from routers.pbp import router as pbp_router
 from routers.attribution import router as attribution_router
+from routers.player_usage import router as player_usage_router
 
 # IMPORTANT: use the router-based NFL system
 from routers import nfl_router
@@ -53,6 +54,7 @@ app.include_router(league_public_router)
 app.include_router(nfl_pbp_router)
 app.include_router(pbp_router)
 app.include_router(attribution_router)
+app.include_router(player_usage_router)
 
 # The correct NFL router (Option A)
 app.include_router(nfl_router)

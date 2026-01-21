@@ -9,3 +9,4 @@ from .league_public import router as league_public_router
 from .nfl_pbp_routes import router as nfl_pbp_router
 from .pbp import router as pbp_router
 from .attribution import router as attribution_router
+from .player_usage import router as player_usage_router
