@@ -323,6 +323,12 @@ def apply_vandalay_scoring(df: pd.DataFrame) -> pd.DataFrame:
 
     d["fantasy_points"] = fantasy_points
 
+    # aliases for PPR / half-PPR consumers
+    rec = _col(d, "receptions", 0)
+    d["fantasy_points_ppr"] = d["fantasy_points"] + rec
+    d["fantasy_points_half"] = d["fantasy_points"] + 0.5 * rec
+    d["fantasy_points_0.5ppr"] = d["fantasy_points_half"]
+
     return d
 
 
@@ -401,16 +407,21 @@ def apply_standard_scoring(df: pd.DataFrame, int_penalty: int = -1) -> pd.DataFr
     d["fantasy_points_ppr"] = d["fantasy_points"] + rec
     d["fantasy_points_half"] = d["fantasy_points"] + 0.5 * rec
 
+    # provide the 0.5 ppr alias expected by presenters/loaders
+    d["fantasy_points_0.5ppr"] = d["fantasy_points_half"]
+
     return d
 
 def apply_ppr_scoring(df: pd.DataFrame) -> pd.DataFrame:
     d = apply_standard_scoring(df)
     d["fantasy_points"] = d["fantasy_points_ppr"]
+    d["fantasy_points_0.5ppr"] = d.get("fantasy_points_0.5ppr", d.get("fantasy_points_half", d["fantasy_points"]))
     return d
 
 def apply_half_ppr_scoring(df: pd.DataFrame) -> pd.DataFrame:
     d = apply_standard_scoring(df)
     d["fantasy_points"] = d["fantasy_points_half"]
+    d["fantasy_points_0.5ppr"] = d.get("fantasy_points_0.5ppr", d["fantasy_points_half"])
     return d
 
 
@@ -494,6 +505,9 @@ def apply_shen2000_scoring(df: pd.DataFrame) -> pd.DataFrame:
     d["fantasy_points"] = d["fantasy_points_shen2000"]
     d["fantasy_points_ppr"] = d["fantasy_points"] + rec
     d["fantasy_points_half"] = d["fantasy_points"] + 0.5 * rec
+
+    # alias for downstream expectations
+    d["fantasy_points_0.5ppr"] = d["fantasy_points_half"]
 
     return d
 
