@@ -67,8 +67,12 @@ for season in seasons:
 # Print results
 print('\nFiltered Audit Results (2019-2024, weeks 1-17):')
 print(f"Total player rows examined: {summary['total_players']}")
-print(f"Overall zero fantasy_points: {summary['total_zero_fp']} ({100.0*summary['total_zero_fp']/summary['total_players']:.1f}%)")
-print(f"Overall zero fantasy_points_ppr: {summary['total_zero_ppr']} ({100.0*summary['total_zero_ppr']/summary['total_players']:.1f}%)")
+if summary['total_players'] > 0:
+    print(f"Overall zero fantasy_points: {summary['total_zero_fp']} ({100.0*summary['total_zero_fp']/summary['total_players']:.1f}%)")
+    print(f"Overall zero fantasy_points_ppr: {summary['total_zero_ppr']} ({100.0*summary['total_zero_ppr']/summary['total_players']:.1f}%)")
+else:
+    print("Overall zero fantasy_points: 0 (N/A - no rows examined)")
+    print("Overall zero fantasy_points_ppr: 0 (N/A - no rows examined)")
 
 if summary['snap_players'] > 0:
     print('\nPlayers with snap_pct>0:')

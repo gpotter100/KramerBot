@@ -32,7 +32,7 @@ app = FastAPI(title="KramerBot API", version="0.1.0")
 
 # Read allowed origins from environment (Render)
 allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "*").split(",")
-print("🚀 Allowed CORS origins:", allowed_origins)
+print("Allowed CORS origins:", allowed_origins)
 
 app.add_middleware(
     CORSMiddleware,
