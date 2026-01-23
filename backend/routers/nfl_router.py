@@ -407,7 +407,7 @@ def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str
         raise HTTPException(status_code=500, detail="Failed to load NFL data")
 
 # ============================================================
-# MULTI-WEEK USAGE + FANTASY SCORING + ATTRIBUTION
+# MULTI-WEEK USAGE + FANTASY SCORING + ATTRIBUTION (PATCHED)
 # ============================================================
 
 @router.get("/nfl/multi-usage-v2/{season}")
@@ -419,6 +419,9 @@ def get_multi_week_usage(
 ):
     from services.metrics.fantasy_attribution import compute_fantasy_attribution
 
+    # -------------------------------
+    # Parse week list
+    # -------------------------------
     try:
         week_list = [int(w) for w in weeks.split(",") if w.strip()]
     except:
@@ -428,8 +431,11 @@ def get_multi_week_usage(
         raise HTTPException(status_code=400, detail="No weeks provided")
 
     pos = position.upper()
-    all_rows = []
+    all_frames = []
 
+    # -------------------------------
+    # Load + process each week
+    # -------------------------------
     for w in week_list:
         df = load_weekly_data(season, w)
         if df.empty or "week" not in df.columns:
@@ -451,84 +457,70 @@ def get_multi_week_usage(
         # Weekly pipeline
         week_df = present_usage(week_df, pos)
         week_df = apply_scoring(week_df, scoring)
-        week_df = compute_fantasy_attribution(week_df, scoring)
         week_df = add_efficiency_metrics(week_df)
 
+        # Clean
         week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
         week_df["week"] = w
 
-        all_rows.extend(week_df.to_dict(orient="records"))
+        all_frames.append(week_df)
 
-    if not all_rows:
+    if not all_frames:
         return []
 
-    # ------------------------------------------------------------
-    # Aggregate across weeks
-    # ------------------------------------------------------------
-    aggregated = {}
-    for row in all_rows:
-        pid = row.get("player_id") or f"{row.get('player_name')}-{row.get('team')}"
+    # ============================================================
+    # AGGREGATE RAW STATS ACROSS WEEKS
+    # ============================================================
+    df_all = pd.concat(all_frames, ignore_index=True)
 
-        if pid not in aggregated:
-            aggregated[pid] = {
-                "player_id": pid,
-                "player_name": row.get("player_name"),
-                "team": row.get("team"),
-                "position": row.get("position"),
-                "weeks": [],
-                "attempts": 0,
-                "receptions": 0,
-                "touches": 0,
-                "total_yards": 0,
-                "touchdowns": 0,
-                "fantasy_points": 0,
-                "fantasy_points_ppr": 0,
-                "fantasy_points_half": 0,
-                "fantasy_points_shen2000": 0,
-                "attr": {
-                    "passing_pct": 0,
-                    "rushing_pct": 0,
-                    "receiving_pct": 0,
-                    "td_pct": 0,
-                    "bonus_pct": 0,
-                    "turnover_pct": 0,
-                }
-            }
+    group_cols = ["player_id", "player_name", "team", "position"]
 
-        agg = aggregated[pid]
+    agg_df = (
+        df_all.groupby(group_cols, dropna=False)
+        .agg(
+            attempts=("attempts", "sum"),
+            receptions=("receptions", "sum"),
+            passing_yards=("passing_yards", "sum"),
+            rushing_yards=("rushing_yards", "sum"),
+            receiving_yards=("receiving_yards", "sum"),
+            passing_tds=("passing_tds", "sum"),
+            rushing_tds=("rushing_tds", "sum"),
+            receiving_tds=("receiving_tds", "sum"),
+            interceptions=("interceptions", "sum"),
+            fumbles_lost=("fumbles_lost", "sum"),
+            fantasy_points=("fantasy_points", "sum"),
+            fantasy_points_ppr=("fantasy_points_ppr", "sum"),
+            fantasy_points_half=("fantasy_points_half", "sum"),
+            fantasy_points_shen2000=("fantasy_points_shen2000", "sum"),
+        )
+        .reset_index()
+    )
 
-        # Weeks
-        wk = row.get("week")
-        if wk not in agg["weeks"]:
-            agg["weeks"].append(wk)
+    # Add touches + total yards + touchdowns
+    agg_df["touches"] = agg_df["attempts"] + agg_df["receptions"]
+    agg_df["total_yards"] = (
+        agg_df["passing_yards"]
+        + agg_df["rushing_yards"]
+        + agg_df["receiving_yards"]
+    )
+    agg_df["touchdowns"] = (
+        agg_df["passing_tds"]
+        + agg_df["rushing_tds"]
+        + agg_df["receiving_tds"]
+    )
 
-        # Usage
-        agg["attempts"] += row.get("attempts", 0)
-        agg["receptions"] += row.get("receptions", 0)
-        agg["touches"] += row.get("touches", 0)
-        agg["total_yards"] += row.get("total_yards", 0)
-        agg["touchdowns"] += row.get("touchdowns", 0)
+    # ============================================================
+    # RUN ATTRIBUTION ON AGGREGATED DATA
+    # ============================================================
+    agg_df = compute_fantasy_attribution(agg_df, scoring=scoring)
 
-        # Fantasy scoring
-        agg["fantasy_points"] += row.get("fantasy_points", 0)
-        agg["fantasy_points_ppr"] += row.get("fantasy_points_ppr", 0)
-        agg["fantasy_points_half"] += row.get("fantasy_points_half", 0)
-        agg["fantasy_points_shen2000"] += row.get("fantasy_points_shen2000", 0)
+    # ============================================================
+    # RETURN CLEAN RESULTS
+    # ============================================================
+    agg_df = agg_df.replace([np.inf, -np.inf], 0).fillna(0)
+    agg_df = agg_df.sort_values("fantasy_points", ascending=False)
 
-        # Attribution (sum raw, normalize later)
-        for key, val in row.get("attr", {}).items():
-            agg["attr"][key] += val
-
-    # Normalize attribution to percentages
-    for player in aggregated.values():
-        total = sum(abs(v) for v in player["attr"].values()) or 1
-        for k in player["attr"]:
-            player["attr"][k] = round(player["attr"][k] / total * 100, 2)
-
-    result = list(aggregated.values())
-    result.sort(key=lambda r: r.get("fantasy_points", 0), reverse=True)
-
-    return result
+    return agg_df.to_dict(orient="records")
 
 
 # ============================================================

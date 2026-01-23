@@ -71,20 +71,15 @@ def compute_raw_components(df: pd.DataFrame) -> pd.DataFrame:
 def apply_scoring_adjustments(df: pd.DataFrame, scoring: str) -> pd.DataFrame:
     """
     Adjusts attribution components based on scoring system.
-    - Standard: receptions = 0
-    - PPR: receptions = 1.0 per rec
-    - Half-PPR: receptions = 0.5 per rec
-    - Vandalay: receptions = 0.5 per rec (already correct)
-    - SHEN2000: receptions = 0.5 per rec
     """
 
     d = df.copy()
     scoring = scoring.lower()
 
-    if scoring in ["standard"]:
+    if scoring == "standard":
         d["comp_receptions"] = 0
 
-    elif scoring in ["ppr"]:
+    elif scoring == "ppr":
         d["comp_receptions"] = _num(d, "receptions") * 1.0
 
     elif scoring in ["half", "half_ppr", "half-ppr"]:
@@ -95,7 +90,7 @@ def apply_scoring_adjustments(df: pd.DataFrame, scoring: str) -> pd.DataFrame:
 
 
 # ============================================================
-#  PERCENTAGE ATTRIBUTION
+#  ATTRIBUTION COLUMNS
 # ============================================================
 
 ATTR_COLUMNS = [
@@ -113,13 +108,17 @@ ATTR_COLUMNS = [
     "comp_bonus_receiving",
 ]
 
+
+# ============================================================
+#  PERCENTAGE ATTRIBUTION
+# ============================================================
+
 def compute_percentages(df: pd.DataFrame) -> pd.DataFrame:
     """
     Converts raw components into percentages of fantasy_points.
     """
 
     d = df.copy()
-
     total_fp = _num(d, "fantasy_points", 0.0001)  # avoid divide-by-zero
 
     for col in ATTR_COLUMNS:
@@ -152,9 +151,10 @@ def compute_fantasy_attribution(df: pd.DataFrame, scoring: str) -> pd.DataFrame:
         attr = {}
         for col in ATTR_COLUMNS:
             pct_col = col.replace("comp_", "pct_")
-            attr[col.replace("comp_", "")] = {
+            clean_key = col.replace("comp_", "")
+            attr[clean_key] = {
                 "raw": float(row[col]),
-                "pct": float(row[pct_col])
+                "pct": float(row[pct_col]),
             }
         attr_dicts.append(attr)
 
