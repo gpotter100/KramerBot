@@ -417,7 +417,7 @@ def get_multi_week_usage(
     position: str = "ALL",
     scoring: str = "standard"
 ):
-    from services.metrics.fantasy_attribution import compute_attribution
+    from services.metrics.fantasy_attribution import compute_fantasy_attribution
 
     try:
         week_list = [int(w) for w in weeks.split(",") if w.strip()]
