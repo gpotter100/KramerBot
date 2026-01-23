@@ -11,7 +11,7 @@ def get_player_usage(season: int, week: int):
     usage = aggregate_player_usage(df)
     return usage.to_dict(orient="records")
 
-@router.get("/nfl/multi-usage/{season}")
+@router.get("/nfl/multi-usage-raw/{season}")
 def get_multi_week_usage(season: int, weeks: str, scoring: str = "standard"):
     """
     Aggregate player usage across multiple weeks.
