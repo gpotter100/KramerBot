@@ -22,7 +22,7 @@ from routers.attribution import router as attribution_router
 from routers.player_usage import router as player_usage_router
 
 # IMPORTANT: use the router-based NFL system
-from routers import nfl_router
+from routers.nfl_router import router as nfl_router
 
 # ---------------------------------------------------------
 # APP INIT
@@ -55,6 +55,7 @@ app.include_router(nfl_pbp_router)
 app.include_router(pbp_router)
 app.include_router(attribution_router)
 app.include_router(player_usage_router)
+app.include_router(nfl_router)
 
 # The correct NFL router (Option A)
 app.include_router(nfl_router)
