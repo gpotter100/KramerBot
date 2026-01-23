@@ -188,7 +188,7 @@ async function loadMultiUsage() {
 
   try {
     const res = await fetch(
-      `${BACKEND_URL}/nfl/multi-usage/${season}?weeks=${weekParam}&scoring=${encodeURIComponent(scoring)}`
+      `${BACKEND_URL}/nfl/multi-usage-v2/${season}?weeks=${weekParam}&scoring=${encodeURIComponent(scoring)}`
     );
 
     if (!res.ok) throw new Error(`Backend returned ${res.status}`);
