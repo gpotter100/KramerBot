@@ -5,7 +5,7 @@ from weekly.usage import aggregate_player_usage
 router = APIRouter()
 
 
-@router.get("/nfl/player-usage/{season}/{week}")
+@router.get("/nfl/player-usage-raw/{season}/{week}")
 def get_player_usage(season: int, week: int):
     df = load_weekly_data(season, week)
     usage = aggregate_player_usage(df)
