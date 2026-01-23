@@ -11,9 +11,9 @@ This project is a small FastAPI + static frontend application focused on NFL PBP
   - frontend/: static UI assets; backend mounts `../frontend/styles` as `/styles`.
 
 - **Important files to reference**:
-  - [backend/main.py](backend/main.py) — app init and router registration
-  - [backend/routers/nfl_router.py](backend/routers/nfl_router.py) — NFL player-usage route patterns and season cache
-  - [backend/services/presenters/usage_presenter.py](backend/services/presenters/usage_presenter.py) — canonical grouping/aggregation logic
+  - [backend/main.py](../backend/main.py) — app init and router registration
+  - [backend/routers/nfl_router.py](../backend/routers/nfl_router.py) — NFL player-usage route patterns and season cache
+  - [backend/services/presenters/usage_presenter.py](../backend/services/presenters/usage_presenter.py) — canonical grouping/aggregation logic
   - [backend/services/loaders/*] — ID harmonization and PBP loaders used across routes
   - backend/requirements.txt — Python dependencies to install
 

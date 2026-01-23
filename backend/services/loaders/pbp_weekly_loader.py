@@ -148,28 +148,4 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     weekly["season"] = season
     weekly["week"] = week
 
-    # ------------------------------------------------------------
-    # FANTASY SCORING
-    # ------------------------------------------------------------
-    for col in [
-        "targets", "receptions", "receiving_yards", "receiving_tds",
-        "carries", "rushing_yards", "rushing_tds",
-        "attempts", "passing_yards", "passing_tds", "interceptions"
-    ]:
-        if col not in weekly.columns:
-            weekly[col] = 0
-
-    weekly["fantasy_points"] = (
-        weekly["rushing_yards"] / 10
-        + weekly["receiving_yards"] / 10
-        + weekly["rushing_tds"] * 6
-        + weekly["receiving_tds"] * 6
-        + weekly["passing_yards"] / 25
-        + weekly["passing_tds"] * 4
-        - weekly["interceptions"] * 2
-    )
-
-    weekly["fantasy_points_ppr"] = weekly["fantasy_points"] + weekly["receptions"]
-    weekly["fantasy_points_0.5ppr"] = weekly["fantasy_points"] + weekly["receptions"] * 0.5
-
     return weekly
