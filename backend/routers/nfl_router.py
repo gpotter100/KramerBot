@@ -406,6 +406,130 @@ def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str
         print("❌ ERROR IN NFL ROUTE:", e)
         raise HTTPException(status_code=500, detail="Failed to load NFL data")
 
+# ============================================================
+# MULTI-WEEK USAGE + FANTASY SCORING + ATTRIBUTION
+# ============================================================
+
+@router.get("/nfl/multi-usage-v2/{season}")
+def get_multi_week_usage(
+    season: int,
+    weeks: str,
+    position: str = "ALL",
+    scoring: str = "standard"
+):
+    from services.metrics.fantasy_attribution import compute_attribution
+
+    try:
+        week_list = [int(w) for w in weeks.split(",") if w.strip()]
+    except:
+        raise HTTPException(status_code=400, detail="Invalid weeks parameter")
+
+    if not week_list:
+        raise HTTPException(status_code=400, detail="No weeks provided")
+
+    pos = position.upper()
+    all_rows = []
+
+    for w in week_list:
+        df = load_weekly_data(season, w)
+        if df.empty or "week" not in df.columns:
+            continue
+
+        week_df = df[df["week"] == w]
+        if week_df.empty:
+            continue
+
+        # Position filter
+        if pos == "WR/TE":
+            week_df = week_df[week_df["position"].isin(["WR", "TE"])]
+        elif pos != "ALL":
+            week_df = week_df[week_df["position"] == pos]
+
+        if week_df.empty:
+            continue
+
+        # Weekly pipeline
+        week_df = present_usage(week_df, pos)
+        week_df = apply_scoring(week_df, scoring)
+        week_df = compute_attribution(week_df)
+        week_df = add_efficiency_metrics(week_df)
+
+        week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
+        week_df["week"] = w
+
+        all_rows.extend(week_df.to_dict(orient="records"))
+
+    if not all_rows:
+        return []
+
+    # ------------------------------------------------------------
+    # Aggregate across weeks
+    # ------------------------------------------------------------
+    aggregated = {}
+    for row in all_rows:
+        pid = row.get("player_id") or f"{row.get('player_name')}-{row.get('team')}"
+
+        if pid not in aggregated:
+            aggregated[pid] = {
+                "player_id": pid,
+                "player_name": row.get("player_name"),
+                "team": row.get("team"),
+                "position": row.get("position"),
+                "weeks": [],
+                "attempts": 0,
+                "receptions": 0,
+                "touches": 0,
+                "total_yards": 0,
+                "touchdowns": 0,
+                "fantasy_points": 0,
+                "fantasy_points_ppr": 0,
+                "fantasy_points_half": 0,
+                "fantasy_points_shen2000": 0,
+                "attr": {
+                    "passing_pct": 0,
+                    "rushing_pct": 0,
+                    "receiving_pct": 0,
+                    "td_pct": 0,
+                    "bonus_pct": 0,
+                    "turnover_pct": 0,
+                }
+            }
+
+        agg = aggregated[pid]
+
+        # Weeks
+        wk = row.get("week")
+        if wk not in agg["weeks"]:
+            agg["weeks"].append(wk)
+
+        # Usage
+        agg["attempts"] += row.get("attempts", 0)
+        agg["receptions"] += row.get("receptions", 0)
+        agg["touches"] += row.get("touches", 0)
+        agg["total_yards"] += row.get("total_yards", 0)
+        agg["touchdowns"] += row.get("touchdowns", 0)
+
+        # Fantasy scoring
+        agg["fantasy_points"] += row.get("fantasy_points", 0)
+        agg["fantasy_points_ppr"] += row.get("fantasy_points_ppr", 0)
+        agg["fantasy_points_half"] += row.get("fantasy_points_half", 0)
+        agg["fantasy_points_shen2000"] += row.get("fantasy_points_shen2000", 0)
+
+        # Attribution (sum raw, normalize later)
+        for key, val in row.get("attr", {}).items():
+            agg["attr"][key] += val
+
+    # Normalize attribution to percentages
+    for player in aggregated.values():
+        total = sum(abs(v) for v in player["attr"].values()) or 1
+        for k in player["attr"]:
+            player["attr"][k] = round(player["attr"][k] / total * 100, 2)
+
+    result = list(aggregated.values())
+    result.sort(key=lambda r: r.get("fantasy_points", 0), reverse=True)
+
+    return result
+
 
 # ============================================================
 # SEASONS ROUTE
