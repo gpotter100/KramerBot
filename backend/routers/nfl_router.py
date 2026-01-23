@@ -451,7 +451,7 @@ def get_multi_week_usage(
         # Weekly pipeline
         week_df = present_usage(week_df, pos)
         week_df = apply_scoring(week_df, scoring)
-        week_df = compute_attribution(week_df)
+        week_df = compute_fantasy_attribution(week_df, scoring)
         week_df = add_efficiency_metrics(week_df)
 
         week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
