@@ -253,6 +253,9 @@
     const res = await fetch(`${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`);
     const payload = await res.json();
 
+    // ⭐ MAKE TABLE VISIBLE
+    document.getElementById("table-wrapper").classList.remove("hidden");
+
     usageBody.innerHTML = `<tr><td colspan="15">Loaded ${payload.length} rows.</td></tr>`;
     loadingIndicator?.classList.add("hidden");
   }
