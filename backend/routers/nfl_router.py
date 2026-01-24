@@ -480,6 +480,17 @@ def get_multi_week_usage(
         # ============================================================
         df_all = pd.concat(all_frames, ignore_index=True)
 
+        # Ensure required raw stat columns exist (PBP-derived weekly data may omit some)
+        required_cols = [
+            "attempts", "receptions",
+            "passing_yards", "rushing_yards", "receiving_yards",
+            "passing_tds", "rushing_tds", "receiving_tds",
+            "interceptions", "fumbles_lost"
+        ]
+        for col in required_cols:
+            if col not in df_all.columns:
+                df_all[col] = 0
+
         group_cols = ["player_id", "player_name", "team", "position"]
 
         agg_df = (
