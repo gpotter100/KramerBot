@@ -463,10 +463,7 @@ def get_multi_week_usage(
             if week_df.empty:
                 continue
 
-            # Present usage
-            week_df = present_usage(week_df, pos)
-
-            # We do NOT apply scoring here; we aggregate raw stats first.
+            # DO NOT call present_usage() yet — keep raw stats intact
             week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
             week_df["week"] = w
 
@@ -521,6 +518,9 @@ def get_multi_week_usage(
         # RUN ATTRIBUTION ON AGGREGATED DATA
         # ============================================================
         agg_df = compute_fantasy_attribution(agg_df, scoring)
+
+        agg_df = present_usage(agg_df, pos)
+
 
         # ============================================================
         # RETURN CLEAN RESULTS
