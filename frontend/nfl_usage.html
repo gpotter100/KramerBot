@@ -216,6 +216,19 @@
   <script type="module" src="scripts/nfl.js" defer></script>
   <script type="module" src="scripts/main.js" defer></script>
 
+  <script type="module">
+    import { API_BASE as BACKEND_URL } from './scripts/config.js';
+
+    async function initDropdowns() {
+      const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
+      const seasons = await res.json();
+      document.getElementById("season-input").innerHTML = seasons.map(y => `<option>${y}</option>`).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", initDropdowns);
+  </script>
+
+
   <script>
     document.getElementById("hamburger-toggle").addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("open");
