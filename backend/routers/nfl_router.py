@@ -191,8 +191,11 @@ def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str
         return week_df.to_dict(orient="records")
 
     except Exception as e:
+        import traceback
         print("❌ ERROR IN NFL ROUTE:", e)
+        traceback.print_exc()   # <— THIS is the important part
         raise HTTPException(status_code=500, detail="Failed to load NFL data")
+
 
 
 # ============================================================
