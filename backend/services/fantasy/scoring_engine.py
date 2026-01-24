@@ -4,8 +4,12 @@ import pandas as pd
 #  SAFE NUMERIC ACCESSOR
 # ============================================================
 
-def _num(s, default=0.0):
-    return pd.to_numeric(s, errors="coerce").fillna(default)
+def _num(s, default=0):
+    try:
+        return pd.to_numeric(s, errors="coerce").fillna(default)
+    except Exception:
+        return default if s is None else float(s)
+
 
 def coerce_numeric(val, default=0.0):
     """
