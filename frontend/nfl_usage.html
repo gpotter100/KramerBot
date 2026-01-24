@@ -228,6 +228,30 @@
     document.addEventListener("DOMContentLoaded", initDropdowns);
   </script>
 
+  <script type="module">
+    import { API_BASE as BACKEND_URL } from './scripts/config.js';
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const seasonInput = document.getElementById("season-input");
+      const weekInput = document.getElementById("week-input");
+
+      console.log("seasonInput:", seasonInput);
+      console.log("weekInput:", weekInput);
+
+      const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
+      const seasons = await res.json();
+
+      if (seasonInput) {
+        seasonInput.innerHTML = seasons.map(y => `<option>${y}</option>`).join("");
+      }
+
+      if (weekInput) {
+        weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
+          `<option value="${i + 1}">${i + 1}</option>`
+        ).join("");
+      }
+    });
+  </script>
 
   <script>
     document.getElementById("hamburger-toggle").addEventListener("click", () => {
