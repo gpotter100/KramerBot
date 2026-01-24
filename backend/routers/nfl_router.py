@@ -454,6 +454,9 @@ def get_multi_week_usage(
             if week_df.empty:
                 continue
 
+            print("DEBUG WEEKLY COLUMNS:", list(week_df.columns))
+
+
             # Position filter
             if pos == "WR/TE":
                 week_df = week_df[week_df["position"].isin(["WR", "TE"])]
