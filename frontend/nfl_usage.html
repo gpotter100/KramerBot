@@ -220,23 +220,8 @@
     import { API_BASE as BACKEND_URL } from './scripts/config.js';
 
     async function initDropdowns() {
-      const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
-      const seasons = await res.json();
-      document.getElementById("season-input").innerHTML = seasons.map(y => `<option>${y}</option>`).join("");
-    }
-
-    document.addEventListener("DOMContentLoaded", initDropdowns);
-  </script>
-
-  <script type="module">
-    import { API_BASE as BACKEND_URL } from './scripts/config.js';
-
-    document.addEventListener("DOMContentLoaded", async () => {
       const seasonInput = document.getElementById("season-input");
       const weekInput = document.getElementById("week-input");
-
-      console.log("seasonInput:", seasonInput);
-      console.log("weekInput:", weekInput);
 
       const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
       const seasons = await res.json();
@@ -250,8 +235,38 @@
           `<option value="${i + 1}">${i + 1}</option>`
         ).join("");
       }
+    }
+
+    async function loadStats() {
+      console.log("Load button clicked");
+
+      const season = Number(document.getElementById("season-input")?.value);
+      const week = Number(document.getElementById("week-input")?.value);
+      const scoring = document.getElementById("scoring-filter")?.value || "standard";
+
+      const loadingIndicator = document.getElementById("loading-indicator");
+      const usageBody = document.getElementById("usage-body");
+
+      loadingIndicator?.classList.remove("hidden");
+      usageBody.innerHTML = "";
+
+      const res = await fetch(`${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`);
+      const payload = await res.json();
+
+      usageBody.innerHTML = `<tr><td colspan="15">Loaded ${payload.length} rows.</td></tr>`;
+      loadingIndicator?.classList.add("hidden");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initDropdowns();
+
+      const loadBtn = document.getElementById("load-btn");
+      console.log("loadBtn:", loadBtn);
+      loadBtn?.addEventListener("click", loadStats);
     });
   </script>
+
+
 
   <script>
     document.getElementById("hamburger-toggle").addEventListener("click", () => {
