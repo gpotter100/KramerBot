@@ -19,7 +19,8 @@ def _num(df, col, default=0.0):
 def compute_raw_components(df: pd.DataFrame) -> pd.DataFrame:
     """
     Extracts raw fantasy components from weekly or multi-week usage rows.
-    Produces additive components that sum to fantasy_points.
+    Produces additive components that sum to fantasy_points (for the
+    selected scoring system).
     """
 
     d = df.copy()
@@ -71,10 +72,15 @@ def compute_raw_components(df: pd.DataFrame) -> pd.DataFrame:
 def apply_scoring_adjustments(df: pd.DataFrame, scoring: str) -> pd.DataFrame:
     """
     Adjusts attribution components based on scoring system.
+    - Standard: receptions = 0
+    - PPR: receptions = 1.0 per rec
+    - Half-PPR: receptions = 0.5 per rec
+    - Vandalay: receptions = 0.5 per rec
+    - SHEN2000: receptions = 0.5 per rec
     """
 
     d = df.copy()
-    scoring = scoring.lower()
+    scoring = (scoring or "standard").lower()
 
     if scoring == "standard":
         d["comp_receptions"] = 0
@@ -82,15 +88,14 @@ def apply_scoring_adjustments(df: pd.DataFrame, scoring: str) -> pd.DataFrame:
     elif scoring == "ppr":
         d["comp_receptions"] = _num(d, "receptions") * 1.0
 
-    elif scoring in ["half", "half_ppr", "half-ppr"]:
+    elif scoring in ["half", "half_ppr", "half-ppr", "vandalay", "shen2000"]:
         d["comp_receptions"] = _num(d, "receptions") * 0.5
 
-    # Vandalay + SHEN2000 already use 0.5 PPR
     return d
 
 
 # ============================================================
-#  ATTRIBUTION COLUMNS
+#  PERCENTAGE ATTRIBUTION
 # ============================================================
 
 ATTR_COLUMNS = [
@@ -108,17 +113,14 @@ ATTR_COLUMNS = [
     "comp_bonus_receiving",
 ]
 
-
-# ============================================================
-#  PERCENTAGE ATTRIBUTION
-# ============================================================
-
 def compute_percentages(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Converts raw components into percentages of fantasy_points.
+    Converts raw components into percentages of fantasy_points
+    (for the selected scoring system).
     """
 
     d = df.copy()
+
     total_fp = _num(d, "fantasy_points", 0.0001)  # avoid divide-by-zero
 
     for col in ATTR_COLUMNS:

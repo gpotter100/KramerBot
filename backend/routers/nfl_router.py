@@ -9,6 +9,7 @@ from services.loaders.pbp_weekly_loader import load_weekly_from_pbp
 from services.fantasy.scoring_engine import apply_scoring
 from services.metrics.custom_metrics import add_efficiency_metrics
 from services.snap_counts.loader import load_snap_counts
+from services.metrics.fantasy_attribution import compute_fantasy_attribution
 
 router = APIRouter()
 
@@ -157,14 +158,19 @@ def load_weekly_data(season: int, week: int) -> pd.DataFrame:
 
 
 # ============================================================
-# PLAYER USAGE ROUTE
+# PLAYER USAGE ROUTE (PATCHED)
 # ============================================================
 
 @router.get("/nfl/player-usage/{season}/{week}")
-def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str = "standard"):
+def get_player_usage(
+    season: int,
+    week: int,
+    position: str = "ALL",
+    scoring: str = "standard"
+):
 
     try:
-        print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}")
+        print(f"🔥 NFL ROUTE HIT: season={season}, week={week}, position={position}, scoring={scoring}")
 
         df = load_weekly_data(season, week)
         if df.empty or "week" not in df.columns:
@@ -187,9 +193,11 @@ def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str
         # Present usage
         week_df = present_usage(week_df, pos)
 
-        # Apply scoring
+        # Apply ALL scoring systems + select active one
         week_df = apply_scoring(week_df, scoring)
 
+        # Attribution for the selected scoring system
+        week_df = compute_fantasy_attribution(week_df, scoring)
 
         # Add advanced metrics
         week_df = add_efficiency_metrics(week_df)
@@ -201,6 +209,7 @@ def get_player_usage(season: int, week: int, position: str = "ALL", scoring: str
     except Exception as e:
         print("❌ ERROR IN NFL ROUTE:", e)
         raise HTTPException(status_code=500, detail="Failed to load NFL data")
+
 
 from fastapi import APIRouter, HTTPException
 import pandas as pd
@@ -417,110 +426,113 @@ def get_multi_week_usage(
     position: str = "ALL",
     scoring: str = "standard"
 ):
-    from services.metrics.fantasy_attribution import compute_fantasy_attribution
 
-    # -------------------------------
-    # Parse week list
-    # -------------------------------
     try:
-        week_list = [int(w) for w in weeks.split(",") if w.strip()]
-    except:
-        raise HTTPException(status_code=400, detail="Invalid weeks parameter")
+        # -------------------------------
+        # Parse week list
+        # -------------------------------
+        try:
+            week_list = [int(w) for w in weeks.split(",") if w.strip()]
+        except:
+            raise HTTPException(status_code=400, detail="Invalid weeks parameter")
 
-    if not week_list:
-        raise HTTPException(status_code=400, detail="No weeks provided")
+        if not week_list:
+            raise HTTPException(status_code=400, detail="No weeks provided")
 
-    pos = position.upper()
-    all_frames = []
+        pos = position.upper()
+        all_frames = []
 
-    # -------------------------------
-    # Load + process each week
-    # -------------------------------
-    for w in week_list:
-        df = load_weekly_data(season, w)
-        if df.empty or "week" not in df.columns:
-            continue
+        # -------------------------------
+        # Load + process each week
+        # -------------------------------
+        for w in week_list:
+            df = load_weekly_data(season, w)
+            if df.empty or "week" not in df.columns:
+                continue
 
-        week_df = df[df["week"] == w]
-        if week_df.empty:
-            continue
+            week_df = df[df["week"] == w]
+            if week_df.empty:
+                continue
 
-        # Position filter
-        if pos == "WR/TE":
-            week_df = week_df[week_df["position"].isin(["WR", "TE"])]
-        elif pos != "ALL":
-            week_df = week_df[week_df["position"] == pos]
+            # Position filter
+            if pos == "WR/TE":
+                week_df = week_df[week_df["position"].isin(["WR", "TE"])]
+            elif pos != "ALL":
+                week_df = week_df[week_df["position"] == pos]
 
-        if week_df.empty:
-            continue
+            if week_df.empty:
+                continue
 
-        # Weekly pipeline
-        week_df = present_usage(week_df, pos)
-        week_df = apply_scoring(week_df, scoring)
-        week_df = add_efficiency_metrics(week_df)
+            # Present usage
+            week_df = present_usage(week_df, pos)
 
-        # Clean
-        week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
-        week_df["week"] = w
+            # We do NOT apply scoring here; we aggregate raw stats first.
+            week_df = week_df.replace([np.inf, -np.inf], 0).fillna(0)
+            week_df["week"] = w
 
-        all_frames.append(week_df)
+            all_frames.append(week_df)
 
-    if not all_frames:
-        return []
+        if not all_frames:
+            return []
 
-    # ============================================================
-    # AGGREGATE RAW STATS ACROSS WEEKS
-    # ============================================================
-    df_all = pd.concat(all_frames, ignore_index=True)
+        # ============================================================
+        # AGGREGATE RAW STATS ACROSS WEEKS
+        # ============================================================
+        df_all = pd.concat(all_frames, ignore_index=True)
 
-    group_cols = ["player_id", "player_name", "team", "position"]
+        group_cols = ["player_id", "player_name", "team", "position"]
 
-    agg_df = (
-        df_all.groupby(group_cols, dropna=False)
-        .agg(
-            attempts=("attempts", "sum"),
-            receptions=("receptions", "sum"),
-            passing_yards=("passing_yards", "sum"),
-            rushing_yards=("rushing_yards", "sum"),
-            receiving_yards=("receiving_yards", "sum"),
-            passing_tds=("passing_tds", "sum"),
-            rushing_tds=("rushing_tds", "sum"),
-            receiving_tds=("receiving_tds", "sum"),
-            interceptions=("interceptions", "sum"),
-            fumbles_lost=("fumbles_lost", "sum"),
-            fantasy_points=("fantasy_points", "sum"),
-            fantasy_points_ppr=("fantasy_points_ppr", "sum"),
-            fantasy_points_half=("fantasy_points_half", "sum"),
-            fantasy_points_shen2000=("fantasy_points_shen2000", "sum"),
+        agg_df = (
+            df_all.groupby(group_cols, dropna=False)
+            .agg(
+                attempts=("attempts", "sum"),
+                receptions=("receptions", "sum"),
+                passing_yards=("passing_yards", "sum"),
+                rushing_yards=("rushing_yards", "sum"),
+                receiving_yards=("receiving_yards", "sum"),
+                passing_tds=("passing_tds", "sum"),
+                rushing_tds=("rushing_tds", "sum"),
+                receiving_tds=("receiving_tds", "sum"),
+                interceptions=("interceptions", "sum"),
+                fumbles_lost=("fumbles_lost", "sum"),
+            )
+            .reset_index()
         )
-        .reset_index()
-    )
 
-    # Add touches + total yards + touchdowns
-    agg_df["touches"] = agg_df["attempts"] + agg_df["receptions"]
-    agg_df["total_yards"] = (
-        agg_df["passing_yards"]
-        + agg_df["rushing_yards"]
-        + agg_df["receiving_yards"]
-    )
-    agg_df["touchdowns"] = (
-        agg_df["passing_tds"]
-        + agg_df["rushing_tds"]
-        + agg_df["receiving_tds"]
-    )
+        # Add touches + total yards + touchdowns
+        agg_df["touches"] = agg_df["attempts"] + agg_df["receptions"]
+        agg_df["total_yards"] = (
+            agg_df["passing_yards"]
+            + agg_df["rushing_yards"]
+            + agg_df["receiving_yards"]
+        )
+        agg_df["touchdowns"] = (
+            agg_df["passing_tds"]
+            + agg_df["rushing_tds"]
+            + agg_df["receiving_tds"]
+        )
 
-    # ============================================================
-    # RUN ATTRIBUTION ON AGGREGATED DATA
-    # ============================================================
-    agg_df = compute_fantasy_attribution(agg_df, scoring=scoring)
+        # ============================================================
+        # APPLY SCORING (ALL SYSTEMS) + SELECT ACTIVE
+        # ============================================================
+        agg_df = apply_scoring(agg_df, scoring)
 
-    # ============================================================
-    # RETURN CLEAN RESULTS
-    # ============================================================
-    agg_df = agg_df.replace([np.inf, -np.inf], 0).fillna(0)
-    agg_df = agg_df.sort_values("fantasy_points", ascending=False)
+        # ============================================================
+        # RUN ATTRIBUTION ON AGGREGATED DATA
+        # ============================================================
+        agg_df = compute_fantasy_attribution(agg_df, scoring)
 
-    return agg_df.to_dict(orient="records")
+        # ============================================================
+        # RETURN CLEAN RESULTS
+        # ============================================================
+        agg_df = agg_df.replace([np.inf, -np.inf], 0).fillna(0)
+        agg_df = agg_df.sort_values("fantasy_points", ascending=False)
+
+        return agg_df.to_dict(orient="records")
+
+    except Exception as e:
+        print("❌ ERROR IN MULTI-WEEK NFL ROUTE:", e)
+        raise HTTPException(status_code=500, detail="Failed to load multi-week NFL data")
 
 
 # ============================================================
