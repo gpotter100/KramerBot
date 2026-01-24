@@ -7,6 +7,16 @@ import pandas as pd
 def _num(s, default=0.0):
     return pd.to_numeric(s, errors="coerce").fillna(default)
 
+def coerce_numeric(val, default=0.0):
+    """
+    Backward-compatible helper for older loaders.
+    Converts a value to float, returns default on failure.
+    """
+    try:
+        return float(val)
+    except Exception:
+        return default
+
 
 # ============================================================
 #  SCORING REGISTRY
