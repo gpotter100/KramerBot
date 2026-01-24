@@ -272,3 +272,19 @@
 .tab-panel.active {
   display: block;
 }
+
+
+#player-breakdown-panel {
+  padding: 20px;
+  background: #111;
+  color: #eee;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.breakdown-section {
+  margin-top: 16px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 6px;
+}

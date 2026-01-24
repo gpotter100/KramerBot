@@ -1,5 +1,46 @@
 import { API_BASE as BACKEND_URL } from "./config.js";
 
+function buildFantasyBreakdown(p) {
+  const safe = v => (typeof v === "number" ? v : 0);
+
+  return {
+    passing: {
+      yds: safe(p.passing_yards),
+      fpts_yds: safe(p.comp_passing_yards),
+      attr_pct_yds: safe(p.pct_passing_yards),
+      tds: safe(p.passing_tds),
+      fpts_tds: safe(p.comp_passing_tds),
+      attr_pct_tds: safe(p.pct_passing_tds),
+    },
+    rushing: {
+      yds: safe(p.rushing_yards),
+      fpts_yds: safe(p.comp_rushing_yards),
+      attr_pct_yds: safe(p.pct_rushing_yards),
+      tds: safe(p.rushing_tds),
+      fpts_tds: safe(p.comp_rushing_tds),
+      attr_pct_tds: safe(p.pct_rushing_tds),
+    },
+    receiving: {
+      rec: safe(p.receptions),
+      yds: safe(p.receiving_yards),
+      fpts_yds: safe(p.comp_receiving_yards),
+      attr_pct_yds: safe(p.pct_receiving_yards),
+      tds: safe(p.receiving_tds),
+      fpts_tds: safe(p.comp_receiving_tds),
+      attr_pct_tds: safe(p.pct_receiving_tds),
+    },
+    fumbles: {
+      lost: safe(p.fumbles_lost),
+      fpts_lost: safe(p.comp_fumbles_lost),
+      attr_pct_lost: safe(p.pct_fumbles_lost),
+    },
+    fantasy: {
+      total: safe(p.fantasy_points),
+    },
+  };
+}
+
+
 /* ==========================================================
    NFL PAGE — PRODUCTION nfl.js
    Goals:
@@ -319,34 +360,142 @@ function sortBy(column) {
    TABLE RENDERING
 =============================== */
 function renderTable(data) {
-  if (!Array.isArray(data) || data.length === 0) {
-    usageBody.innerHTML = `<tr><td colspan="15">No players match your filters.</td></tr>`;
-    setHidden(tableWrapper, false);
-    return;
-  }
-
   const scoringField = scoringFieldForCurrentSelection();
 
-  usageBody.innerHTML = data.map(p => `
-    <tr>
-      <td>${positionIcons[p.position] || text(p.position, "")}</td>
-      <td>${text(p.player_name)}</td>
-      <td>${text(p.team)}</td>
-      <td>${fmtInt(p.attempts)}</td>
-      <td>${fmtInt(p.receptions)}</td>
-      <td>${fmtInt(p.targets)}</td>
-      <td>${fmtInt(p.carries)}</td>
-      <td>${fmtInt(p.total_yards)}</td>
-      <td>${fmtInt(p.touchdowns)}</td>
-      <td>${fmt1(p[scoringField])}</td>
-      <td>${fmtInt(p.touches)}</td>
-      <td>${fmt2(p.efficiency)}</td>
-      <td>${fmt2(p.fantasy_per_touch)}</td>
-    </tr>
-  `).join("");
+  // STEP 3A — use breakdown inside the row template
+  usageBody.innerHTML = data.map((p, idx) => {
+    const breakdown = buildFantasyBreakdown(p);
+
+    return `
+      <tr data-player-index="${idx}">
+        <td>${positionIcons[p.position] || text(p.position, "")}</td>
+        <td>${text(p.player_name)}</td>
+        <td>${text(p.team)}</td>
+
+        <!-- Example: show passing yards -->
+        <td>${fmtInt(breakdown.passing.yds)}</td>
+
+        <!-- Example: show fantasy points from passing yards -->
+        <td>${fmt1(breakdown.passing.fpts_yds)}</td>
+
+        <!-- Example: show attribution % -->
+        <td>${fmt1(breakdown.passing.attr_pct_yds)}%</td>
+
+        <!-- Example: total fantasy -->
+        <td>${fmt1(breakdown.fantasy.total)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  // STEP 3B — attach click handlers to each row
+  document.querySelectorAll("#usage-body tr").forEach(row => {
+    row.addEventListener("click", () => {
+      const idx = Number(row.dataset.playerIndex);
+      const player = data[idx];
+      renderPlayerBreakdown(player);   // <-- this opens the panel
+    });
+  });
 
   setHidden(tableWrapper, false);
 }
+
+
+function buildFantasyBreakdown(p) {
+  const safe = v => (typeof v === "number" ? v : 0);
+
+  return {
+    passing: {
+      yds: safe(p.passing_yards),
+      fpts_yds: safe(p.comp_passing_yards),
+      attr_pct_yds: safe(p.pct_passing_yards),
+      tds: safe(p.passing_tds),
+      fpts_tds: safe(p.comp_passing_tds),
+      attr_pct_tds: safe(p.pct_passing_tds),
+    },
+    rushing: {
+      yds: safe(p.rushing_yards),
+      fpts_yds: safe(p.comp_rushing_yards),
+      attr_pct_yds: safe(p.pct_rushing_yards),
+      tds: safe(p.rushing_tds),
+      fpts_tds: safe(p.comp_rushing_tds),
+      attr_pct_tds: safe(p.pct_rushing_tds),
+    },
+    receiving: {
+      rec: safe(p.receptions),
+      yds: safe(p.receiving_yards),
+      fpts_yds: safe(p.comp_receiving_yards),
+      attr_pct_yds: safe(p.pct_receiving_yards),
+      tds: safe(p.receiving_tds),
+      fpts_tds: safe(p.comp_receiving_tds),
+      attr_pct_tds: safe(p.pct_receiving_tds),
+    },
+    fumbles: {
+      lost: safe(p.fumbles_lost),
+      fpts_lost: safe(p.comp_fumbles_lost),
+      attr_pct_lost: safe(p.pct_fumbles_lost),
+    },
+    fantasy: {
+      total: safe(p.fantasy_points),
+    },
+  };
+}
+
+
+function renderPlayerBreakdown(player) {
+  const panel = document.getElementById("player-breakdown-panel");
+  if (!panel) return;
+
+  const b = buildFantasyBreakdown(player);
+
+  panel.innerHTML = `
+    <div class="breakdown-header">
+      <h2>${text(player.player_name)} — ${text(player.team)}</h2>
+      <p>Position: ${text(player.position)}</p>
+      <p>Total Fantasy: ${fmt1(b.fantasy.total)}</p>
+    </div>
+
+    <div class="breakdown-section">
+      <h3>Passing</h3>
+      <p>Yards: ${b.passing.yds}</p>
+      <p>Fantasy from Yards: ${fmt1(b.passing.fpts_yds)}</p>
+      <p>Attribution % (Yards): ${fmt1(b.passing.attr_pct_yds)}%</p>
+      <p>TDs: ${b.passing.tds}</p>
+      <p>Fantasy from TDs: ${fmt1(b.passing.fpts_tds)}</p>
+      <p>Attribution % (TDs): ${fmt1(b.passing.attr_pct_tds)}%</p>
+    </div>
+
+    <div class="breakdown-section">
+      <h3>Rushing</h3>
+      <p>Yards: ${b.rushing.yds}</p>
+      <p>Fantasy from Yards: ${fmt1(b.rushing.fpts_yds)}</p>
+      <p>Attribution % (Yards): ${fmt1(b.rushing.attr_pct_yds)}%</p>
+      <p>TDs: ${b.rushing.tds}</p>
+      <p>Fantasy from TDs: ${fmt1(b.rushing.fpts_tds)}</p>
+      <p>Attribution % (TDs): ${fmt1(b.rushing.attr_pct_tds)}%</p>
+    </div>
+
+    <div class="breakdown-section">
+      <h3>Receiving</h3>
+      <p>Receptions: ${b.receiving.rec}</p>
+      <p>Yards: ${b.receiving.yds}</p>
+      <p>Fantasy from Yards: ${fmt1(b.receiving.fpts_yds)}</p>
+      <p>Attribution % (Yards): ${fmt1(b.receiving.attr_pct_yds)}%</p>
+      <p>TDs: ${b.receiving.tds}</p>
+      <p>Fantasy from TDs: ${fmt1(b.receiving.fpts_tds)}</p>
+      <p>Attribution % (TDs): ${fmt1(b.receiving.attr_pct_tds)}%</p>
+    </div>
+
+    <div class="breakdown-section">
+      <h3>Fumbles</h3>
+      <p>Lost: ${b.fumbles.lost}</p>
+      <p>Fantasy from Fumbles: ${fmt1(b.fumbles.fpts_lost)}</p>
+      <p>Attribution %: ${fmt1(b.fumbles.attr_pct_lost)}%</p>
+    </div>
+  `;
+
+  panel.classList.remove("hidden");
+}
+
 
 /* ===============================
    TOP PERFORMERS
