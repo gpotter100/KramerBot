@@ -132,5 +132,12 @@ def load_snap_counts(season: int, week: int) -> pd.DataFrame:
     keep = ["player_id", "player_name", "team", "position", "snap_pct"]
     existing = [c for c in keep if c in df.columns]
     df = df[existing].copy()
+    # ------------------------------------------------------------
+    # FINAL SAFETY NORMALIZATION
+    # Ensure snap_pct is always a float Series, never a scalar
+    # ------------------------------------------------------------
+    if "snap_pct" not in df.columns:
+        df["snap_pct"] = 0.0
+    df["snap_pct"] = pd.to_numeric(df["snap_pct"], errors="coerce").fillna(0.0)
 
     return df
