@@ -1,3 +1,4 @@
+from operator import pos
 from fastapi import APIRouter, HTTPException
 import pandas as pd
 import numpy as np
@@ -191,14 +192,14 @@ def get_player_usage(
             return []
 
         # Present usage
-        week_df = present_usage(week_df, pos)
-
         # Apply ALL scoring systems + select active one
         week_df = apply_scoring(week_df, scoring)
 
         # Attribution for the selected scoring system
         week_df = compute_fantasy_attribution(week_df, scoring)
 
+        # Present usage LAST (so it doesn't overwrite raw stats)
+        week_df = present_usage(week_df, pos)
         # Add advanced metrics
         week_df = add_efficiency_metrics(week_df)
 
