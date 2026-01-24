@@ -242,7 +242,14 @@ async function initDropdowns() {
   }
 }
 
-initDropdowns();
+/* ==========================================================
+   INIT (NEW)
+========================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+  initDropdowns();
+});
+
+
 
 /* ===============================
    EVENT BINDINGS
