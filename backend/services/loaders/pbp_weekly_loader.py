@@ -158,7 +158,7 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     if not dfs:
         return pd.DataFrame()
-    weekly = pl.reduce(
+    weekly = reduce(
         lambda left, right: pd.merge(
             left, right, on=["player_id", "player_name", "team"], how="outer"
         ),
