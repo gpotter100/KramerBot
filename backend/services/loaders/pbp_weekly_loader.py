@@ -148,24 +148,50 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     ]
 
     # Sack fumbles: only count if QB fumbled on a sack
+    # ------------------------------------------------------------
+    # Sack fumbles (schema-safe)
+    # ------------------------------------------------------------
+
+    # Identify which fumble column exists
+    if "fumble" in pass_events.columns:
+        fumble_col = "fumble"
+    elif "fumbled" in pass_events.columns:
+        fumble_col = "fumbled"
+    elif "fumble_recovery_1_team" in pass_events.columns:
+        # treat any recovery event as a fumble event
+        fumble_col = "fumble_recovery_1_team"
+    else:
+        fumble_col = None  # no fumble indicator exists
+
+    # Identify qb_hit column if present
     qb_hit_col = "qb_hit" if "qb_hit" in pass_events.columns else None
 
-    if qb_hit_col:
-        sack_fumble_events = pass_events[
-            (pass_events[qb_hit_col] == 1) &
-            (pass_events["fumble"] == 1) &
-            (pass_events["passer_id"].notna())
+    # Build sack fumble events safely
+    if fumble_col:
+        if qb_hit_col:
+            sack_fumble_events = pass_events[
+                (pass_events[fumble_col] == 1) &
+                (pass_events[qb_hit_col] == 1) &
+                (pass_events["passer_id"].notna())
+            ]
+        else:
+            sack_fumble_events = pass_events[
+                (pass_events[fumble_col] == 1) &
+                (pass_events["passer_id"].notna())
+            ]
+    else:
+        sack_fumble_events = pass_events.iloc[0:0]  # empty dataframe
+        # No fumble column exists → no sack fumbles possible
+        sack_fumble_events = pass_events.iloc[0:0]  # empty dataframe
+
+    # Lost fumbles (schema-safe)
+    if "fumble_lost" in pass_events.columns:
+        sack_fumble_lost_events = sack_fumble_events[
+            sack_fumble_events["fumble_lost"] == 1
         ]
     else:
-        # fallback: any fumble on a pass play by the QB
-        sack_fumble_events = pass_events[
-            (pass_events["fumble"] == 1) &
-            (pass_events["passer_id"].notna())
-        ]
+        sack_fumble_lost_events = pass_events.iloc[0:0]
 
-        sack_fumble_lost_events = sack_fumble_events[
-        sack_fumble_events["fumble_lost"] == 1
-    ]
 
 
     pass_df = (
