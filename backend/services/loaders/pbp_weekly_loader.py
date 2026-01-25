@@ -148,15 +148,26 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     ]
 
     # Sack fumbles: only count if QB fumbled on a sack
-    sack_fumble_events = pass_events[
-        (pass_events["qb_hit"] == 1) &
-        (pass_events["fumble"] == 1) &
-        (pass_events["passer_id"].notna())
-    ]
+    qb_hit_col = "qb_hit" if "qb_hit" in pass_events.columns else None
 
-    sack_fumble_lost_events = sack_fumble_events[
+    if qb_hit_col:
+        sack_fumble_events = pass_events[
+            (pass_events[qb_hit_col] == 1) &
+            (pass_events["fumble"] == 1) &
+            (pass_events["passer_id"].notna())
+        ]
+    else:
+        # fallback: any fumble on a pass play by the QB
+        sack_fumble_events = pass_events[
+            (pass_events["fumble"] == 1) &
+            (pass_events["passer_id"].notna())
+        ]
+
+        sack_fumble_lost_events = sack_fumble_events[
         sack_fumble_events["fumble_lost"] == 1
     ]
+
+
     pass_df = (
         pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
         .agg(
