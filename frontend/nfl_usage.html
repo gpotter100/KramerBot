@@ -123,20 +123,42 @@
           <table id="usage-table" class="data-table">
             <thead>
               <tr>
-                <th data-sort="position">Pos</th>
-                <th data-sort="player_name">Player</th>
-                <th data-sort="team">Team</th>
-                <th data-sort="attempts">Att</th>
-                <th data-sort="receptions">Rec</th>
-                <th data-sort="targets">Tgt</th>
-                <th data-sort="carries">Carries</th>
-                <th data-sort="total_yards">Total Yds</th>
-                <th data-sort="touchdowns">TDs</th>
-                <th data-sort="dynamic_fantasy">Fantasy</th>
-                <th data-sort="touches">Touches</th>
-                <th data-sort="efficiency">Eff</th>
-                <th data-sort="fantasy_per_touch">PPR / Touch</th>
+                <!-- Identity -->
+                <th>Pos</th>
+                <th>Player</th>
+                <th>Team</th>
+
+                <!-- PASSING -->
+                <th>Pass Yds</th>
+                <th>FPTS - Pass Yds</th>
+                <th>ATTR% - Pass Yds</th>
+                <th>Pass TD</th>
+                <th>FPTS - Pass TD</th>
+                <th>ATTR% - Pass TD</th>
+                <!-- RUSHING -->
+                <th>Rush Yds</th>
+                <th>FPTS - Rush Yds</th>
+                <th>ATTR% - Rush Yds</th>
+                <th>Rush TD</th>
+                <th>FPTS - Rush TD</th>
+                <th>ATTR% - Rush TD</th>
+                <!-- RECEIVING -->
+                <th>Rec</th>
+                <th>Rec Yds</th>
+                <th>FPTS - Rec Yds</th>
+                <th>ATTR% - Rec Yds</th>
+                <th>Rec TD</th>
+                <th>FPTS - Rec TD</th>
+                <th>ATTR% - Rec TD</th>
+                <!-- FUMBLES -->
+                <th>Fumbles Lost</th>
+                <th>FPTS - Lost</th>
+                <th>ATTR% - Lost</th>
+
+                <!-- FANTASY -->
+                <th>Fantasy Pts</th>
               </tr>
+
             </thead>
             <tbody id="usage-body"></tbody>
           </table>
@@ -256,47 +278,48 @@
     // ⭐ MAKE TABLE VISIBLE
     document.getElementById("table-wrapper").classList.remove("hidden");
 
+    const fmt = v => Number(v ?? 0).toFixed(2);
+
     usageBody.innerHTML = payload.map(row => `
-  <tr>
-    <!-- Identity -->
-    <td>${row.position ?? ""}</td>
-    <td>${row.player_name ?? ""}</td>
-    <td>${row.team ?? ""}</td>
+      <tr>
+        <!-- Identity -->
+        <td>${row.position ?? ""}</td>
+        <td>${row.player_name ?? ""}</td>
+        <td>${row.team ?? ""}</td>
 
-    <!-- PASSING -->
-    <td>${row.passing_yards ?? 0}</td>
-    <td>${row.comp_passing_yards ?? 0}</td>
-    <td>${row.pct_passing_yards ?? 0}</td>
-    <td>${row.passing_tds ?? 0}</td>
-    <td>${row.comp_passing_tds ?? 0}</td>
-    <td>${row.pct_passing_tds ?? 0}</td>
+        <!-- PASSING -->
+        <td>${fmt(row.passing_yards)}</td>
+        <td>${fmt(row.comp_passing_yards)}</td>
+        <td>${fmt(row.pct_passing_yards)}</td>
+        <td>${fmt(row.passing_tds)}</td>
+        <td>${fmt(row.comp_passing_tds)}</td>
+        <td>${fmt(row.pct_passing_tds)}</td>
+        <!-- RUSHING -->
+        <td>${fmt(row.rushing_yards)}</td>
+        <td>${fmt(row.comp_rushing_yards)}</td>
+        <td>${fmt(row.pct_rushing_yards)}</td>
+        <td>${fmt(row.rushing_tds)}</td>
+        <td>${fmt(row.comp_rushing_tds)}</td>
+        <td>${fmt(row.pct_rushing_tds)}</td>
+        <!-- RECEIVING -->
+        <td>${fmt(row.receptions)}</td>
+        <td>${fmt(row.receiving_yards)}</td>
+        <td>${fmt(row.comp_receiving_yards)}</td>
+        <td>${fmt(row.pct_receiving_yards)}</td>
+        <td>${fmt(row.receiving_tds)}</td>
+        <td>${fmt(row.comp_receiving_tds)}</td>
+        <td>${fmt(row.pct_receiving_tds)}</td>
 
-    <!-- RUSHING -->
-    <td>${row.rushing_yards ?? 0}</td>
-    <td>${row.comp_rushing_yards ?? 0}</td>
-    <td>${row.pct_rushing_yards ?? 0}</td>
-    <td>${row.rushing_tds ?? 0}</td>
-    <td>${row.comp_rushing_tds ?? 0}</td>
-    <td>${row.pct_rushing_tds ?? 0}</td>
+        <!-- FUMBLES -->
+        <td>${fmt(row.fumbles_lost)}</td>
+        <td>${fmt(row.comp_fumbles_lost)}</td>
+        <td>${fmt(row.pct_fumbles_lost)}</td>
 
-    <!-- RECEIVING -->
-    <td>${row.receptions ?? 0}</td>
-    <td>${row.receiving_yards ?? 0}</td>
-    <td>${row.comp_receiving_yards ?? 0}</td>
-    <td>${row.pct_receiving_yards ?? 0}</td>
-    <td>${row.receiving_tds ?? 0}</td>
-    <td>${row.comp_receiving_tds ?? 0}</td>
-    <td>${row.pct_receiving_tds ?? 0}</td>
+        <!-- FANTASY -->
+        <td>${fmt(row.fantasy_points)}</td>
+      </tr>
+    `).join("");
 
-    <!-- FUMBLES -->
-    <td>${row.fumbles_lost ?? 0}</td>
-    <td>${row.comp_fumbles_lost ?? 0}</td>
-    <td>${row.pct_fumbles_lost ?? 0}</td>
-
-    <!-- FANTASY -->
-    <td>${row.fantasy_points ?? 0}</td>
-  </tr>
-`).join("");
 
     loadingIndicator?.classList.add("hidden");
   }
