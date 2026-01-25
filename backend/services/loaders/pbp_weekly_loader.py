@@ -2,7 +2,7 @@ import pandas as pd
 import polars as pl
 from pathlib import Path
 
-from backend.services.nfl_pbp_service import pbp_week
+from services.nfl_pbp_service import pbp_week
 
 # ------------------------------------------------------------
 # Local PBP directory (written by your R ingestion pipeline)
