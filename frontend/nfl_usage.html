@@ -124,39 +124,39 @@
             <thead>
               <tr>
                 <!-- Identity -->
-                <th>Pos</th>
-                <th>Player</th>
-                <th>Team</th>
+                <th data-sort="position">Pos</th> 
+                <th data-sort="player_name">Player</th> 
+                <th data-sort="team">Team</th>
 
                 <!-- PASSING -->
-                <th>Pass Yds</th>
-                <th>FPTS - Pass Yds</th>
-                <th>ATTR% - Pass Yds</th>
-                <th>Pass TD</th>
-                <th>FPTS - Pass TD</th>
-                <th>ATTR% - Pass TD</th>
+                <th data-sort="passing_yards">Pass Yds</th> 
+                <th data-sort="comp_passing_yards">FPTS - Pass Yds</th> 
+                <th data-sort="pct_passing_yards">ATTR% - Pass Yds</th> 
+                <th data-sort="passing_tds">Pass TD</th> 
+                <th data-sort="comp_passing_tds">FPTS - Pass TD</th> 
+                <th data-sort="pct_passing_tds">ATTR% - Pass TD</th>
                 <!-- RUSHING -->
-                <th>Rush Yds</th>
-                <th>FPTS - Rush Yds</th>
-                <th>ATTR% - Rush Yds</th>
-                <th>Rush TD</th>
-                <th>FPTS - Rush TD</th>
-                <th>ATTR% - Rush TD</th>
+                <th data-sort="rushing_yards">Rush Yds</th> 
+                <th data-sort="comp_rushing_yards">FPTS - Rush Yds</th> 
+                <th data-sort="pct_rushing_yards">ATTR% - Rush Yds</th> 
+                <th data-sort="rushing_tds">Rush TD</th> 
+                <th data-sort="comp_rushing_tds">FPTS - Rush TD</th> 
+                <th data-sort="pct_rushing_tds">ATTR% - Rush TD</th>
                 <!-- RECEIVING -->
-                <th>Rec</th>
-                <th>Rec Yds</th>
-                <th>FPTS - Rec Yds</th>
-                <th>ATTR% - Rec Yds</th>
-                <th>Rec TD</th>
-                <th>FPTS - Rec TD</th>
-                <th>ATTR% - Rec TD</th>
+                <th data-sort="receptions">Rec</th> 
+                <th data-sort="receiving_yards">Rec Yds</th> 
+                <th data-sort="comp_receiving_yards">FPTS - Rec Yds</th> 
+                <th data-sort="pct_receiving_yards">ATTR% - Rec Yds</th> 
+                <th data-sort="receiving_tds">Rec TD</th> 
+                <th data-sort="comp_receiving_tds">FPTS - Rec TD</th> 
+                <th data-sort="pct_receiving_tds">ATTR% - Rec TD</th>
                 <!-- FUMBLES -->
-                <th>Fumbles Lost</th>
-                <th>FPTS - Lost</th>
-                <th>ATTR% - Lost</th>
+                <th data-sort="fumbles_lost">Fumbles Lost</th> 
+                <th data-sort="comp_fumbles_lost">FPTS - Lost</th> 
+                <th data-sort="pct_fumbles_lost">ATTR% - Lost</th>
 
                 <!-- FANTASY -->
-                <th>Fantasy Pts</th>
+                <th data-sort="fantasy_points">Fantasy Pts</th>
               </tr>
 
             </thead>
@@ -241,67 +241,34 @@
 <script type="module">
   import { API_BASE as BACKEND_URL } from './scripts/config.js';
 
-  async function initDropdowns() {
-    const seasonInput = document.getElementById("season-input");
-    const weekInput = document.getElementById("week-input");
+  let currentRows = [];
+  let currentSort = { field: null, asc: true };
 
-    const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
-    const seasons = await res.json();
+  const fmt = v => Number(v ?? 0).toFixed(2);
 
-    if (seasonInput) {
-      seasonInput.innerHTML = seasons.map(y => `<option>${y}</option>`).join("");
-    }
-
-    if (weekInput) {
-      weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
-        `<option value="${i + 1}">${i + 1}</option>`
-      ).join("");
-    }
-  }
-
-  async function loadStats() {
-    console.log("Load button clicked");
-
-    const season = Number(document.getElementById("season-input")?.value);
-    const week = Number(document.getElementById("week-input")?.value);
-    const scoring = document.getElementById("scoring-filter")?.value || "standard";
-
-    const loadingIndicator = document.getElementById("loading-indicator");
+  function renderRows(rows) {
     const usageBody = document.getElementById("usage-body");
 
-    loadingIndicator?.classList.remove("hidden");
-    usageBody.innerHTML = "";
-
-    const res = await fetch(`${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`);
-    const payload = await res.json();
-
-    // ⭐ MAKE TABLE VISIBLE
-    document.getElementById("table-wrapper").classList.remove("hidden");
-
-    const fmt = v => Number(v ?? 0).toFixed(2);
-
-    usageBody.innerHTML = payload.map(row => `
+    usageBody.innerHTML = rows.map(row => `
       <tr>
-        <!-- Identity -->
         <td>${row.position ?? ""}</td>
         <td>${row.player_name ?? ""}</td>
         <td>${row.team ?? ""}</td>
 
-        <!-- PASSING -->
         <td>${fmt(row.passing_yards)}</td>
         <td>${fmt(row.comp_passing_yards)}</td>
         <td>${fmt(row.pct_passing_yards)}</td>
         <td>${fmt(row.passing_tds)}</td>
         <td>${fmt(row.comp_passing_tds)}</td>
         <td>${fmt(row.pct_passing_tds)}</td>
-        <!-- RUSHING -->
+
         <td>${fmt(row.rushing_yards)}</td>
         <td>${fmt(row.comp_rushing_yards)}</td>
         <td>${fmt(row.pct_rushing_yards)}</td>
         <td>${fmt(row.rushing_tds)}</td>
         <td>${fmt(row.comp_rushing_tds)}</td>
         <td>${fmt(row.pct_rushing_tds)}</td>
-        <!-- RECEIVING -->
+
         <td>${fmt(row.receptions)}</td>
         <td>${fmt(row.receiving_yards)}</td>
         <td>${fmt(row.comp_receiving_yards)}</td>
@@ -310,30 +277,98 @@
         <td>${fmt(row.comp_receiving_tds)}</td>
         <td>${fmt(row.pct_receiving_tds)}</td>
 
-        <!-- FUMBLES -->
         <td>${fmt(row.fumbles_lost)}</td>
         <td>${fmt(row.comp_fumbles_lost)}</td>
         <td>${fmt(row.pct_fumbles_lost)}</td>
 
-        <!-- FANTASY -->
         <td>${fmt(row.fantasy_points)}</td>
       </tr>
     `).join("");
+  }
 
+  function enableSorting() {
+    document.querySelectorAll("#usage-table thead th").forEach(th => {
+      th.onclick = () => {
+        const field = th.dataset.sort;
+        if (!field) return;
 
-    loadingIndicator?.classList.add("hidden");
+        if (currentSort.field === field) {
+          currentSort.asc = !currentSort.asc;
+        } else {
+          currentSort.field = field;
+          currentSort.asc = true;
+        }
+
+        currentRows.sort((a, b) => {
+          const va = a[field] ?? 0;
+          const vb = b[field] ?? 0;
+
+          if (typeof va === "string") {
+            return currentSort.asc
+              ? va.localeCompare(vb)
+              : vb.localeCompare(va);
+          }
+
+          return currentSort.asc ? va - vb : vb - va;
+        });
+
+        renderRows(currentRows);
+      };
+    });
+  }
+
+  async function initDropdowns() {
+    const seasonInput = document.getElementById("season-input");
+    const weekInput = document.getElementById("week-input");
+
+    const res = await fetch(`${BACKEND_URL}/nfl/seasons`);
+    const seasons = await res.json();
+
+    seasonInput.innerHTML = seasons.map(y => `<option>${y}</option>`).join("");
+    weekInput.innerHTML = Array.from({ length: 18 }, (_, i) =>
+      `<option value="${i + 1}">${i + 1}</option>`
+    ).join("");
+  }
+
+  async function loadStats() {
+    const season = Number(document.getElementById("season-input").value);
+    const week = Number(document.getElementById("week-input").value);
+    const scoring = document.getElementById("scoring-filter").value;
+    const positionFilter = document.getElementById("position-filter").value;
+
+    document.getElementById("loading-indicator").classList.remove("hidden");
+
+    const res = await fetch(
+      `${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`
+    );
+    const payload = await res.json();
+
+    let rows = payload;
+
+    if (positionFilter !== "ALL") {
+      rows = rows.filter(r => {
+        if (positionFilter === "WR/TE") {
+          return r.position === "WR" || r.position === "TE";
+        }
+        return r.position === positionFilter;
+      });
+    }
+
+    currentRows = rows;
+    currentSort = { field: null, asc: true };
+
+    document.getElementById("table-wrapper").classList.remove("hidden");
+    renderRows(currentRows);
+    enableSorting();
+
+    document.getElementById("loading-indicator").classList.add("hidden");
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     initDropdowns();
-
-    const loadBtn = document.getElementById("load-btn");
-    console.log("loadBtn:", loadBtn);
-    loadBtn?.addEventListener("click", loadStats);
+    document.getElementById("load-btn").addEventListener("click", loadStats);
   });
 </script>
-
-
 
 
   <script>
