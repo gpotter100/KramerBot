@@ -296,14 +296,14 @@
         <td>${fmt(row.passing_yards)}</td>
         <td>${fmt(row.comp_passing_yards)}</td>
         <td>${fmt(row.pct_passing_yards)}</td>
-        <td>${fmt(row.passing_tds)}</td>
+        <td>${fmt(row.passing_tds ?? row.passing_td ?? row.pass_tds)}</td>
         <td>${fmt(row.comp_passing_tds)}</td>
         <td>${fmt(row.pct_passing_tds)}</td>
 
         <td>${fmt(row.rushing_yards)}</td>
         <td>${fmt(row.comp_rushing_yards)}</td>
         <td>${fmt(row.pct_rushing_yards)}</td>
-        <td>${fmt(row.rushing_tds)}</td>
+        <td>${fmt(row.rushing_tds ?? row.rushing_td)}</td>
         <td>${fmt(row.comp_rushing_tds)}</td>
         <td>${fmt(row.pct_rushing_tds)}</td>
 
@@ -311,7 +311,7 @@
         <td>${fmt(row.receiving_yards)}</td>
         <td>${fmt(row.comp_receiving_yards)}</td>
         <td>${fmt(row.pct_receiving_yards)}</td>
-        <td>${fmt(row.receiving_tds)}</td>
+        <td>${fmt(row.receiving_tds ?? row.receiving_td)}</td>
         <td>${fmt(row.comp_receiving_tds)}</td>
         <td>${fmt(row.pct_receiving_tds)}</td>
 
