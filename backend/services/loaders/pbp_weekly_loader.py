@@ -2,6 +2,8 @@ import pandas as pd
 import polars as pl
 from pathlib import Path
 
+from KramerBot.backend.services.nfl_pbp_service import pbp_week
+
 # ------------------------------------------------------------
 # Local PBP directory (written by your R ingestion pipeline)
 # ------------------------------------------------------------
@@ -57,96 +59,126 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # ------------------------------------------------------------
     # RECEIVING
     # ------------------------------------------------------------
+
     rec_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
+    # Receiving TDs: complete pass + touchdown + receiver_id present
+    rec_td_events = rec_events[
+        (rec_events["complete_pass"] == 1) &
+        (rec_events["touchdown"] == 1) &
+        (rec_events["receiver_id"].notna())
+    ]
+
+    # Receiving fumbles lost: receiver fumbled after catch
+    rec_fumble_lost_events = rec_events[
+        (rec_events["fumble_lost"] == 1) &
+        (rec_events["receiver_id"].notna())
+    ]
     rec_df = (
         rec_events.groupby(["receiver_id", "receiver", "posteam"], dropna=True)
         .agg(
             targets=("receiver_id", "count"),
             receptions=("complete_pass", "sum"),
             receiving_yards=("yards_gained", "sum"),
-            receiving_tds=("touchdown", "sum"),
             receiving_air_yards=("air_yards", "sum"),
             receiving_first_downs=("first_down", "sum"),
             receiving_epa=("epa", "sum"),
-            fumbles_lost=("fumble_lost", lambda x: (
-                (rec_events.loc[x.index, "fumble_lost"] == 1) &
-                (rec_events.loc[x.index, "receiver_id"].notna())
-            ).sum()),
-
+            receiving_tds=("receiver_id", lambda x: x.isin(rec_td_events["receiver_id"]).sum()),
+            fumbles_lost=("receiver_id", lambda x: x.isin(rec_fumble_lost_events["receiver_id"]).sum()),
         )
         .reset_index()
-        .rename(
-            columns={
-                "receiver_id": "player_id",
-                "receiver": "player_name",
-                "posteam": "team",
-            }
-        )
+        .rename(columns={
+            "receiver_id": "player_id",
+            "receiver": "player_name",
+            "posteam": "team"
+        })
     )
 
     # ------------------------------------------------------------
     # RUSHING
     # ------------------------------------------------------------
+
     rush_events = pbp_week[pbp_week.get("rush_attempt", 0) == 1]
+
+    # Rushing TDs: rush attempt + touchdown + rusher_id present
+    rush_td_events = rush_events[
+        (rush_events["touchdown"] == 1) &
+        (rush_events["rusher_id"].notna())
+    ]
+
+    # Rushing fumbles lost: rusher fumbled on a run
+    rush_fumble_lost_events = rush_events[
+        (rush_events["fumble_lost"] == 1) &
+        (rush_events["rusher_id"].notna())
+    ]
+
     rush_df = (
         rush_events.groupby(["rusher_id", "rusher", "posteam"], dropna=True)
         .agg(
             carries=("rusher_id", "count"),
             rushing_yards=("yards_gained", "sum"),
-            rushing_tds=("touchdown", "sum"),
             rushing_epa=("epa", "sum"),
-            fumbles_lost=("fumble_lost", lambda x: (
-                (rush_events.loc[x.index, "fumble_lost"] == 1) &
-                (rush_events.loc[x.index, "rusher_id"].notna())
-            ).sum()),
 
+            rushing_tds=("rusher_id", lambda x: x.isin(rush_td_events["rusher_id"]).sum()),
+            fumbles_lost=("rusher_id", lambda x: x.isin(rush_fumble_lost_events["rusher_id"]).sum()),
         )
         .reset_index()
-        .rename(
-            columns={
-                "rusher_id": "player_id",
-                "rusher": "player_name",
-                "posteam": "team",
-            }
-        )
+        .rename(columns={
+            "rusher_id": "player_id",
+            "rusher": "player_name",
+            "posteam": "team"
+        })
     )
+
 
     # ------------------------------------------------------------
     # PASSING
     # ------------------------------------------------------------
+
     pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
+
+    # TDs: only count if passer_id is present and touchdown occurred
+    pass_td_events = pass_events[
+        (pass_events["touchdown"] == 1) &
+        (pass_events["passer_id"].notna())
+    ]
+    # INTs: only count if interception occurred and passer_id is present
+    int_events = pass_events[
+        (pass_events["interception"] == 1) &
+        (pass_events["passer_id"].notna())
+    ]
+
+    # Sack fumbles: only count if QB fumbled on a sack
+    sack_fumble_events = pass_events[
+        (pass_events["qb_hit"] == 1) &
+        (pass_events["fumble"] == 1) &
+        (pass_events["passer_id"].notna())
+    ]
+
+    sack_fumble_lost_events = sack_fumble_events[
+        sack_fumble_events["fumble_lost"] == 1
+    ]
     pass_df = (
         pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
         .agg(
             attempts=("pass_attempt", "sum"),
             completions=("complete_pass", "sum"),
             passing_yards=("yards_gained", "sum"),
-            passing_tds=("touchdown", "sum"),
-            
-            interceptions=("interception", lambda x: (
-                (pass_events.loc[x.index, "pass_attempt"] == 1) &
-                (pass_events.loc[x.index, "interception"] == 1) &
-                (pass_events.loc[x.index, "passer_id"].notna())
-            ).sum()),
-
-            fumbles_lost=("fumble_lost", lambda x: (
-                (pass_events.loc[x.index, "fumble_lost"] == 1) &
-                (pass_events.loc[x.index, "passer_id"].notna())
-            ).sum()),
-
             passing_air_yards=("air_yards", "sum"),
             passing_first_downs=("first_down", "sum"),
             passing_epa=("epa", "sum"),
+            passing_tds=("passer_id", lambda x: x.isin(pass_td_events["passer_id"]).sum()),
+            interceptions=("passer_id", lambda x: x.isin(int_events["passer_id"]).sum()),
+            sack_fumbles=("passer_id", lambda x: x.isin(sack_fumble_events["passer_id"]).sum()),
+            sack_fumbles_lost=("passer_id", lambda x: x.isin(sack_fumble_lost_events["passer_id"]).sum()),
         )
         .reset_index()
-        .rename(
-            columns={
-                "passer_id": "player_id",
-                "passer": "player_name",
-                "posteam": "team",
-            }
-        )
+        .rename(columns={
+            "passer_id": "player_id",
+            "passer": "player_name",
+            "posteam": "team"
+        })
     )
+
 
     # ------------------------------------------------------------
     # MERGE ALL THREE

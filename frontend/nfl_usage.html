@@ -123,43 +123,68 @@
           <table id="usage-table" class="data-table">
             <thead>
               <tr>
+                <th>Pos</th>
+                <th>Player</th>
+                <th>Team</th>
+
+                <!-- PASSING -->
+                <th colspan="9" class="group">Passing</th>
+                <!-- RUSHING -->
+                <th colspan="4" class="group">Rushing</th>
+
+                <!-- RECEIVING -->
+                <th colspan="4" class="group">Receiving</th>
+                <!-- TURNOVERS -->
+                <th colspan="4" class="group">Turnovers</th>
+
+                <!-- FANTASY -->
+                <th colspan="4" class="group">Fantasy</th>
+              </tr>
+
+              <tr>
                 <!-- Identity -->
-                <th data-sort="position">Pos</th> 
-                <th data-sort="player_name">Player</th> 
+                <th data-sort="position">Pos</th>
+                <th data-sort="player_name">Player</th>
                 <th data-sort="team">Team</th>
 
                 <!-- PASSING -->
-                <th data-sort="passing_yards">Pass Yds</th> 
-                <th data-sort="comp_passing_yards">FPTS - Pass Yds</th> 
-                <th data-sort="pct_passing_yards">ATTR% - Pass Yds</th> 
-                <th data-sort="passing_tds">Pass TD</th> 
-                <th data-sort="comp_passing_tds">FPTS - Pass TD</th> 
-                <th data-sort="pct_passing_tds">ATTR% - Pass TD</th>
+                <th data-sort="passing_yards">Yds</th>
+                <th data-sort="comp_passing_yards">FPTS (Yds)</th>
+                <th data-sort="pct_passing_yards">% Yds</th>
+
+                <th data-sort="passing_tds">TD</th>
+                <th data-sort="comp_passing_tds">FPTS (TD)</th>
+                <th data-sort="pct_passing_tds">% TD</th>
+
+                <th data-sort="interceptions">INT</th>
+                <th data-sort="comp_interceptions">FPTS (INT)</th>
+                <th data-sort="pct_interceptions">% INT</th>
+
                 <!-- RUSHING -->
-                <th data-sort="rushing_yards">Rush Yds</th> 
-                <th data-sort="comp_rushing_yards">FPTS - Rush Yds</th> 
-                <th data-sort="pct_rushing_yards">ATTR% - Rush Yds</th> 
-                <th data-sort="rushing_tds">Rush TD</th> 
-                <th data-sort="comp_rushing_tds">FPTS - Rush TD</th> 
-                <th data-sort="pct_rushing_tds">ATTR% - Rush TD</th>
+                <th data-sort="rushing_yards">Yds</th>
+                <th data-sort="comp_rushing_yards">FPTS (Yds)</th>
+                <th data-sort="rushing_tds">TD</th>
+                <th data-sort="comp_rushing_tds">FPTS (TD)</th>
                 <!-- RECEIVING -->
-                <th data-sort="receptions">Rec</th> 
-                <th data-sort="receiving_yards">Rec Yds</th> 
-                <th data-sort="comp_receiving_yards">FPTS - Rec Yds</th> 
-                <th data-sort="pct_receiving_yards">ATTR% - Rec Yds</th> 
-                <th data-sort="receiving_tds">Rec TD</th> 
-                <th data-sort="comp_receiving_tds">FPTS - Rec TD</th> 
-                <th data-sort="pct_receiving_tds">ATTR% - Rec TD</th>
-                <!-- FUMBLES -->
-                <th data-sort="fumbles_lost">Fumbles Lost</th> 
-                <th data-sort="comp_fumbles_lost">FPTS - Lost</th> 
-                <th data-sort="pct_fumbles_lost">ATTR% - Lost</th>
+                <th data-sort="receiving_yards">Yds</th>
+                <th data-sort="comp_receiving_yards">FPTS (Yds)</th>
+                <th data-sort="receiving_tds">TD</th>
+                <th data-sort="comp_receiving_tds">FPTS (TD)</th>
 
-                <!-- FANTASY -->
-                <th data-sort="fantasy_points">Fantasy Pts</th>
+                <!-- TURNOVERS -->
+                <th data-sort="fumbles_lost">Fum Lost</th>
+                <th data-sort="comp_fumbles_lost">FPTS (Fum)</th>
+
+                <th data-sort="sack_fumbles">Sack Fum</th>
+                <th data-sort="comp_sack_fumbles">FPTS (Sack Fum)</th>
+                <!-- FANTASY TOTALS -->
+                <th data-sort="fantasy_points">FPTS</th>
+                <th data-sort="fantasy_points_ppr">PPR</th>
+                <th data-sort="fantasy_points_half">Half</th>
+                <th data-sort="fantasy_points_shen2000">Shen2000</th>
               </tr>
-
             </thead>
+
             <tbody id="usage-body"></tbody>
           </table>
         </section>
@@ -303,45 +328,62 @@
         </td>
 
 
-        <td>${fmt(row.passing_yards)}</td>
-        <td>${fmt(row.comp_passing_yards)}</td>
-        <td>${fmt(row.pct_passing_yards)}</td>
-        <td>${fmt(row.passing_tds ?? row.passing_td ?? row.pass_tds)}</td>
-        <td>${fmt(row.comp_passing_tds)}</td>
-        <td>${fmt(row.pct_passing_tds)}</td>
+        <!-- PASSING -->
+      <td>${fmt(row.passing_yards)}</td>
+      <td>${fmt(row.comp_passing_yards)}</td>
+      <td>${pct(row.pct_passing_yards)}</td>
 
-        <td>${fmt(row.rushing_yards)}</td>
-        <td>${fmt(row.comp_rushing_yards)}</td>
-        <td>${fmt(row.pct_rushing_yards)}</td>
-        <td>${fmt(row.rushing_tds ?? row.rushing_td)}</td>
-        <td>${fmt(row.comp_rushing_tds)}</td>
-        <td>${fmt(row.pct_rushing_tds)}</td>
+      <td>${fmt(row.passing_tds)}</td>
+      <td>${fmt(row.comp_passing_tds)}</td>
+      <td>${pct(row.pct_passing_tds)}</td>
 
-        <td>${fmt(row.receptions)}</td>
-        <td>${fmt(row.receiving_yards)}</td>
-        <td>${fmt(row.comp_receiving_yards)}</td>
-        <td>${fmt(row.pct_receiving_yards)}</td>
-        <td>${fmt(row.receiving_tds ?? row.receiving_td)}</td>
-        <td>${fmt(row.comp_receiving_tds)}</td>
-        <td>${fmt(row.pct_receiving_tds)}</td>
+      <td>${fmt(row.interceptions)}</td>
+      <td>${fmt(row.comp_interceptions)}</td>
+      <td>${pct(row.pct_interceptions)}</td>
 
-        <td>${fmt(row.fumbles_lost)}</td>
-        <td>${fmt(row.comp_fumbles_lost)}</td>
-        <td>${fmt(row.pct_fumbles_lost)}</td>
+      <!-- RUSHING -->
+      <td>${fmt(row.rushing_yards)}</td>
+      <td>${fmt(row.comp_rushing_yards)}</td>
+      <td>${fmt(row.rushing_tds)}</td>
+      <td>${fmt(row.comp_rushing_tds)}</td>
 
-        <td>${fmt(row.fantasy_points_active)}</td>
-      </tr>
-    `).join("");
+      <!-- RECEIVING -->
+      <td>${fmt(row.receiving_yards)}</td>
+      <td>${fmt(row.comp_receiving_yards)}</td>
+      <td>${fmt(row.receiving_tds)}</td>
+      <td>${fmt(row.comp_receiving_tds)}</td>
 
-      usageBody.querySelectorAll("tr").forEach(tr => {
-  tr.addEventListener("click", () => {
-    const playerId = tr.dataset.playerId;
-    selectPlayer(playerId);
+      <!-- TURNOVERS -->
+      <td>${fmt(row.fumbles_lost)}</td>
+      <td>${fmt(row.comp_fumbles_lost)}</td>
+
+      <td>${fmt(row.sack_fumbles)}</td>
+      <td>${fmt(row.comp_sack_fumbles)}</td>
+
+      <!-- FANTASY TOTALS -->
+      <td>${fmt(row.fantasy_points)}</td>
+      <td>${fmt(row.fantasy_points_ppr)}</td>
+      <td>${fmt(row.fantasy_points_half)}</td>
+      <td>${fmt(row.fantasy_points_shen2000)}</td>
+    </tr>
+  `).join("");
+
+  usageBody.querySelectorAll("tr").forEach(tr => {
+    tr.addEventListener("click", () => {
+      const playerId = tr.dataset.playerId;
+      selectPlayer(playerId);
+    });
   });
-});
+}
 
+function fmt(v) {
+  return (v === undefined || v === null) ? "" : Number(v).toFixed(2);
+}
 
-  }
+function pct(v) {
+  return (v === undefined || v === null) ? "" : (Number(v) * 100).toFixed(1) + "%";
+}
+
 
   function selectPlayer(playerId) {
     const player = currentRows.find(
