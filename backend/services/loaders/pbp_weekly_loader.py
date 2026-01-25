@@ -69,41 +69,49 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
         rec_col = "receiver_id"
     else:
         rec_col = None
-    # Receiving TDs: only if receiving_tds == 1 and receiver is present
+    # Receiving TDs
     if rec_col:
         rec_td_events = rec_events[
             (rec_events.get("receiving_tds", 0) == 1) &
             (rec_events[rec_col].notna())
         ]
     else:
-        # No receiver column → no receiving TDs possible
         rec_td_events = rec_events.iloc[0:0]
 
-
-    # Receiving fumbles lost: receiver fumbled after catch
-    rec_fumble_lost_events = rec_events[
-        (rec_events["fumble_lost"] == 1) &
-        (rec_events["receiver_id"].notna())
-    ]
+    # Identify fumble_lost column
+    if "fumble_lost" in rec_events.columns:
+        fumble_lost_col = "fumble_lost"
+    else:
+        fumble_lost_col = None
+    # Receiving fumbles lost
+    if rec_col and fumble_lost_col:
+        rec_fumble_lost_events = rec_events[
+            (rec_events[fumble_lost_col] == 1) &
+            (rec_events[rec_col].notna())
+        ]
+    else:
+        rec_fumble_lost_events = rec_events.iloc[0:0]
+    # Build receiving dataframe
     rec_df = (
-        rec_events.groupby(["receiver_id", "receiver", "posteam"], dropna=True)
+        rec_events.groupby([rec_col, "receiver", "posteam"], dropna=True)
         .agg(
-            targets=("receiver_id", "count"),
+            targets=(rec_col, "count"),
             receptions=("complete_pass", "sum"),
             receiving_yards=("yards_gained", "sum"),
             receiving_air_yards=("air_yards", "sum"),
             receiving_first_downs=("first_down", "sum"),
             receiving_epa=("epa", "sum"),
-            receiving_tds=("receiver_id", lambda x: x.isin(rec_td_events["receiver_id"]).sum()),
-            fumbles_lost=("receiver_id", lambda x: x.isin(rec_fumble_lost_events["receiver_id"]).sum()),
+            receiving_tds=(rec_col, lambda x: x.isin(rec_td_events[rec_col]).sum()),
+            fumbles_lost=(rec_col, lambda x: x.isin(rec_fumble_lost_events[rec_col]).sum()),
         )
         .reset_index()
         .rename(columns={
-            "receiver_id": "player_id",
+            rec_col: "player_id",
             "receiver": "player_name",
             "posteam": "team"
         })
     )
+
 
     # ------------------------------------------------------------
     # RUSHING
@@ -118,41 +126,46 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
         rusher_col = "rusher_id"
     else:
         rusher_col = None
-    # Rushing TDs: only if rushing_tds == 1 and rusher is present
+    # Rushing TDs
     if rusher_col:
         rush_td_events = rush_events[
             (rush_events.get("rushing_tds", 0) == 1) &
             (rush_events[rusher_col].notna())
         ]
     else:
-        # No rusher column → no rushing TDs possible
         rush_td_events = rush_events.iloc[0:0]
 
+    # Identify fumble_lost column
+    if "fumble_lost" in rush_events.columns:
+        fumble_lost_col = "fumble_lost"
+    else:
+        fumble_lost_col = None
+    # Rushing fumbles lost
+    if rusher_col and fumble_lost_col:
+        rush_fumble_lost_events = rush_events[
+            (rush_events[fumble_lost_col] == 1) &
+            (rush_events[rusher_col].notna())
+        ]
+    else:
+        rush_fumble_lost_events = rush_events.iloc[0:0]
 
-    # Rushing fumbles lost: rusher fumbled on a run
-    rush_fumble_lost_events = rush_events[
-        (rush_events["fumble_lost"] == 1) &
-        (rush_events["rusher_player_id"].notna())
-    ]
-
+    # Build rushing dataframe
     rush_df = (
-        rush_events.groupby(["rusher_id", "rusher", "posteam"], dropna=True)
+        rush_events.groupby([rusher_col, "rusher", "posteam"], dropna=True)
         .agg(
-            carries=("rusher_id", "count"),
+            carries=(rusher_col, "count"),
             rushing_yards=("yards_gained", "sum"),
             rushing_epa=("epa", "sum"),
-
-            rushing_tds=("rusher_id", lambda x: x.isin(rush_td_events["rusher_id"]).sum()),
-            fumbles_lost=("rusher_id", lambda x: x.isin(rush_fumble_lost_events["rusher_id"]).sum()),
+            rushing_tds=(rusher_col, lambda x: x.isin(rush_td_events[rusher_col]).sum()),
+            fumbles_lost=(rusher_col, lambda x: x.isin(rush_fumble_lost_events[rusher_col]).sum()),
         )
         .reset_index()
         .rename(columns={
-            "rusher_id": "player_id",
+            rusher_col: "player_id",
             "rusher": "player_name",
             "posteam": "team"
         })
     )
-
 
     # ------------------------------------------------------------
     # PASSING
