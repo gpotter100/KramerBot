@@ -62,11 +62,23 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     rec_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
 
+    # Identify receiver column
+    if "receiver_player_id" in rec_events.columns:
+        rec_col = "receiver_player_id"
+    elif "receiver_id" in rec_events.columns:
+        rec_col = "receiver_id"
+    else:
+        rec_col = None
     # Receiving TDs: only if receiving_tds == 1 and receiver is present
-    rec_td_events = rec_events[
-        (rec_events.get("receiving_tds", 0) == 1) &
-        (rec_events["receiver_player_id"].notna())
-    ]
+    if rec_col:
+        rec_td_events = rec_events[
+            (rec_events.get("receiving_tds", 0) == 1) &
+            (rec_events[rec_col].notna())
+        ]
+    else:
+        # No receiver column → no receiving TDs possible
+        rec_td_events = rec_events.iloc[0:0]
+
 
     # Receiving fumbles lost: receiver fumbled after catch
     rec_fumble_lost_events = rec_events[
