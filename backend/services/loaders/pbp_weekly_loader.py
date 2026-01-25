@@ -111,11 +111,23 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     rush_events = pbp_week[pbp_week.get("rush_attempt", 0) == 1]
 
+    # Identify rusher column
+    if "rusher_player_id" in rush_events.columns:
+        rusher_col = "rusher_player_id"
+    elif "rusher_id" in rush_events.columns:
+        rusher_col = "rusher_id"
+    else:
+        rusher_col = None
     # Rushing TDs: only if rushing_tds == 1 and rusher is present
-    rush_td_events = rush_events[
-        (rush_events.get("rushing_tds", 0) == 1) &
-        (rush_events["rusher_player_id"].notna())
-    ]
+    if rusher_col:
+        rush_td_events = rush_events[
+            (rush_events.get("rushing_tds", 0) == 1) &
+            (rush_events[rusher_col].notna())
+        ]
+    else:
+        # No rusher column → no rushing TDs possible
+        rush_td_events = rush_events.iloc[0:0]
+
 
     # Rushing fumbles lost: rusher fumbled on a run
     rush_fumble_lost_events = rush_events[
