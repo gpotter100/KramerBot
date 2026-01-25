@@ -256,7 +256,48 @@
     // ⭐ MAKE TABLE VISIBLE
     document.getElementById("table-wrapper").classList.remove("hidden");
 
-    usageBody.innerHTML = `<tr><td colspan="15">Loaded ${payload.length} rows.</td></tr>`;
+    usageBody.innerHTML = payload.map(row => `
+  <tr>
+    <!-- Identity -->
+    <td>${row.position ?? ""}</td>
+    <td>${row.player_name ?? ""}</td>
+    <td>${row.team ?? ""}</td>
+
+    <!-- PASSING -->
+    <td>${row.passing_yards ?? 0}</td>
+    <td>${row.comp_passing_yards ?? 0}</td>
+    <td>${row.pct_passing_yards ?? 0}</td>
+    <td>${row.passing_tds ?? 0}</td>
+    <td>${row.comp_passing_tds ?? 0}</td>
+    <td>${row.pct_passing_tds ?? 0}</td>
+
+    <!-- RUSHING -->
+    <td>${row.rushing_yards ?? 0}</td>
+    <td>${row.comp_rushing_yards ?? 0}</td>
+    <td>${row.pct_rushing_yards ?? 0}</td>
+    <td>${row.rushing_tds ?? 0}</td>
+    <td>${row.comp_rushing_tds ?? 0}</td>
+    <td>${row.pct_rushing_tds ?? 0}</td>
+
+    <!-- RECEIVING -->
+    <td>${row.receptions ?? 0}</td>
+    <td>${row.receiving_yards ?? 0}</td>
+    <td>${row.comp_receiving_yards ?? 0}</td>
+    <td>${row.pct_receiving_yards ?? 0}</td>
+    <td>${row.receiving_tds ?? 0}</td>
+    <td>${row.comp_receiving_tds ?? 0}</td>
+    <td>${row.pct_receiving_tds ?? 0}</td>
+
+    <!-- FUMBLES -->
+    <td>${row.fumbles_lost ?? 0}</td>
+    <td>${row.comp_fumbles_lost ?? 0}</td>
+    <td>${row.pct_fumbles_lost ?? 0}</td>
+
+    <!-- FANTASY -->
+    <td>${row.fantasy_points ?? 0}</td>
+  </tr>
+`).join("");
+
     loadingIndicator?.classList.add("hidden");
   }
 
