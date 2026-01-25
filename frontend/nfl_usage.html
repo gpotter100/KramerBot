@@ -446,6 +446,7 @@
     list.innerHTML = top.map(p => `
       <li data-player-id="${p.player_id}">
         <strong>${p.player_name}</strong>
+        <span>(${p.team} - ${p.position})</span>
         <span>${fmt(p.fantasy_points_active)} pts</span>
       </li>
     `).join("");
