@@ -295,7 +295,7 @@
     const usageBody = document.getElementById("usage-body");
 
     usageBody.innerHTML = rows.map(row => `
-      <tr onclick="selectPlayer('${row.player_id || row.playerId || row.gsis_id || row.id}')">
+      <tr data-player-id="${row.player_id || row.playerId || row.gsis_id || row.id}">
         <td>${row.position ?? ""}</td>
         <td>${row.player_name ?? ""}</td>
         <td style="color:${TEAM_COLORS[row.team] || '#ccc'}; font-weight:600;">
@@ -332,6 +332,15 @@
         <td>${fmt(row.fantasy_points_active)}</td>
       </tr>
     `).join("");
+
+      usageBody.querySelectorAll("tr").forEach(tr => {
+  tr.addEventListener("click", () => {
+    const playerId = tr.dataset.playerId;
+    selectPlayer(playerId);
+  });
+});
+
+
   }
 
   function selectPlayer(playerId) {
@@ -493,6 +502,9 @@
       `${BACKEND_URL}/nfl/player-usage/${season}/${week}?scoring=${encodeURIComponent(scoring)}`
     );
     const payload = await res.json();
+
+    console.log("Sample row:", payload[0]);
+
 
     let rows = payload;
 
