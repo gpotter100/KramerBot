@@ -285,7 +285,7 @@
     const usageBody = document.getElementById("usage-body");
 
     usageBody.innerHTML = rows.map(row => `
-      <tr>
+      <tr onclick="selectPlayer(${row.player_id})">
         <td>${row.position ?? ""}</td>
         <td>${row.player_name ?? ""}</td>
         <td style="color:${TEAM_COLORS[row.team] || '#ccc'}; font-weight:600;">
@@ -324,6 +324,77 @@
     `).join("");
   }
 
+  function selectPlayer(playerId) {
+    const player = currentRows.find(p => p.player_id === playerId);
+    if (!player) return;
+
+    document.getElementById("charts-container").classList.remove("hidden");
+    renderAttributionChart(player);
+  }
+
+  function getAttributionData(player) {
+    return {
+      labels: [
+        "Pass Yds",
+        "Pass TD",
+        "Rush Yds",
+        "Rush TD",
+        "Rec Yds",
+        "Rec TD",
+        "Fumbles"
+      ],
+      values: [
+        player.comp_passing_yards,
+        player.comp_passing_tds,
+        player.comp_rushing_yards,
+        player.comp_rushing_tds,
+        player.comp_receiving_yards,
+        player.comp_receiving_tds,
+        player.comp_fumbles_lost
+      ]
+    };
+  }
+
+  let attributionChart = null;
+
+  function renderAttributionChart(player) {
+    const { labels, values } = getAttributionData(player);
+
+    const ctx = document.getElementById("usage-donut").getContext("2d");
+
+    if (attributionChart) {
+      attributionChart.destroy();
+    }
+
+    attributionChart = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: [
+            "#4e79a7",
+            "#59a14f",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#edc948",
+            "#b07aa1"
+          ]
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: "right" },
+          title: {
+            display: true,
+            text: `${player.player_name} – Fantasy Attribution`
+          }
+        }
+      }
+    });
+  }
+
   function enableSorting() {
     document.querySelectorAll("#usage-table thead th").forEach(th => {
       th.onclick = () => {
@@ -354,6 +425,24 @@
       };
     });
   }
+
+  function renderTopPerformers(rows) {
+    const top = [...rows]
+      .sort((a, b) => b.fantasy_points - a.fantasy_points)
+      .slice(0, 5);
+
+    const list = document.getElementById("top-list");
+
+    list.innerHTML = top.map(p => `
+      <li data-player-id="${p.player_id}">
+        <strong>${p.player_name}</strong>
+        <span>${fmt(p.fantasy_points)} pts</span>
+      </li>
+    `).join("");
+
+    document.getElementById("top-performers").classList.remove("hidden");
+  }
+
 
   async function initDropdowns() {
     const seasonInput = document.getElementById("season-input");
@@ -392,6 +481,7 @@
       });
     }
 
+    renderTopPerformers(currentRows);
     currentRows = rows;
     currentSort = { field: null, asc: true };
 
