@@ -173,16 +173,15 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
 
-    # Passing TDs: only if passing_tds == 1 and passer is present
+    # Passing TDs
     pass_td_events = pass_events[
         (pass_events.get("passing_tds", 0) == 1) &
         (pass_events["passer_id"].notna())
     ]
-
-    # INTs: only if interception occurred and passer is present
-    int_events = pass_events[
-        (pass_events.get("interception", 0) == 1) &
-        (pass_events["passer_id"].notna())
+    # INTs must come from ALL plays, not just pass attempts
+    int_events = pbp_week[
+        (pbp_week.get("interception", 0) == 1) &
+        (pbp_week["passer_id"].notna())
     ]
     # ------------------------------------------------------------
     # Sack fumbles (schema-safe)
