@@ -68,6 +68,11 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
             receiving_air_yards=("air_yards", "sum"),
             receiving_first_downs=("first_down", "sum"),
             receiving_epa=("epa", "sum"),
+            fumbles_lost=("fumble_lost", lambda x: (
+                (rec_events.loc[x.index, "fumble_lost"] == 1) &
+                (rec_events.loc[x.index, "receiver_id"].notna())
+            ).sum()),
+
         )
         .reset_index()
         .rename(
@@ -90,6 +95,11 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
             rushing_yards=("yards_gained", "sum"),
             rushing_tds=("touchdown", "sum"),
             rushing_epa=("epa", "sum"),
+            fumbles_lost=("fumble_lost", lambda x: (
+                (rush_events.loc[x.index, "fumble_lost"] == 1) &
+                (rush_events.loc[x.index, "rusher_id"].notna())
+            ).sum()),
+
         )
         .reset_index()
         .rename(
@@ -112,7 +122,18 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
             completions=("complete_pass", "sum"),
             passing_yards=("yards_gained", "sum"),
             passing_tds=("touchdown", "sum"),
-            interceptions=("interception", "sum"),
+            
+            interceptions=("interception", lambda x: (
+                (pass_events.loc[x.index, "pass_attempt"] == 1) &
+                (pass_events.loc[x.index, "interception"] == 1) &
+                (pass_events.loc[x.index, "passer_id"].notna())
+            ).sum()),
+
+            fumbles_lost=("fumble_lost", lambda x: (
+                (pass_events.loc[x.index, "fumble_lost"] == 1) &
+                (pass_events.loc[x.index, "passer_id"].notna())
+            ).sum()),
+
             passing_air_yards=("air_yards", "sum"),
             passing_first_downs=("first_down", "sum"),
             passing_epa=("epa", "sum"),
@@ -137,14 +158,31 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     if not dfs:
         return pd.DataFrame()
-
-    weekly = reduce(
+    weekly = pl.reduce(
         lambda left, right: pd.merge(
             left, right, on=["player_id", "player_name", "team"], how="outer"
         ),
         dfs,
     )
 
+    # ------------------------------------------------------------
+    # CLEAN UP ROLE-SPECIFIC STAT COLUMNS
+    # ------------------------------------------------------------
+
+    def sum_columns(df, base_name):
+        cols = [c for c in df.columns if c == base_name or c.startswith(f"{base_name}_")]
+        if not cols:
+            df[base_name] = 0
+        else:
+            df[base_name] = df[cols].sum(axis=1)
+            df.drop(columns=[c for c in cols if c != base_name], inplace=True)
+        return df
+
+    weekly = sum_columns(weekly, "fumbles_lost")
+    weekly = sum_columns(weekly, "interceptions")
+    weekly = sum_columns(weekly, "passing_tds")
+    weekly = sum_columns(weekly, "rushing_tds")
+    weekly = sum_columns(weekly, "receiving_tds")
     weekly["season"] = season
     weekly["week"] = week
 
