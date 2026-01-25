@@ -288,7 +288,10 @@
       <tr>
         <td>${row.position ?? ""}</td>
         <td>${row.player_name ?? ""}</td>
-        <td>${row.team ?? ""}</td>
+        <td style="color:${TEAM_COLORS[row.team] || '#ccc'}; font-weight:600;">
+          ${row.team ?? ""}
+        </td>
+
 
         <td>${fmt(row.passing_yards)}</td>
         <td>${fmt(row.comp_passing_yards)}</td>
