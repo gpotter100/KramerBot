@@ -295,7 +295,7 @@
     const usageBody = document.getElementById("usage-body");
 
     usageBody.innerHTML = rows.map(row => `
-      <tr onclick="selectPlayer(${row.player_id})">
+      <tr onclick="selectPlayer('${row.player_id || row.playerId || row.gsis_id || row.id}')">
         <td>${row.position ?? ""}</td>
         <td>${row.player_name ?? ""}</td>
         <td style="color:${TEAM_COLORS[row.team] || '#ccc'}; font-weight:600;">
@@ -335,8 +335,17 @@
   }
 
   function selectPlayer(playerId) {
-    const player = currentRows.find(p => p.player_id === playerId);
-    if (!player) return;
+    const player = currentRows.find(
+      p => p.player_id == playerId ||
+           p.playerId == playerId ||
+           p.gsis_id == playerId ||
+           p.id == playerId
+    );
+
+    if (!player) {
+      console.warn("Player not found for click:", playerId);
+      return;
+    }
 
     document.getElementById("charts-container").classList.remove("hidden");
     renderAttributionChart(player);
