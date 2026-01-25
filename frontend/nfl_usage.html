@@ -241,6 +241,16 @@
 <script type="module">
   import { API_BASE as BACKEND_URL } from './scripts/config.js';
 
+  function getFantasyField(scoring) {
+    switch (scoring) {
+      case "ppr": return "fantasy_points_ppr";
+      case "half-ppr": return "fantasy_points_half";
+      case "vandalay": return "fantasy_points_vandalay";
+      case "shen2000": return "fantasy_points_shen2000";
+      default: return "fantasy_points";
+    }
+  }
+
   const TEAM_COLORS = {
     ARI: "#97233F",
     ATL: "#A71930",
@@ -319,7 +329,7 @@
         <td>${fmt(row.comp_fumbles_lost)}</td>
         <td>${fmt(row.pct_fumbles_lost)}</td>
 
-        <td>${fmt(row.fantasy_points)}</td>
+        <td>${fmt(row.fantasy_points_active)}</td>
       </tr>
     `).join("");
   }
@@ -428,15 +438,15 @@
 
   function renderTopPerformers(rows) {
     const top = [...rows]
-      .sort((a, b) => b.fantasy_points - a.fantasy_points)
-      .slice(0, 5);
+      .sort((a, b) => b.fantasy_points_active - a.fantasy_points_active)
+      .slice(0, 10);
 
     const list = document.getElementById("top-list");
 
     list.innerHTML = top.map(p => `
       <li data-player-id="${p.player_id}">
         <strong>${p.player_name}</strong>
-        <span>${fmt(p.fantasy_points)} pts</span>
+        <span>${fmt(p.fantasy_points_active)} pts</span>
       </li>
     `).join("");
 
@@ -462,6 +472,7 @@
     const week = Number(document.getElementById("week-input").value);
     const scoring = document.getElementById("scoring-filter").value;
     const positionFilter = document.getElementById("position-filter").value;
+    const fantasyField = getFantasyField(scoring);
 
     document.getElementById("loading-indicator").classList.remove("hidden");
 
@@ -480,6 +491,12 @@
         return r.position === positionFilter;
       });
     }
+
+    // Normalize fantasy points based on selected scoring
+    rows = rows.map(r => ({
+      ...r,
+      fantasy_points_active: Number(r[fantasyField] ?? r.fantasy_points ?? 0)
+    }));
 
     renderTopPerformers(currentRows);
     currentRows = rows;
