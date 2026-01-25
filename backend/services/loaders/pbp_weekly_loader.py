@@ -61,11 +61,11 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # ------------------------------------------------------------
 
     rec_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
-    # Receiving TDs: complete pass + touchdown + receiver_id present
+
+    # Receiving TDs: only if receiving_tds == 1 and receiver is present
     rec_td_events = rec_events[
-        (rec_events["complete_pass"] == 1) &
-        (rec_events["touchdown"] == 1) &
-        (rec_events["receiver_id"].notna())
+        (rec_events.get("receiving_tds", 0) == 1) &
+        (rec_events["receiver_player_id"].notna())
     ]
 
     # Receiving fumbles lost: receiver fumbled after catch
@@ -99,16 +99,16 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     rush_events = pbp_week[pbp_week.get("rush_attempt", 0) == 1]
 
-    # Rushing TDs: rush attempt + touchdown + rusher_id present
+    # Rushing TDs: only if rushing_tds == 1 and rusher is present
     rush_td_events = rush_events[
-        (rush_events["touchdown"] == 1) &
-        (rush_events["rusher_id"].notna())
+        (rush_events.get("rushing_tds", 0) == 1) &
+        (rush_events["rusher_player_id"].notna())
     ]
 
     # Rushing fumbles lost: rusher fumbled on a run
     rush_fumble_lost_events = rush_events[
         (rush_events["fumble_lost"] == 1) &
-        (rush_events["rusher_id"].notna())
+        (rush_events["rusher_player_id"].notna())
     ]
 
     rush_df = (
@@ -136,18 +136,17 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
 
     pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
 
-    # TDs: only count if passer_id is present and touchdown occurred
+    # Passing TDs: only if passing_tds == 1 and passer is present
     pass_td_events = pass_events[
-        (pass_events["touchdown"] == 1) &
-        (pass_events["passer_id"].notna())
-    ]
-    # INTs: only count if interception occurred and passer_id is present
-    int_events = pass_events[
-        (pass_events["interception"] == 1) &
+        (pass_events.get("passing_tds", 0) == 1) &
         (pass_events["passer_id"].notna())
     ]
 
-    # Sack fumbles: only count if QB fumbled on a sack
+    # INTs: only if interception occurred and passer is present
+    int_events = pass_events[
+        (pass_events.get("interception", 0) == 1) &
+        (pass_events["passer_id"].notna())
+    ]
     # ------------------------------------------------------------
     # Sack fumbles (schema-safe)
     # ------------------------------------------------------------
@@ -158,10 +157,9 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     elif "fumbled" in pass_events.columns:
         fumble_col = "fumbled"
     elif "fumble_recovery_1_team" in pass_events.columns:
-        # treat any recovery event as a fumble event
         fumble_col = "fumble_recovery_1_team"
     else:
-        fumble_col = None  # no fumble indicator exists
+        fumble_col = None
 
     # Identify qb_hit column if present
     qb_hit_col = "qb_hit" if "qb_hit" in pass_events.columns else None
@@ -180,9 +178,7 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
                 (pass_events["passer_id"].notna())
             ]
     else:
-        sack_fumble_events = pass_events.iloc[0:0]  # empty dataframe
-        # No fumble column exists → no sack fumbles possible
-        sack_fumble_events = pass_events.iloc[0:0]  # empty dataframe
+        sack_fumble_events = pass_events.iloc[0:0]
 
     # Lost fumbles (schema-safe)
     if "fumble_lost" in pass_events.columns:
@@ -191,7 +187,6 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
         ]
     else:
         sack_fumble_lost_events = pass_events.iloc[0:0]
-
 
 
     pass_df = (
