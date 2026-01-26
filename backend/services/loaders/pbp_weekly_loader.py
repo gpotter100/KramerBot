@@ -178,59 +178,40 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # PASSING
     # ------------------------------------------------------------
 
+    # All pass plays
     pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
-
-    # Passing TDs
+    # Passing TDs:
+    # - play is a pass attempt
+    # - touchdown == 1
+    # - passer_id present
+    # - receiver_id present (prevents QB rush TDs / scrambles)
     pass_td_events = pass_events[
-        (pass_events.get("passing_tds", 0) == 1) &
-        (pass_events["passer_id"].notna())
+        (pass_events["touchdown"] == 1) &
+        (pass_events["passer_id"].notna()) &
+        (pass_events["receiver_id"].notna())
     ]
-    # INTs must come from ALL plays, not just pass attempts
+
+    # INTs:
+    # - must come from ALL plays, not just pass_attempt == 1
+    # - interception == 1
+    # - passer_id present
     int_events = pbp_week[
-        (pbp_week.get("interception", 0) == 1) &
+        (pbp_week["interception"] == 1) &
         (pbp_week["passer_id"].notna())
     ]
-    # ------------------------------------------------------------
-    # Sack fumbles (schema-safe)
-    # ------------------------------------------------------------
 
-    # Identify which fumble column exists
-    if "fumble" in pass_events.columns:
-        fumble_col = "fumble"
-    elif "fumbled" in pass_events.columns:
-        fumble_col = "fumbled"
-    elif "fumble_recovery_1_team" in pass_events.columns:
-        fumble_col = "fumble_recovery_1_team"
-    else:
-        fumble_col = None
+    # Sack fumbles lost (best approximation with this schema):
+    # - fumble_lost == 1
+    # - passer_id present
+    # - play_type == "pass" (so it's a QB play, not a rush)
+    sack_fumble_lost_events = pbp_week[
+        (pbp_week["fumble_lost"] == 1) &
+        (pbp_week["passer_id"].notna()) &
+        (pbp_week["play_type"] == "pass")
+    ]
 
-    # Identify qb_hit column if present
-    qb_hit_col = "qb_hit" if "qb_hit" in pass_events.columns else None
-
-    # Build sack fumble events safely
-    if fumble_col:
-        if qb_hit_col:
-            sack_fumble_events = pass_events[
-                (pass_events[fumble_col] == 1) &
-                (pass_events[qb_hit_col] == 1) &
-                (pass_events["passer_id"].notna())
-            ]
-        else:
-            sack_fumble_events = pass_events[
-                (pass_events[fumble_col] == 1) &
-                (pass_events["passer_id"].notna())
-            ]
-    else:
-        sack_fumble_events = pass_events.iloc[0:0]
-
-    # Lost fumbles (schema-safe)
-    if "fumble_lost" in pass_events.columns:
-        sack_fumble_lost_events = sack_fumble_events[
-            sack_fumble_events["fumble_lost"] == 1
-        ]
-    else:
-        sack_fumble_lost_events = pass_events.iloc[0:0]
-
+    # With only fumble_lost available, sack_fumbles == sack_fumbles_lost
+    sack_fumble_events = sack_fumble_lost_events
 
     pass_df = (
         pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
@@ -250,7 +231,7 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
         .rename(columns={
             "passer_id": "player_id",
             "passer": "player_name",
-            "posteam": "team"
+           "posteam": "team"
         })
     )
 
