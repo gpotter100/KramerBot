@@ -178,40 +178,27 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # PASSING
     # ------------------------------------------------------------
 
-    # All pass plays
-    pass_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
-    # Passing TDs:
-    # - play is a pass attempt
-    # - touchdown == 1
-    # - passer_id present
-    # - receiver_id present (prevents QB rush TDs / scrambles)
+    # TRUE pass plays only
+    pass_events = pbp_week[pbp_week["play_type"] == "pass"]
+    # Passing TDs
     pass_td_events = pass_events[
         (pass_events["touchdown"] == 1) &
         (pass_events["passer_id"].notna()) &
         (pass_events["receiver_id"].notna())
     ]
 
-    # INTs:
-    # - must come from ALL plays, not just pass_attempt == 1
-    # - interception == 1
-    # - passer_id present
-    int_events = pbp_week[
-        (pbp_week["interception"] == 1) &
-        (pbp_week["passer_id"].notna())
+    # Interceptions
+    int_events = pass_events[
+        (pass_events["interception"] == 1) &
+        (pass_events["passer_id"].notna())
     ]
-
-    # Sack fumbles lost (best approximation with this schema):
-    # - fumble_lost == 1
-    # - passer_id present
-    # - play_type == "pass" (so it's a QB play, not a rush)
-    sack_fumble_lost_events = pbp_week[
-        (pbp_week["fumble_lost"] == 1) &
-        (pbp_week["passer_id"].notna()) &
-        (pbp_week["play_type"] == "pass")
+    # Sack fumbles lost
+    sack_fumble_lost_events = pass_events[
+        (pass_events["fumble_lost"] == 1) &
+        (pass_events["passer_id"].notna())
     ]
-
-    # With only fumble_lost available, sack_fumbles == sack_fumbles_lost
     sack_fumble_events = sack_fumble_lost_events
+
 
     pass_df = (
         pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
