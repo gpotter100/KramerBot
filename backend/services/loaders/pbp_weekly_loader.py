@@ -183,20 +183,25 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # Passing TDs
     pass_td_events = pass_events[
         (pass_events["touchdown"] == 1) &
-        (pass_events["passer_id"].notna()) &
-        (pass_events["receiver_id"].notna())
+        (pass_events["desc"].str.contains("pass", case=False, na=False)) &
+        (pass_events["receiver_id"].notna()) &
+        (pass_events["passer_id"].notna())
     ]
 
     # Interceptions
     int_events = pass_events[
         (pass_events["interception"] == 1) &
+        (pass_events["desc"].str.contains("intercept", case=False, na=False)) &
         (pass_events["passer_id"].notna())
     ]
+
     # Sack fumbles lost
     sack_fumble_lost_events = pass_events[
         (pass_events["fumble_lost"] == 1) &
+        (pass_events["desc"].str.contains("sack", case=False, na=False)) &
         (pass_events["passer_id"].notna())
     ]
+
     # Sack fumbles = sack fumbles lost (no separate fumble column)
     sack_fumble_events = sack_fumble_lost_events
 
