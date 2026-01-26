@@ -87,7 +87,6 @@ const compareMetrics = document.getElementById("compare-metrics");
 
 let touchesChart = null;
 let snapChart = null;
-let usageDonutChart = null;
 
 /* ===============================
    HELPERS (safe + formatting)
@@ -603,22 +602,6 @@ function renderCharts(data) {
     }
   });
 
-  // Render usage donut chart
-  usageDonutChart = new Chart(usageDonutCanvas, {
-    type: "doughnut",
-    data: {
-      labels,
-      datasets: [{
-        label: "Touches",
-        data: touches,
-        backgroundColor: labels.map(() => "#59a14f")
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: "bottom" } }
-    }
-  });
 
   setHidden(chartsContainer, false);
 }
