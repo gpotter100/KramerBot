@@ -407,47 +407,6 @@ function renderTable(data) {
 }
 
 
-function buildFantasyBreakdown(p) {
-  const safe = v => (typeof v === "number" ? v : 0);
-
-  return {
-    passing: {
-      yds: safe(p.passing_yards),
-      fpts_yds: safe(p.comp_passing_yards),
-      attr_pct_yds: safe(p.pct_passing_yards),
-      tds: safe(p.passing_tds),
-      fpts_tds: safe(p.comp_passing_tds),
-      attr_pct_tds: safe(p.pct_passing_tds),
-    },
-    rushing: {
-      yds: safe(p.rushing_yards),
-      fpts_yds: safe(p.comp_rushing_yards),
-      attr_pct_yds: safe(p.pct_rushing_yards),
-      tds: safe(p.rushing_tds),
-      fpts_tds: safe(p.comp_rushing_tds),
-      attr_pct_tds: safe(p.pct_rushing_tds),
-    },
-    receiving: {
-      rec: safe(p.receptions),
-      yds: safe(p.receiving_yards),
-      fpts_yds: safe(p.comp_receiving_yards),
-      attr_pct_yds: safe(p.pct_receiving_yards),
-      tds: safe(p.receiving_tds),
-      fpts_tds: safe(p.comp_receiving_tds),
-      attr_pct_tds: safe(p.pct_receiving_tds),
-    },
-    fumbles: {
-      lost: safe(p.fumbles_lost),
-      fpts_lost: safe(p.comp_fumbles_lost),
-      attr_pct_lost: safe(p.pct_fumbles_lost),
-    },
-    fantasy: {
-      total: safe(p.fantasy_points),
-    },
-  };
-}
-
-
 function renderPlayerBreakdown(player) {
   const panel = document.getElementById("player-breakdown-panel");
   if (!panel) return;
