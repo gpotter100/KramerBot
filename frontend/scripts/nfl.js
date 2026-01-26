@@ -137,7 +137,7 @@ function scoringFieldForCurrentSelection() {
     case "half_ppr":
       return "fantasy_points_half";
     case "vandalay":
-      return "fantasy_points";            // Vandalay uses the base field
+      return "fantasy_points_vandalay";            // Vandalay uses the base field
     case "shen2000":
     case "shen 2000":
       return "fantasy_points_shen2000";   // SHEN 2000 backend field
@@ -163,7 +163,7 @@ function normalizePlayer(raw) {
   const touchdowns = passingTDs + rushingTDs + receivingTDs;
 
   // Backend now ALWAYS provides fantasy_points for Vandalay
-  const fantasyPoints = num(raw.fantasy_points);
+  const fantasyPoints = num(raw.fantasy_points_vandalay);   // Vandalay uses the base field
 
   // SHEN 2000 backend field
   const shen2000Points = num(raw.fantasy_points_shen2000);

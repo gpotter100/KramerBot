@@ -27,6 +27,7 @@ def compute_multiweek_attribution(pbp_rows, usage_rows):
             "fantasy_points": u.get("fantasy_points", 0),
             "fantasy_points_ppr": u.get("fantasy_points_ppr", 0),
             "fantasy_points_half": u.get("fantasy_points_half", 0),
+            "fantasy_points_vandalay": u.get("fantasy_points_vandalay", 0),
             "fantasy_points_shen2000": u.get("fantasy_points_shen2000", 0),
 
             # Raw attribution buckets
