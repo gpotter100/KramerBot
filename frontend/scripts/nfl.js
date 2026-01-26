@@ -529,6 +529,12 @@ function renderCompare() {
 /* ===============================
    CHARTS
 =============================== */
+
+// remove the "let" — just assign
+touchesChart = null;
+snapChart = null;
+usageDonutChart = null;
+
 function renderCharts(data) {
   if (!Array.isArray(data) || data.length === 0) return;
 
@@ -540,10 +546,21 @@ function renderCharts(data) {
   const touches = chartData.map(p => num(p.touches));
   const snapPct = chartData.map(p => num(p.snap_pct));
 
-  if (touchesChart) touchesChart.destroy();
-  if (snapChart) snapChart.destroy();
-  if (usageDonutChart) usageDonutChart.destroy();
+  // Destroy existing charts safely
+  if (touchesChart) {
+    touchesChart.destroy();
+    touchesChart = null;
+  }
+  if (snapChart) {
+    snapChart.destroy();
+    snapChart = null;
+  }
+  if (usageDonutChart) {
+    usageDonutChart.destroy();
+    usageDonutChart = null;
+  }
 
+  // Render touches bar chart
   touchesChart = new Chart(touchesCanvas, {
     type: "bar",
     data: {
@@ -565,6 +582,7 @@ function renderCharts(data) {
     }
   });
 
+  // Render snap % line chart
   snapChart = new Chart(snapCanvas, {
     type: "line",
     data: {
@@ -590,6 +608,7 @@ function renderCharts(data) {
     }
   });
 
+  // Render usage donut chart
   usageDonutChart = new Chart(usageDonutCanvas, {
     type: "doughnut",
     data: {
