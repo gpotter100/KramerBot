@@ -37,8 +37,13 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     Builds weekly player-level stats from local PBP parquet.
     This is the unified weekly builder for ALL seasons.
     """
-    print("PBP COLUMNS:", pbp_week.columns.tolist())
+    # Load the parquet
+    local_path = LOCAL_PBP_DIR / f"pbp_{season}.parquet"
 
+    # Debug: print schema
+    pbp_week = pd.read_parquet(local_path)
+    print(f"DEBUG: Loaded PBP for {season} week {week}")
+    print("PBP COLUMNS:", pbp_week.columns.tolist())
 
     lf = load_pbp_local(season)
 
