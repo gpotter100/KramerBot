@@ -374,7 +374,7 @@ function renderTable(data) {
     const breakdown = buildFantasyBreakdown(p);
 
     return `
-      <tr data-player-index="${idx}">
+      <tr data-player-id="${p.player_id}">
         <td>${positionIcons[p.position] || text(p.position, "")}</td>
         <td>${text(p.player_name)}</td>
         <td>${text(p.team)}</td>
@@ -397,9 +397,9 @@ function renderTable(data) {
   // STEP 3B — attach click handlers to each row
   document.querySelectorAll("#usage-body tr").forEach(row => {
     row.addEventListener("click", () => {
-      const idx = Number(row.dataset.playerIndex);
-      const player = data[idx];
-      renderPlayerBreakdown(player);   // <-- this opens the panel
+      const playerId = row.dataset.playerId;
+      const player = data.find(p => p.player_id === playerId);
+      renderPlayerBreakdown(player);
     });
   });
 
