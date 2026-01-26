@@ -197,9 +197,21 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
         (pass_events["fumble_lost"] == 1) &
         (pass_events["passer_id"].notna())
     ]
+    # Sack fumbles = sack fumbles lost (no separate fumble column)
     sack_fumble_events = sack_fumble_lost_events
 
+    # ------------------------------------------------------------
+    # Count events by passer_id (THIS is the fix)
+    # ------------------------------------------------------------
 
+    td_counts = pass_td_events.groupby("passer_id").size().rename("passing_tds")
+    int_counts = int_events.groupby("passer_id").size().rename("interceptions")
+    sack_f_counts = sack_fumble_events.groupby("passer_id").size().rename("sack_fumbles")
+    sack_f_lost_counts = sack_fumble_lost_events.groupby("passer_id").size().rename("sack_fumbles_lost")
+
+    # ------------------------------------------------------------
+    # Base passing stats
+    # ------------------------------------------------------------
 
     pass_df = (
         pass_events.groupby(["passer_id", "passer", "posteam"], dropna=True)
@@ -210,19 +222,32 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
             passing_air_yards=("air_yards", "sum"),
             passing_first_downs=("first_down", "sum"),
             passing_epa=("epa", "sum"),
-            passing_tds=("passer_id", lambda x: x.isin(pass_td_events["passer_id"]).sum()),
-            interceptions=("passer_id", lambda x: x.isin(int_events["passer_id"]).sum()),
-            sack_fumbles=("passer_id", lambda x: x.isin(sack_fumble_events["passer_id"]).sum()),
-            sack_fumbles_lost=("passer_id", lambda x: x.isin(sack_fumble_lost_events["passer_id"]).sum()),
         )
         .reset_index()
-        .rename(columns={
-            "passer_id": "player_id",
-            "passer": "player_name",
-           "posteam": "team"
-        })
     )
 
+    # ------------------------------------------------------------
+    # Merge event counts
+    # ------------------------------------------------------------
+
+    pass_df = (
+        pass_df
+        .merge(td_counts, on="passer_id", how="left")
+        .merge(int_counts, on="passer_id", how="left")
+        .merge(sack_f_counts, on="passer_id", how="left")
+        .merge(sack_f_lost_counts, on="passer_id", how="left")
+        .fillna(0)
+    )
+
+    # ------------------------------------------------------------
+    # Final rename
+    # ------------------------------------------------------------
+
+    pass_df = pass_df.rename(columns={
+        "passer_id": "player_id",
+        "passer": "player_name",
+        "posteam": "team"
+    })
 
     # ------------------------------------------------------------
     # MERGE ALL THREE
