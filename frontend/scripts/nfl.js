@@ -549,10 +549,7 @@ function renderCharts(data) {
     snapChart.destroy();
     snapChart = null;
   }
-  if (usageDonutChart) {
-    usageDonutChart.destroy();
-    usageDonutChart = null;
-  }
+  
 
   // Render touches bar chart
   touchesChart = new Chart(touchesCanvas, {
