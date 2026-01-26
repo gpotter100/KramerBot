@@ -530,11 +530,6 @@ function renderCompare() {
    CHARTS
 =============================== */
 
-// remove the "let" — just assign
-touchesChart = null;
-snapChart = null;
-usageDonutChart = null;
-
 function renderCharts(data) {
   if (!Array.isArray(data) || data.length === 0) return;
 
