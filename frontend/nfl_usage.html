@@ -266,6 +266,10 @@
 <script type="module">
   import { API_BASE as BACKEND_URL } from './scripts/config.js';
 
+  function num(v) {
+    return typeof v === "number" ? v : 0;
+  }
+
   function getFantasyField(scoring) {
     switch (scoring) {
       case "ppr": return "fantasy_points_ppr";
