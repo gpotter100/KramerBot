@@ -124,55 +124,47 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # RUSHING
     # ------------------------------------------------------------
 
-    rush_events = pbp_week[pbp_week.get("rush_attempt", 0) == 1]
+    rush_events = pbp_week[pbp_week["play_type"] == "run"]
 
-    # Identify rusher column
-    if "rusher_player_id" in rush_events.columns:
-        rusher_col = "rusher_player_id"
-    elif "rusher_id" in rush_events.columns:
-        rusher_col = "rusher_id"
-    else:
-        rusher_col = None
     # Rushing TDs
-    if rusher_col:
-        rush_td_events = rush_events[
-            (rush_events.get("rushing_tds", 0) == 1) &
-            (rush_events[rusher_col].notna())
-        ]
-    else:
-        rush_td_events = rush_events.iloc[0:0]
-
-    # Identify fumble_lost column
-    if "fumble_lost" in rush_events.columns:
-        fumble_lost_col = "fumble_lost"
-    else:
-        fumble_lost_col = None
+    rush_td_events = rush_events[
+        (rush_events["touchdown"] == 1) &
+        (rush_events["rusher_id"].notna())
+    ]
     # Rushing fumbles lost
-    if rusher_col and fumble_lost_col:
-        rush_fumble_lost_events = rush_events[
-            (rush_events[fumble_lost_col] == 1) &
-            (rush_events[rusher_col].notna())
-        ]
-    else:
-        rush_fumble_lost_events = rush_events.iloc[0:0]
+    rush_fumble_lost_events = rush_events[
+        (rush_events["fumble_lost"] == 1) &
+        (rush_events["rusher_id"].notna())
+    ]
+    # Count events by rusher_id
+    rush_td_counts = rush_td_events.groupby("rusher_id").size().rename("rushing_tds")
+    rush_fumble_lost_counts = rush_fumble_lost_events.groupby("rusher_id").size().rename("fumbles_lost")
 
-    # Build rushing dataframe
+    # Base rushing stats
     rush_df = (
-        rush_events.groupby([rusher_col, "rusher", "posteam"], dropna=True)
+        rush_events.groupby(["rusher_id", "rusher", "posteam"], dropna=True)
         .agg(
-            carries=(rusher_col, "count"),
+            carries=("rusher_id", "count"),
             rushing_yards=("yards_gained", "sum"),
             rushing_epa=("epa", "sum"),
-            rushing_tds=(rusher_col, lambda x: x.isin(rush_td_events[rusher_col]).sum()),
-            fumbles_lost=(rusher_col, lambda x: x.isin(rush_fumble_lost_events[rusher_col]).sum()),
         )
         .reset_index()
-        .rename(columns={
-            rusher_col: "player_id",
-            "rusher": "player_name",
-            "posteam": "team"
-        })
     )
+
+    # Merge event counts
+    rush_df = (
+        rush_df
+        .merge(rush_td_counts, on="rusher_id", how="left")
+        .merge(rush_fumble_lost_counts, on="rusher_id", how="left")
+        .fillna(0)
+    )
+
+    # Final rename
+    rush_df = rush_df.rename(columns={
+        "rusher_id": "player_id",
+        "rusher": "player_name",
+        "posteam": "team"
+    })
 
     # ------------------------------------------------------------
     # PASSING
