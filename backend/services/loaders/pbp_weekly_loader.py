@@ -67,59 +67,51 @@ def load_weekly_from_pbp(season: int, week: int) -> pd.DataFrame:
     # RECEIVING
     # ------------------------------------------------------------
 
-    rec_events = pbp_week[pbp_week.get("pass_attempt", 0) == 1]
+    rec_events = pbp_week[pbp_week["play_type"] == "pass"]
 
-    # Identify receiver column
-    if "receiver_player_id" in rec_events.columns:
-        rec_col = "receiver_player_id"
-    elif "receiver_id" in rec_events.columns:
-        rec_col = "receiver_id"
-    else:
-        rec_col = None
     # Receiving TDs
-    if rec_col:
-        rec_td_events = rec_events[
-            (rec_events.get("receiving_tds", 0) == 1) &
-            (rec_events[rec_col].notna())
-        ]
-    else:
-        rec_td_events = rec_events.iloc[0:0]
+    rec_td_events = rec_events[
+        (rec_events["touchdown"] == 1) &
+        (rec_events["receiver_id"].notna()) &
+        (rec_events["passer_id"].notna())
+    ]
 
-    # Identify fumble_lost column
-    if "fumble_lost" in rec_events.columns:
-        fumble_lost_col = "fumble_lost"
-    else:
-        fumble_lost_col = None
     # Receiving fumbles lost
-    if rec_col and fumble_lost_col:
-        rec_fumble_lost_events = rec_events[
-            (rec_events[fumble_lost_col] == 1) &
-            (rec_events[rec_col].notna())
-        ]
-    else:
-        rec_fumble_lost_events = rec_events.iloc[0:0]
-    # Build receiving dataframe
+    rec_fumble_lost_events = rec_events[
+        (rec_events["fumble_lost"] == 1) &
+        (rec_events["receiver_id"].notna())
+    ]
+    # Count events by receiver_id
+    rec_td_counts = rec_td_events.groupby("receiver_id").size().rename("receiving_tds")
+    rec_fumble_lost_counts = rec_fumble_lost_events.groupby("receiver_id").size().rename("fumbles_lost")
+
+    # Base receiving stats
     rec_df = (
-        rec_events.groupby([rec_col, "receiver", "posteam"], dropna=True)
+        rec_events.groupby(["receiver_id", "receiver", "posteam"], dropna=True)
         .agg(
-            targets=(rec_col, "count"),
+            targets=("receiver_id", "count"),
             receptions=("complete_pass", "sum"),
             receiving_yards=("yards_gained", "sum"),
             receiving_air_yards=("air_yards", "sum"),
-            receiving_first_downs=("first_down", "sum"),
             receiving_epa=("epa", "sum"),
-            receiving_tds=(rec_col, lambda x: x.isin(rec_td_events[rec_col]).sum()),
-            fumbles_lost=(rec_col, lambda x: x.isin(rec_fumble_lost_events[rec_col]).sum()),
         )
         .reset_index()
-        .rename(columns={
-            rec_col: "player_id",
-            "receiver": "player_name",
-            "posteam": "team"
-        })
     )
 
-
+    # Merge event counts
+    rec_df = (
+        rec_df
+        .merge(rec_td_counts, on="receiver_id", how="left")
+        .merge(rec_fumble_lost_counts, on="receiver_id", how="left")
+        .fillna(0)
+    )
+    # Final rename
+    rec_df = rec_df.rename(columns={
+        "receiver_id": "player_id",
+        "receiver": "player_name",
+        "posteam": "team"
+    })
+    
     # ------------------------------------------------------------
     # RUSHING
     # ------------------------------------------------------------
