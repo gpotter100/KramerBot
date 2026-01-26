@@ -428,43 +428,48 @@ function pct(v) {
 
   let attributionChart = null;
 
-  function renderAttributionChart(player) {
-    const { labels, values } = getAttributionData(player);
+  function renderAttributionChart(data) {
+    const canvas = document.getElementById("usage-donut");
+    if (!canvas) return;
 
-    const ctx = document.getElementById("usage-donut").getContext("2d");
+    const ctx = canvas.getContext("2d");
 
+    // Destroy previous chart if it exists
     if (attributionChart) {
       attributionChart.destroy();
+      attributionChart = null;
     }
 
+    const labels = ["Passing", "Rushing", "Receiving", "Fumbles"];
+    const values = [
+      num(data.comp_passing_yards) + num(data.comp_passing_tds),
+      num(data.comp_rushing_yards) + num(data.comp_rushing_tds),
+      num(data.comp_receiving_yards) + num(data.comp_receiving_tds),
+      num(data.comp_fumbles_lost)
+    ];
     attributionChart = new Chart(ctx, {
       type: "doughnut",
       data: {
         labels,
         datasets: [{
           data: values,
-          backgroundColor: [
-            "#4e79a7",
-            "#59a14f",
-            "#f28e2b",
-            "#e15759",
-            "#76b7b2",
-            "#edc948",
-            "#b07aa1"
-          ]
+          backgroundColor: ["#4e79a7", "#59a14f", "#f28e2b", "#e15759"]
         }]
       },
       options: {
+        responsive: true,
         plugins: {
-          legend: { position: "right" },
-          title: {
-            display: true,
-            text: `${player.player_name} – Fantasy Attribution`
+          legend: { position: "bottom" },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${fmt1(ctx.raw)} pts`        
+            }
           }
         }
       }
     });
   }
+
 
   function enableSorting() {
     document.querySelectorAll("#usage-table thead th").forEach(th => {
