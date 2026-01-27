@@ -289,7 +289,13 @@
   border-radius: 6px;
 }
 
-.th-center {
-  text-align: center !important;
+.data-table .col-passing-yds {
+  text-align: right !important;
+}
+.data-table .col-comp-passing-yds {
+  text-align: right !important;
+}
+.data-table .col-pct-passing-yards {
+  text-align: right !important;
 }
 

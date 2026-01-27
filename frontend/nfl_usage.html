@@ -148,9 +148,9 @@
                 <th data-sort="team">Team</th>
 
                 <!-- PASSING -->
-                <th data-sort="passing_yards" style="text-align:center;">Yds</th>
-                <th data-sort="comp_passing_yards" style="text-align:center;">FPTS (Yds)</th>
-                <th data-sort="pct_passing_yards" style="text-align:center;">% Yds</th>
+                <th data-sort="passing_yards" class="col-passing-yds">Yds</th>
+                <th data-sort="comp_passing_yards" class="col-comp-passing-yds">FPTS (Yds)</th>
+                <th data-sort="pct_passing_yards" class="col-pct-passing-yards">% Yds</th>
 
                 <th data-sort="passing_tds">TD</th>
                 <th data-sort="comp_passing_tds">FPTS (TD)</th>
@@ -345,9 +345,9 @@
 
 
         <!-- PASSING -->
-      <td>${fmt(row.passing_yards)}</td>
-      <td>${fmt(row.comp_passing_yards)}</td>
-      <td>${pct(row.pct_passing_yards)}</td>
+      <td class="col-passing-yds">${fmt(row.passing_yards)}</td>
+      <td class="col-comp-passing-yds">${fmt(row.comp_passing_yards)}</td>
+      <td class="col-pct-passing-yards">${pct(row.pct_passing_yards)}</td>
 
       <td>${fmt(row.passing_tds)}</td>
       <td>${fmt(row.comp_passing_tds)}</td>
