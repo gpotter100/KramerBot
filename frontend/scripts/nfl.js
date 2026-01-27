@@ -11,6 +11,9 @@ function buildFantasyBreakdown(p) {
       tds: safe(p.passing_tds),
       fpts_tds: safe(p.comp_passing_tds),
       attr_pct_tds: safe(p.pct_passing_tds),
+      int: safe(p.interceptions),
+      fpts_int: safe(p.comp_interceptions),
+      attr_pct_int: safe(p.pct_interceptions),
     },
     rushing: {
       yds: safe(p.rushing_yards),
@@ -22,6 +25,8 @@ function buildFantasyBreakdown(p) {
     },
     receiving: {
       rec: safe(p.receptions),
+      fpts_rec: safe(p.comp_receptions),
+      attr_pct_rec: safe(p.pct_receptions),
       yds: safe(p.receiving_yards),
       fpts_yds: safe(p.comp_receiving_yards),
       attr_pct_yds: safe(p.pct_receiving_yards),
@@ -429,6 +434,9 @@ function renderPlayerBreakdown(player) {
       <p>TDs: ${b.passing.tds}</p>
       <p>Fantasy from TDs: ${fmt1(b.passing.fpts_tds)}</p>
       <p>Attribution % (TDs): ${fmt1(b.passing.attr_pct_tds)}%</p>
+      <p>Interceptions: ${b.passing.int}</p>
+      <p>Fantasy from INTs: ${fmt1(b.passing.fpts_int)}</p>
+      <p>Attribution % (INTs): ${fmt1(b.passing.attr_pct_int)}%</p>
     </div>
 
     <div class="breakdown-section">
@@ -444,6 +452,8 @@ function renderPlayerBreakdown(player) {
     <div class="breakdown-section">
       <h3>Receiving</h3>
       <p>Receptions: ${b.receiving.rec}</p>
+      <p>Fantasy from Receptions: ${fmt1(b.receiving.fpts_rec)}</p>
+      <p>Attribution % (Receptions): ${fmt1(b.receiving.attr_pct_rec)}%</p>
       <p>Yards: ${b.receiving.yds}</p>
       <p>Fantasy from Yards: ${fmt1(b.receiving.fpts_yds)}</p>
       <p>Attribution % (Yards): ${fmt1(b.receiving.attr_pct_yds)}%</p>
