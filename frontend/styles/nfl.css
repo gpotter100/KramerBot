@@ -298,4 +298,12 @@
 .data-table .col-pct-passing-yards {
   text-align: right !important;
 }
-
+.data-table .col-receptions {
+  text-align: right !important;
+}
+.data-table .col-comp-receptions {
+  text-align: right !important;
+}
+.data-table .col-pct-receptions {
+  text-align: right !important;
+}

@@ -170,9 +170,9 @@
                 <th data-sort="pct_rushing_tds">% TD</th>
 
                 <!-- RECEIVING -->
-                <th data-sort="receptions" style="text-align:center;">Rec</th>
-                <th data-sort="comp_receptions" style="text-align:center;">FPTS (Rec)</th>
-                <th data-sort="pct_receptions" style="text-align:center;">Rec %</th>
+                <th data-sort="receptions" class="col-receptions">Rec</th>
+                <th data-sort="comp_receptions" class="col-comp-receptions">FPTS (Rec)</th>
+                <th data-sort="pct_receptions" class="col-pct-receptions">Rec %</th>
 
                 <th data-sort="receiving_yards">Yds</th>
                 <th data-sort="comp_receiving_yards">FPTS (Yds)</th>
@@ -367,9 +367,9 @@
       <td>${pct(row.pct_rushing_tds)}</td>
 
       <!-- RECEIVING -->
-      <td>${fmt(row.receptions)}</td>
-      <td>${fmt(row.comp_receptions)}</td>
-      <td>${pct(row.pct_receptions)}</td>
+      <td class="col-receptions">${fmt(row.receptions)}</td>
+      <td class="col-comp-receptions">${fmt(row.comp_receptions)}</td>
+      <td class="col-pct-receptions">${pct(row.pct_receptions)}</td>
 
       <td>${fmt(row.receiving_yards)}</td>
       <td>${fmt(row.comp_receiving_yards)}</td>
