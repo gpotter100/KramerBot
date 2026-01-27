@@ -586,6 +586,8 @@ function pct(v) {
   document.addEventListener("DOMContentLoaded", () => {
     initDropdowns();
     document.getElementById("load-btn").addEventListener("click", loadStats);
+    document.getElementById("position-filter") 
+      .addEventListener("change", loadStats);
   });
 </script>
 
