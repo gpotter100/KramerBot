@@ -152,50 +152,48 @@
                 <th data-sort="comp_passing_yards" class="col-comp-passing-yds">FPTS (Yds)</th>
                 <th data-sort="pct_passing_yards" class="col-pct-passing-yards">% Yds</th>
 
-                <th data-sort="passing_tds">TD</th>
-                <th data-sort="comp_passing_tds">FPTS (TD)</th>
-                <th data-sort="pct_passing_tds">% TD</th>
+                <th data-sort="passing_tds" class="col-passing-tds">TD</th>
+                <th data-sort="comp_passing_tds" class="col-comp-passing-tds">FPTS (TD)</th>
+                <th data-sort="pct_passing_tds" class="col-pct-passing-tds">% TD</th>
 
-                <th data-sort="interceptions">INT</th>
-                <th data-sort="comp_interceptions">FPTS (INT)</th>
-                <th data-sort="pct_interceptions">% INT</th>
-
+                <th data-sort="interceptions" class="col-interceptions">INT</th>
+                <th data-sort="comp_interceptions" class="col-comp-interceptions">FPTS (INT)</th>
+                <th data-sort="pct_interceptions" class="col-pct-interceptions">% INT</th>
                 <!-- RUSHING -->
-                <th data-sort="rushing_yards">Yds</th>
-                <th data-sort="comp_rushing_yards">FPTS (Yds)</th>
-                <th data-sort="pct_rushing_yards">% Yds</th>
+                <th data-sort="rushing_yards" class="col-rushing-yards">Yds</th>
+                <th data-sort="comp_rushing_yards" class="col-comp-rushing-yards">FPTS (Yds)</th>
+                <th data-sort="pct_rushing_yards" class="col-pct-rushing-yards">% Yds</th>
 
-                <th data-sort="rushing_tds">TD</th>
-                <th data-sort="comp_rushing_tds">FPTS (TD)</th>
-                <th data-sort="pct_rushing_tds">% TD</th>
+                <th data-sort="rushing_tds" class="col-rushing-tds">TD</th>
+                <th data-sort="comp_rushing_tds" class="col-comp-rushing-tds">FPTS (TD)</th>
+                <th data-sort="pct_rushing_tds" class="col-pct-rushing-tds">% TD</th>
 
                 <!-- RECEIVING -->
                 <th data-sort="receptions" class="col-receptions">Rec</th>
                 <th data-sort="comp_receptions" class="col-comp-receptions">FPTS (Rec)</th>
                 <th data-sort="pct_receptions" class="col-pct-receptions">Rec %</th>
 
-                <th data-sort="receiving_yards">Yds</th>
-                <th data-sort="comp_receiving_yards">FPTS (Yds)</th>
-                <th data-sort="pct_receiving_yards">% Yds</th>
+                <th data-sort="receiving_yards" class="col-receiving-yards">Yds</th>
+                <th data-sort="comp_receiving_yards" class="col-comp-receiving-yards">FPTS (Yds)</th>
+                <th data-sort="pct_receiving_yards" class="col-pct-receiving-yards">% Yds</th>
 
-                <th data-sort="receiving_tds">TD</th>
-                <th data-sort="comp_receiving_tds">FPTS (TD)</th>
-                <th data-sort="pct_receiving_tds">% TD</th>
+                <th data-sort="receiving_tds" class="col-receiving-tds">TD</th>
+                <th data-sort="comp_receiving_tds" class="col-comp-receiving-tds">FPTS (TD)</th>
+                <th data-sort="pct_receiving_tds" class="col-pct-receiving-tds">% TD</th>
 
                 <!-- TURNOVERS -->
-                <th data-sort="fumbles_lost">Fum Lost</th>
-                <th data-sort="comp_fumbles_lost">FPTS (Fum)</th>
-                <th data-sort="pct_fumbles_lost">% Fum</th>
+                <th data-sort="fumbles_lost" class="col-fumbles-lost">Fum Lost</th>
+                <th data-sort="comp_fumbles_lost" class="col-comp-fumbles-lost">FPTS (Fum)</th>
+                <th data-sort="pct_fumbles_lost" class="col-pct-fumbles-lost">% Fum</th>
 
-                <th data-sort="sack_fumbles">Sack Fum</th>
-                <th data-sort="comp_sack_fumbles">FPTS (Sack Fum)</th>
-                <th data-sort="pct_sack_fumbles">% Sack Fum</th>
-
+                <th data-sort="sack_fumbles" class="col-sack-fumbles">Sack Fum</th>
+                <th data-sort="comp_sack_fumbles" class="col-comp-sack-fumbles">FPTS (Sack Fum)</th>
+                <th data-sort="pct_sack_fumbles" class="col-pct-sack-fumbles">% Sack Fum</th>
                 <!-- FANTASY TOTALS -->
-                <th data-sort="fantasy_points_vandalay">Vandalay</th>
-                <th data-sort="fantasy_points_ppr">PPR</th>
-                <th data-sort="fantasy_points_half">Half</th>
-                <th data-sort="fantasy_points_shen2000">Shen2000</th>
+                <th data-sort="fantasy_points_vandalay" class="col-fantasy-points-vandalay">Vandalay</th>
+                <th data-sort="fantasy_points_ppr" class="col-fantasy-points-ppr">PPR</th>
+                <th data-sort="fantasy_points_half" class="col-fantasy-points-half">Half</th>
+                <th data-sort="fantasy_points_shen2000" class="col-fantasy-points-shen2000">Shen2000</th>
               </tr>
             </thead>
 
@@ -349,50 +347,50 @@
       <td class="col-comp-passing-yds">${fmt(row.comp_passing_yards)}</td>
       <td class="col-pct-passing-yards">${pct(row.pct_passing_yards)}</td>
 
-      <td>${fmt(row.passing_tds)}</td>
-      <td>${fmt(row.comp_passing_tds)}</td>
-      <td>${pct(row.pct_passing_tds)}</td>
+      <td class="col-passing-tds">${fmt(row.passing_tds)}</td>
+      <td class="col-comp-passing-tds">${fmt(row.comp_passing_tds)}</td>
+      <td class="col-pct-passing-tds">${pct(row.pct_passing_tds)}</td>
 
-      <td>${fmt(row.interceptions)}</td>
-      <td>${fmt(row.comp_interceptions)}</td>
-      <td>${pct(row.pct_interceptions)}</td>
+      <td class="col-interceptions">${fmt(row.interceptions)}</td>
+      <td class="col-comp-interceptions">${fmt(row.comp_interceptions)}</td>
+      <td class="col-pct-interceptions">${pct(row.pct_interceptions)}</td>
 
       <!-- RUSHING -->
-      <td>${fmt(row.rushing_yards)}</td>
-      <td>${fmt(row.comp_rushing_yards)}</td>
-      <td>${pct(row.pct_rushing_yards)}</td>
+      <td class="col-rushing-yds">${fmt(row.rushing_yards)}</td>
+      <td class="col-comp-rushing-yds">${fmt(row.comp_rushing_yards)}</td>
+      <td class="col-pct-rushing-yards">${pct(row.pct_rushing_yards)}</td>
 
-      <td>${fmt(row.rushing_tds)}</td>
-      <td>${fmt(row.comp_rushing_tds)}</td>
-      <td>${pct(row.pct_rushing_tds)}</td>
+      <td class="col-rushing-tds">${fmt(row.rushing_tds)}</td>
+      <td class="col-comp-rushing-tds">${fmt(row.comp_rushing_tds)}</td>
+      <td class="col-pct-rushing-tds">${pct(row.pct_rushing_tds)}</td>
 
       <!-- RECEIVING -->
       <td class="col-receptions">${fmt(row.receptions)}</td>
       <td class="col-comp-receptions">${fmt(row.comp_receptions)}</td>
       <td class="col-pct-receptions">${pct(row.pct_receptions)}</td>
 
-      <td>${fmt(row.receiving_yards)}</td>
-      <td>${fmt(row.comp_receiving_yards)}</td>
-      <td>${pct(row.pct_receiving_yards)}</td>
+      <td class="col-receiving-yards">${fmt(row.receiving_yards)}</td>
+      <td class="col-comp-receiving-yards">${fmt(row.comp_receiving_yards)}</td>
+      <td class="col-pct-receiving-yards">${pct(row.pct_receiving_yards)}</td>
 
-      <td>${fmt(row.receiving_tds)}</td>
-      <td>${fmt(row.comp_receiving_tds)}</td>
-      <td>${pct(row.pct_receiving_tds)}</td>
+      <td class="col-receiving-tds">${fmt(row.receiving_tds)}</td>
+      <td class="col-comp-receiving-tds">${fmt(row.comp_receiving_tds)}</td>
+      <td class="col-pct-receiving-tds">${pct(row.pct_receiving_tds)}</td>
 
       <!-- TURNOVERS -->
-      <td>${fmt(row.fumbles_lost)}</td>
-      <td>${fmt(row.comp_fumbles_lost)}</td>
-      <td>${pct(row.pct_fumbles_lost)}</td>
+      <td class="col-fumbles-lost">${fmt(row.fumbles_lost)}</td>
+      <td class="col-comp-fumbles-lost">${fmt(row.comp_fumbles_lost)}</td>
+      <td class="col-pct-fumbles-lost">${pct(row.pct_fumbles_lost)}</td>
 
-      <td>${fmt(row.sack_fumbles)}</td>
-      <td>${fmt(row.comp_sack_fumbles)}</td>
-      <td>${pct(row.pct_sack_fumbles)}</td>
+      <td class="col-sack-fumbles">${fmt(row.sack_fumbles)}</td>
+      <td class="col-comp-sack-fumbles">${fmt(row.comp_sack_fumbles)}</td>
+      <td class="col-pct-sack-fumbles">${pct(row.pct_sack_fumbles)}</td>
 
       <!-- FANTASY TOTALS -->
-      <td>${fmt(row.fantasy_points_vandalay)}</td>
-      <td>${fmt(row.fantasy_points_ppr)}</td>
-      <td>${fmt(row.fantasy_points_half)}</td>
-      <td>${fmt(row.fantasy_points_shen2000)}</td>
+      <td class="col-fantasy-points-vandalay">${fmt(row.fantasy_points_vandalay)}</td>
+      <td class="col-fantasy-points-ppr">${fmt(row.fantasy_points_ppr)}</td>
+      <td class="col-fantasy-points-half">${fmt(row.fantasy_points_half)}</td>
+      <td class="col-fantasy-points-shen2000">${fmt(row.fantasy_points_shen2000)}</td>
     </tr>
   `).join("");
 
