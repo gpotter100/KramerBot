@@ -288,3 +288,8 @@
   background: #1a1a1a;
   border-radius: 6px;
 }
+
+.th-center {
+  text-align: center !important;
+}
+
