@@ -289,6 +289,17 @@
   border-radius: 6px;
 }
 
+.chart-box {
+  width: 400px;
+  margin-left: 24px;
+}
+
+#attribution-bar {
+  width: 100%;
+  height: 300px;
+}
+
+
 .data-table .col-passing-yds {
   text-align: right !important;
 }

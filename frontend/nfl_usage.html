@@ -118,6 +118,11 @@
           <ul id="top-list" class="top-list"></ul>
         </section>
 
+        <div id="attribution-bar-wrapper" class="chart-box hidden">
+          <h3>Attribution Breakdown</h3>
+          <canvas id="attribution-bar"></canvas>
+        </div>
+
         <!-- WEEKLY USAGE TABLE -->
         <section id="table-wrapper" class="table-wrapper hidden">
           <table id="usage-table" class="data-table">
@@ -426,6 +431,7 @@ function pct(v) {
 
     document.getElementById("charts-container").classList.remove("hidden");
     renderAttributionChart(player);
+    renderAttributionBarChart(player);
   }
 
   window.selectPlayer = selectPlayer;
