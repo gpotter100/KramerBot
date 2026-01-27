@@ -163,20 +163,29 @@
                 <!-- RUSHING -->
                 <th data-sort="rushing_yards">Yds</th>
                 <th data-sort="comp_rushing_yards">FPTS (Yds)</th>
+                <th data-sort="pct_rushing_yards">% Yds</th>
                 <th data-sort="rushing_tds">TD</th>
                 <th data-sort="comp_rushing_tds">FPTS (TD)</th>
+                <th data-sort="pct_rushing_tds">% TD</th>
                 <!-- RECEIVING -->
+                <th data-sort="receptions">Rec</th>
+                <th data-sort="comp_receptions">FPTS (Rec)</th>
+                <th data-sort="pct_receptions">% Rec</th>
                 <th data-sort="receiving_yards">Yds</th>
                 <th data-sort="comp_receiving_yards">FPTS (Yds)</th>
+                <th data-sort="pct_receiving_yards">% Yds</th>
                 <th data-sort="receiving_tds">TD</th>
                 <th data-sort="comp_receiving_tds">FPTS (TD)</th>
+                <th data-sort="pct_receiving_tds">% TD</th>
 
                 <!-- TURNOVERS -->
                 <th data-sort="fumbles_lost">Fum Lost</th>
                 <th data-sort="comp_fumbles_lost">FPTS (Fum)</th>
+                <th data-sort="pct_fumbles_lost">% Fum</th>
 
                 <th data-sort="sack_fumbles">Sack Fum</th>
                 <th data-sort="comp_sack_fumbles">FPTS (Sack Fum)</th>
+                <th data-sort="pct_sack_fumbles">% Sack Fum</th>
                 <!-- FANTASY TOTALS -->
                 <th data-sort="fantasy_points_vandalay">Vandalay</th>
                 <th data-sort="fantasy_points_ppr">PPR</th>
@@ -346,21 +355,33 @@
       <!-- RUSHING -->
       <td>${fmt(row.rushing_yards)}</td>
       <td>${fmt(row.comp_rushing_yards)}</td>
+      <td>${pct(row.pct_rushing_yards)}</td>
+
       <td>${fmt(row.rushing_tds)}</td>
       <td>${fmt(row.comp_rushing_tds)}</td>
+      <td>${pct(row.pct_rushing_tds)}</td>
 
       <!-- RECEIVING -->
+      <td>${fmt(row.receptions)}</td>
+      <td>${fmt(row.comp_receptions)}</td>
+      <td>${pct(row.pct_receptions)}</td>
+
       <td>${fmt(row.receiving_yards)}</td>
       <td>${fmt(row.comp_receiving_yards)}</td>
+      <td>${pct(row.pct_receiving_yards)}</td>
+
       <td>${fmt(row.receiving_tds)}</td>
       <td>${fmt(row.comp_receiving_tds)}</td>
+      <td>${pct(row.pct_receiving_tds)}</td>
 
       <!-- TURNOVERS -->
       <td>${fmt(row.fumbles_lost)}</td>
       <td>${fmt(row.comp_fumbles_lost)}</td>
+      <td>${pct(row.pct_fumbles_lost)}</td>
 
       <td>${fmt(row.sack_fumbles)}</td>
       <td>${fmt(row.comp_sack_fumbles)}</td>
+      <td>${pct(row.pct_sack_fumbles)}</td>
 
       <!-- FANTASY TOTALS -->
       <td>${fmt(row.fantasy_points_vandalay)}</td>
