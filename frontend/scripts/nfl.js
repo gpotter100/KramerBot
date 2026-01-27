@@ -308,6 +308,8 @@ async function loadStats() {
     }
 
     currentData = rows.map(normalizePlayer);
+    console.log("Row keys:", Object.keys(rows[0]));
+
 
     populateCompareSelect(currentData);
     applyFilters();
