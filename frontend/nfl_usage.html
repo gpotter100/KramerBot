@@ -282,6 +282,8 @@
 
 <script type="module">
   import { API_BASE as BACKEND_URL } from './scripts/config.js';
+  import { renderAttributionStackedBar } from "./charts_attribution.js";
+
 
   function num(v) {
     return typeof v === "number" ? v : 0;
@@ -430,79 +432,34 @@ function pct(v) {
     }
 
     document.getElementById("charts-container").classList.remove("hidden");
-    renderAttributionChart(player);
-    renderAttributionBar(player);
+
+    // Build totals for stacked bar chart
+    const totals = {
+      passing_yards: num(player.comp_passing_yards),
+      rushing_yards: num(player.comp_rushing_yards),
+      receiving_yards: num(player.comp_receiving_yards),
+
+      passing_tds: num(player.comp_passing_tds),
+      rushing_tds: num(player.comp_rushing_tds),
+      receiving_tds: num(player.comp_receiving_tds),
+
+      receptions: num(player.receptions),
+      turnovers: num(player.comp_fumbles_lost),
+      bonuses: 0
+    };
+
+    // Prepare canvas + context
+    const canvas = document.getElementById("attribution-bar");
+    const ctx = canvas.getContext("2d");
+
+    // Render stacked bar chart (week 1 placeholder)
+    renderAttributionStackedBar(ctx, [{ week: 1, ...totals }]);
+
+    document.getElementById("attribution-bar-wrapper").classList.remove("hidden");
+
   }
 
   window.selectPlayer = selectPlayer;
-
-
-  function getAttributionData(player) {
-    return {
-      labels: [
-        "Pass Yds",
-        "Pass TD",
-        "Rush Yds",
-        "Rush TD",
-        "Rec Yds",
-        "Rec TD",
-        "Fumbles"
-      ],
-      values: [
-        player.comp_passing_yards,
-        player.comp_passing_tds,
-        player.comp_rushing_yards,
-        player.comp_rushing_tds,
-        player.comp_receiving_yards,
-        player.comp_receiving_tds,
-        player.comp_fumbles_lost
-      ]
-    };
-  }
-
-  let attributionChart = null;
-
-  function renderAttributionChart(data) {
-    const canvas = document.getElementById("usage-donut");
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-
-    // Destroy previous chart if it exists
-    if (attributionChart) {
-      attributionChart.destroy();
-      attributionChart = null;
-    }
-
-    const labels = ["Passing", "Rushing", "Receiving", "Fumbles"];
-    const values = [
-      num(data.comp_passing_yards) + num(data.comp_passing_tds),
-      num(data.comp_rushing_yards) + num(data.comp_rushing_tds),
-      num(data.comp_receiving_yards) + num(data.comp_receiving_tds),
-      num(data.comp_fumbles_lost)
-    ];
-    attributionChart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels,
-        datasets: [{
-          data: values,
-          backgroundColor: ["#4e79a7", "#59a14f", "#f28e2b", "#e15759"]
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: "bottom" },
-          tooltip: {
-            callbacks: {
-              label: (ctx) => `${ctx.label}: ${fmt1(ctx.raw)} pts`        
-            }
-          }
-        }
-      }
-    });
-  }
 
 
   function enableSorting() {
