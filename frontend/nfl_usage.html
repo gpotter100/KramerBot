@@ -288,6 +288,8 @@
     return typeof v === "number" ? v : 0;
   }
 
+  let attributionBarChart = null;
+
   function getFantasyField(scoring) {
     switch (scoring) {
       case "ppr": return "fantasy_points_ppr";
@@ -450,6 +452,12 @@ function pct(v) {
     // Prepare canvas + context
     const canvas = document.getElementById("attribution-bar");
     const ctx = canvas.getContext("2d");
+
+    // Destroy previous chart if it exists
+    if (attributionBarChart) {
+      attributionBarChart.destroy();
+      attributionBarChart = null;
+    }
 
     // Render stacked bar chart (week 1 placeholder)
     renderAttributionStackedBar(ctx, [{ week: 1, ...totals }]);
