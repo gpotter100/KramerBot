@@ -202,3 +202,16 @@ document.addEventListener("DOMContentLoaded", () => {
    EVENT BINDINGS (SAFE)
 ========================================================== */
 loadBtn?.addEventListener("click", loadMultiPBP);
+
+/* ============================================================
+   SIDEBAR DROPDOWN TOGGLE
+============================================================ */
+document.querySelectorAll(".sidebar-dropdown .dropdown-toggle").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const menu = btn.nextElementSibling;
+    if (menu) {
+      menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+    }
+  });
+});
+
